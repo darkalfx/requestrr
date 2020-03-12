@@ -1,7 +1,7 @@
 Requestrr [![Paypal](https://img.shields.io/liberapay/patrons/0?color=3b7bbf%20&label=Paypal&style=flat)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ELFGQ65FJFPVQ&currency_code=CAD&source=url) [![Discord](https://img.shields.io/badge/Discord-Invite-%237289da)](https://discord.gg/ATCM64M)
 =================
 
-![logo](https://i.imgur.com/h04cmDz.png)
+![logo](https://i.imgur.com/0UzLYvw.png)
 
 
 Installation & Configuration
