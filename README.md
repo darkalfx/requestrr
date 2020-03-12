@@ -27,7 +27,7 @@ First pull the image from docker hub using docker push darkalfx/requestrr
 Then use the following command create and start the container:
 
     docker run --name requestrr \
-      -p 5060:5060
+      -p 5060:5060 \
       -v path to config:/root/config \
       --restart=unless-stopped \
       darkalfx/requestrr
