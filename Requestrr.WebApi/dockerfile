@@ -1,0 +1,10 @@
+FROM microsoft/dotnet:3.0-sdk
+
+COPY publish/ /root/
+WORKDIR /root/
+
+VOLUME /config
+
+ENV ASPNETCORE_URLS="http://*:5060"
+EXPOSE 5060/tcp
+ENTRYPOINT ["dotnet", "Requestrr.WebApi.dll"]

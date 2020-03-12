@@ -1,0 +1,54 @@
+{
+  "name": "Requestrr",
+  "version": "1.0.0",
+  "description": "Requestrr is a server designed to faciliate the request of media through chat applications.",
+  "main": "index.js",
+  "author": "Darkalfx",
+  "license": "MIT",
+  "scripts": {
+    "start": "NODE_PATH=./src react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start",
+    "compile-sass": "node-sass src/assets/scss/argon-dashboard-react.scss src/assets/css/argon-dashboard-react.css",
+    "minify-sass": "node-sass src/assets/scss/argon-dashboard-react.scss src/assets/css/argon-dashboard-react.min.css --output-style compressed",
+    "map-sass": "node-sass src/assets/scss/argon-dashboard-react.scss src/assets/css/argon-dashboard-react.css --source-map true"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "dependencies": {
+    "chart.js": "2.7.3",
+    "classnames": "2.2.6",
+    "moment": "2.24.0",
+    "node-sass": "4.12.0",
+    "nouislider": "13.1.1",
+    "react": "16.8.4",
+    "react-chartjs-2": "2.7.4",
+    "react-copy-to-clipboard": "5.0.1",
+    "react-datetime": "2.16.3",
+    "react-dom": "16.8.4",
+    "react-dropdown-select": "^4.1.1",
+    "react-google-maps": "9.4.5",
+    "react-loader-spinner": "^3.1.5",
+    "react-redux": "^5.1.1",
+    "react-router-dom": "4.3.1",
+    "react-scripts": "2.1.8",
+    "reactstrap": "7.1.0",
+    "redux": "^3.7.2",
+    "redux-thunk": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/googlemaps": "3.30.18",
+    "@types/markerclustererplus": "2.1.33",
+    "@types/react": "16.8.7",
+    "typescript": "3.3.3333"
+  }
+}

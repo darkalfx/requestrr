@@ -1,0 +1,414 @@
+/*!
+* https://github.com/YouCanBookMe/react-datetime
+*/
+.rdt {
+  position: relative;
+
+  .rdtPicker {
+    -webkit-transition: all 150ms linear;
+    -moz-transition: all 150ms linear;
+    -o-transition: all 150ms linear;
+    -ms-transition: all 150ms linear;
+    transition: all 150ms linear;
+    margin-top: -20px;
+    visibility: hidden;
+    display: block;
+    opacity: 0;
+  }
+  &.rdtOpen {
+    .rdtPicker {
+      opacity: 1;
+      visibility: visible;
+      margin-top: 0;
+    }
+  }
+}
+.rdtPicker {
+  display: none;
+  position: absolute;
+  padding: 20px;
+  margin-top: 1px;
+  z-index: 99999 !important;
+  background: #fff;
+  border-radius: .375rem;
+  box-shadow: 0px 10px 50px 0px rgba(0, 0, 0, 0.2);
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  min-width: 160px;
+
+  &:before {
+    display: inline-block;
+    position: absolute;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    content: "";
+    top: -5px;
+    left: 10px;
+    right: auto;
+    color: #ffffff;
+    border-bottom: 0.4em solid;
+    border-right: 0.4em solid transparent;
+    border-left: 0.4em solid transparent;
+  }
+  &:after {
+    border-bottom: 0.4em solid #ffffff;
+    border-right: 0.4em solid transparent;
+    border-left: 0.4em solid transparent;
+    content: "";
+    display: inline-block;
+    position: absolute;
+    top: -5px;
+    left: 10px;
+  }
+}
+
+.rdtPicker {
+  display: block;
+  top: 40px;
+}
+.rdtStatic .rdtPicker {
+  box-shadow: none;
+  position: static;
+}
+
+.rdtPicker .rdtTimeToggle {
+  text-align: center;
+  padding: 10px;
+  border-radius: 4px;
+  visibility: hidden;
+  position: relative;
+  &:before {
+    visibility: visible;
+    width: 100%;
+    height: 100%;
+    border-radius: 3px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font: normal normal normal 1em/1 "Nucleo";
+    font-size: 18px;
+    content: "\EA5E";
+  }
+}
+
+.rdtPicker table {
+  width: 100%;
+  margin: 0;
+  border-color: $white !important;
+}
+.rdtPicker td,
+.rdtPicker th {
+  text-align: center;
+  padding: 1px;
+}
+.rdtPicker td {
+  cursor: pointer;
+}
+.rdtDay {
+  font-size: .875rem;
+  width: 36px;
+  height: 36px;
+  transition: all .15s ease;
+  text-align: center;
+  border: none;
+  border-radius: 50%;
+  &.rdtToday.rdtActive,
+  &.rdtActive,
+  &.rdtActive:hover,
+  &.start-date,
+  &.end-date,
+  &.middle-date,
+  &.start-date:hover,
+  &.end-date:hover,
+  &.middle-date:hover {
+    background-color: $info !important;
+    color: $white !important;
+  }
+  &.start-date{
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  &.middle-date{
+    border-radius: 0;
+  }
+  &.end-date{
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+.rdtDays {
+  tr {
+    .dow {
+      text-align: center;
+      font-size: 12px;
+      font-weight: inherit;
+      padding-bottom: 5px;
+      padding-top: 10px;
+      font-weight: 300;
+      font-size: .875rem;
+      width: 20px;
+      height: 20px;
+    }
+    .rdtDay {
+      color: $gray-700;
+      font-size: .875rem;
+      &.rdtOld,
+      &.rdtNew {
+        color: $gray-500;
+        font-weight: 300;
+      }
+    }
+  }
+}
+
+.rdtPicker td.rdtDay:hover,
+.rdtPicker td.rdtHour:hover,
+.rdtPicker td.rdtMinute:hover,
+.rdtPicker td.rdtSecond:hover,
+.rdtPicker .rdtTimeToggle:hover,
+.rdtPicker .rdtTimeToggle:hover:before {
+  background: #eeeeee;
+  cursor: pointer;
+}
+.rdtPicker td.rdtToday {
+  position: relative;
+}
+.rdtPicker td.rdtActive.rdtToday:before {
+  border-bottom-color: #fff;
+}
+.rdtPicker td.rdtDisabled,
+.rdtPicker td.rdtDisabled:hover {
+  background: none;
+  color: #999999;
+  cursor: not-allowed;
+}
+
+.rdtPicker td span.rdtOld {
+  color: #999999;
+}
+.rdtPicker td span.rdtDisabled,
+.rdtPicker td span.rdtDisabled:hover {
+  background: none;
+  color: #999999;
+  cursor: not-allowed;
+}
+.rdtPicker tr .dow {
+  width: 14.2857%;
+  border-bottom: none;
+  font-size: .875rem;
+  width: 36px;
+  height: 36px;
+  transition: all .15s ease;
+  text-align: center;
+  border: none;font-weight: 500;
+  border-radius: .375rem;
+}
+.rdtPicker th.rdtSwitch {
+  font-weight: 500;
+  border-radius: .375rem;
+  font-size: .875rem;
+  width: 145px;
+  height: 36px;
+  transition: all .15s ease;
+  text-align: center;
+  border: none;
+}
+.rdtPicker th.rdtNext,
+.rdtPicker th.rdtPrev {
+  font-size: .875rem;
+  width: 36px;
+  height: 36px;
+  transition: all .15s ease;
+  text-align: center;
+  border: none;
+  border-radius: .375rem;
+  cursor: pointer;
+}
+
+.rdtPicker {
+  .dow,
+  th.rdtSwitch,
+  th.rdtNext,
+  th.rdtPrev,
+  .rdtTimeToggle {
+    color: $gray-700;
+  }
+}
+
+.rdtPrev span,
+.rdtNext span {
+  display: block;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Chrome/Safari/Opera */
+  -khtml-user-select: none; /* Konqueror */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none;
+}
+
+.rdtPicker th.rdtDisabled,
+.rdtPicker th.rdtDisabled:hover {
+  background: none;
+  color: #999999;
+  cursor: not-allowed;
+}
+.rdtPicker thead tr:first-child th {
+  cursor: pointer;
+}
+.rdtPicker thead tr:first-child th:hover {
+  background: #eeeeee;
+}
+
+.rdtPicker button {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.rdtPicker button:hover {
+  background-color: #eee;
+}
+
+.rdtPicker thead button {
+  width: 100%;
+  height: 100%;
+}
+
+td.rdtMonth,
+td.rdtYear {
+  height: 50px;
+  width: 25%;
+  cursor: pointer;
+}
+td.rdtMonth:hover,
+td.rdtYear:hover {
+  background: #eee;
+}
+
+.rdtCounters {
+  display: inline-block;
+}
+
+.rdtCounters {
+  > div {
+    float: left;
+    width: 40px;
+    font-weight: inherit;
+    margin: 3px;
+    border-radius: 50%;
+  }
+  .rdtCounterSeparator {
+    width: 0;
+    border: 1px solid transparent;
+  }
+}
+
+.rdtCounter {
+  height: 100px;
+}
+
+.rdtCounter {
+  width: 40px;
+  .rdtCount {
+    padding: 7px;
+    height: 40px;
+    border: 1px solid transparent;
+  }
+}
+.rdtCounters {
+  .rdtCounter:last-child {
+    .rdtCount {
+      color: $info;
+      border-radius: 50%;
+      border: 1px solid $info;
+    }
+  }
+}
+
+.rdtCounterSeparator {
+  padding: 7px;
+  line-height: 100px;
+}
+.rdtCounter .rdtBtn {
+  line-height: 40px;
+  cursor: pointer;
+  display: block;
+  border-radius: 50%;
+  color: $gray-500;
+  -webkit-transition: all 60ms ease-in;
+  -moz-transition: all 60ms ease-in;
+  -o-transition: all 60ms ease-in;
+  -ms-transition: all 60ms ease-in;
+  transition: all 60ms ease-in;
+
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Chrome/Safari/Opera */
+  -khtml-user-select: none; /* Konqueror */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none;
+}
+.rdtCounter .rdtBtn:hover {
+  background: #eee;
+  color: #797979;
+}
+.rdtCounter .rdtCount {
+  font-size: inherit;
+  line-height: 25px;
+}
+
+.rdtMilli {
+  vertical-align: middle;
+  padding-left: 8px;
+  width: 48px;
+}
+
+.rdtMilli input {
+  width: 100%;
+  font-size: inherit;
+  margin-top: 37px;
+}
+.rdtMonths,
+.rdtYears {
+  padding-bottom: 10px;
+  .rdtMonth,
+  .rdtYear {
+    display: inline-block;
+    width: 56px;
+    height: 56px;
+    line-height: 56px;
+    margin: 3px 3px;
+    cursor: pointer;
+    border-radius: 50%;
+    text-align: center;
+
+    &.rdtActive,
+    &.start-date,
+    &.end-date,
+    &.middle-date {
+      background-color: $info !important;
+      color: $white;
+    }
+  }
+}
+.input-group .input-group-prepend + .rdt .form-control{
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.input-group .input-group-prepend + .rdt .form-control{
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.input-group > .rdt:not(:last-child) .form-control{
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.form-group .rdt {
+  width: 1%;
+  margin-bottom: 0;
+  flex: 1 1 auto;
+}

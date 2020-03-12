@@ -1,0 +1,71 @@
+{
+  "Authentication": {
+    "Username": "",
+    "Password": "",
+    "PrivateKey": "[PRIVATEKEY]"
+  },
+  "ChatClients": {
+    "Discord": {
+      "BotToken": "",
+      "ClientId": "",
+      "StatusMessage": "",
+      "EnableDirectMessageSupport": true
+    }
+  },
+  "DownloadClients": {
+    "Ombi": {
+      "Hostname": "",
+      "Port": 3579,
+      "ApiKey": "",
+      "ApiUsername": "",
+      "UseSSL": false,
+      "Version": "3"
+    },
+    "Radarr": {
+      "Hostname": "",
+      "Port": 7878,
+      "ApiKey": "",
+      "MovieProfileId": "1",
+      "MovieRootFolder": "",
+      "MovieMinimumAvailability": "",
+      "MovieTags": [],
+      "AnimeProfileId": "1",
+      "AnimeRootFolder": "",
+      "AnimeMinimumAvailability": "",
+      "AnimeTags": [],
+      "UseSSL": false,
+      "Version": "2"
+    },
+    "Sonarr": {
+      "Hostname": "",
+      "Port": 8989,
+      "ApiKey": "",
+      "TvProfileId": "1",
+      "TvRootFolder": "",
+      "TvTags": [],
+      "TvLanguageId": "1",
+      "TvUseSeasonFolders": true,
+      "AnimeProfileId": "1",
+      "AnimeRootFolder": "",
+      "AnimeTags": [],
+      "AnimeLanguageId": "1",
+      "AnimeUseSeasonFolders": true,
+      "UseSSL": false,
+      "Version": "3"
+    }
+  },
+  "BotClient": {
+    "Client": "",
+    "MonitoredChannels": "",
+    "CommandPrefix": "!"
+  },
+  "Movies": {
+    "Client": "Disabled",
+    "Command": "movie"
+  },
+  "TvShows": {
+    "Client": "Disabled",
+    "Command": "tv"
+  },
+  "Version": "1.0.0"
+}
