@@ -8,7 +8,7 @@ using Discord.WebSocket;
 
 namespace Requestrr.WebApi
 {
-    public class RequestrrModuleBase<T>
+    public class RequestrrModuleBase<T> : IDisposable
     {
         private readonly DiscordSocketClient _discord;
         private Dictionary<ulong, IReactionCallback> _callbacks = new Dictionary<ulong, IReactionCallback>();

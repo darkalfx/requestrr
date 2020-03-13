@@ -107,26 +107,34 @@ namespace Requestrr.WebApi.Requestrr
             {
                 x.AddCommand("ping", async (commandContext, noidea, serviceProvider, commandInfo) =>
                 {
-                    await new DiscordPingWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()).HandlePingAsync();
+                    using(var command = new DiscordPingWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
+                    {
+                        await command.HandlePingAsync();
+                    }
                 }, c => c.WithName("ping").WithRunMode(RunMode.Async));
 
                 x.AddCommand("help", async (commandContext, noidea, serviceProvider, commandInfo) =>
                 {
-                    await new DiscordHelpWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()).HandleHelpAsync();
+                    using(var command = new DiscordHelpWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
+                    {
+                        await command.HandleHelpAsync();
+                    }
                 }, c => c.WithName("help").WithRunMode(RunMode.Async));
 
                 if (discordSettings.MovieDownloadClient != DownloadClient.Disabled)
                 {
                     x.AddCommand(discordSettings.MovieCommand, async (commandContext, message, serviceProvider, commandInfo) =>
                     {
-                        await new DiscordMovieRequestingWorkFlow(
+                        using(var command = new DiscordMovieRequestingWorkFlow(
                         (SocketCommandContext)commandContext,
                         _client,
                         GetMovieClient<IMovieSearcher>(discordSettings),
                         GetMovieClient<IMovieRequester>(discordSettings),
                         serviceProvider.Get<DiscordSettingsProvider>(),
-                        _movieNotificationRequestRepository)
-                        .HandleMovieRequestAsync(message[0].ToString());
+                        _movieNotificationRequestRepository))
+                        {
+                            await command.HandleMovieRequestAsync(message[0].ToString());
+                        }
                     }, c => c.WithName("movie").WithSummary($"The correct usage of this command is: ```{discordSettings.CommandPrefix}{discordSettings.MovieCommand} name of movie```").WithRunMode(RunMode.Async).AddParameter<string>("movieName", p => p.WithIsRemainder(true).WithIsOptional(false)));
                 }
 
@@ -134,14 +142,16 @@ namespace Requestrr.WebApi.Requestrr
                 {
                     x.AddCommand(discordSettings.TvShowCommand, async (commandContext, message, serviceProvider, commandInfo) =>
                     {
-                        await new DiscordTvShowsRequestingWorkFlow(
+                        using(var command = new DiscordTvShowsRequestingWorkFlow(
                            (SocketCommandContext)commandContext,
                            _client,
                             GetTvShowClient<ITvShowSearcher>(discordSettings),
                             GetTvShowClient<ITvShowRequester>(discordSettings),
                            serviceProvider.Get<DiscordSettingsProvider>(),
-                           _tvShowNotificationRequestRepository)
-                           .HandleTvShowRequestAsync(message[0].ToString());
+                           _tvShowNotificationRequestRepository))
+                        {
+                            await command.HandleTvShowRequestAsync(message[0].ToString());
+                        }
                     }, c => c.WithName("tv").WithSummary($"The correct usage of this command is: ```{discordSettings.CommandPrefix}{discordSettings.TvShowCommand} name of tv show```").WithRunMode(RunMode.Async).AddParameter<string>("tvShowName", p => p.WithIsRemainder(true).WithIsOptional(false)));
                 }
             });
