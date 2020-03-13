@@ -40,4 +40,6 @@ Then use the following command create and start the container:
       --restart=unless-stopped \
       darkalfx/requestrr
 
-Then simply access the web portal at http://youraddress:5060/ to create your admin account, then you can configure everything through the web portal. 
+Then simply access the web portal at http://youraddress:5060/ to create your admin account, then you can configure everything through the web portal.
+
+Once you have configured the bot and invited it to your Discord server, simply type !help to see all available commands.
