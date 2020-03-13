@@ -31,7 +31,6 @@ namespace Requestrr.WebApi.Requestrr
         private Ombi _ombiDownloadClient;
         private Radarr _radarrDownloadClient;
         private Sonarr _sonarrDownloadClient;
-
         private ModuleInfo _moduleInfo = null;
 
         public RequestrrBot(IServiceProvider serviceProvider, ILogger<RequestrrBot> logger, DiscordSettingsProvider discordSettingsProvider)
@@ -67,10 +66,10 @@ namespace Requestrr.WebApi.Requestrr
 
                         if (!_currentSettings.Equals(newSettings) || _client.ConnectionState == ConnectionState.Disconnected)
                         {
-                            _logger.LogWarning("Configuration change detected: restarting bot");
+                            _logger.LogWarning("Bot changes detected: restarting bot");
                             _currentSettings = newSettings;
                             await RestartBot(newSettings);
-                            _logger.LogWarning("Configuration change detected: bot restarted");
+                            _logger.LogWarning("Bot changes detected: bot restarted");
                         }
                     }
                     catch (Exception ex)
@@ -107,7 +106,7 @@ namespace Requestrr.WebApi.Requestrr
             {
                 x.AddCommand("ping", async (commandContext, noidea, serviceProvider, commandInfo) =>
                 {
-                    using(var command = new DiscordPingWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
+                    using (var command = new DiscordPingWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
                     {
                         await command.HandlePingAsync();
                     }
@@ -115,7 +114,7 @@ namespace Requestrr.WebApi.Requestrr
 
                 x.AddCommand("help", async (commandContext, noidea, serviceProvider, commandInfo) =>
                 {
-                    using(var command = new DiscordHelpWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
+                    using (var command = new DiscordHelpWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
                     {
                         await command.HandleHelpAsync();
                     }
@@ -125,7 +124,7 @@ namespace Requestrr.WebApi.Requestrr
                 {
                     x.AddCommand(discordSettings.MovieCommand, async (commandContext, message, serviceProvider, commandInfo) =>
                     {
-                        using(var command = new DiscordMovieRequestingWorkFlow(
+                        using (var command = new DiscordMovieRequestingWorkFlow(
                         (SocketCommandContext)commandContext,
                         _client,
                         GetMovieClient<IMovieSearcher>(discordSettings),
@@ -142,7 +141,7 @@ namespace Requestrr.WebApi.Requestrr
                 {
                     x.AddCommand(discordSettings.TvShowCommand, async (commandContext, message, serviceProvider, commandInfo) =>
                     {
-                        using(var command = new DiscordTvShowsRequestingWorkFlow(
+                        using (var command = new DiscordTvShowsRequestingWorkFlow(
                            (SocketCommandContext)commandContext,
                            _client,
                             GetTvShowClient<ITvShowSearcher>(discordSettings),
@@ -194,22 +193,34 @@ namespace Requestrr.WebApi.Requestrr
             switch (log.Severity)
             {
                 case LogSeverity.Critical:
-                    _logger.LogCritical(log.Exception, log.Message);
+                    _logger.LogCritical(log.Exception, $"[Discord] {log.Message}");
+
+                    if (_client.ConnectionState == ConnectionState.Connected)
+                    {
+                        _logger.LogCritical($"[Discord] Disconnecting from Discord due to error");
+                        _client.StopAsync().ContinueWith(x => _client.LogoutAsync());
+                    }
+
                     break;
                 case LogSeverity.Error:
-                    _logger.LogError(log.Exception, log.Message);
+                    _logger.LogError(log.Exception, $"[Discord] {log.Message}");
+                    if (_client.ConnectionState == ConnectionState.Connected)
+                    {
+                        _logger.LogError($"[Discord] Disconnecting from Discord due to error");
+                        _client.StopAsync().ContinueWith(x => _client.LogoutAsync());
+                    }
                     break;
                 case LogSeverity.Warning:
-                    _logger.LogWarning(log.Exception, log.Message);
+                    _logger.LogWarning(log.Exception, $"[Discord] {log.Message}");
                     break;
                 case LogSeverity.Info:
-                    _logger.LogInformation(log.Exception, log.Message);
+                    _logger.LogInformation(log.Exception, $"[Discord] {log.Message}");
                     break;
                 case LogSeverity.Debug:
-                    _logger.LogDebug(log.Exception, log.Message);
+                    _logger.LogDebug(log.Exception, $"[Discord] {log.Message}");
                     break;
                 case LogSeverity.Verbose:
-                    _logger.LogTrace(log.Exception, log.Message);
+                    _logger.LogTrace(log.Exception, $"[Discord] {log.Message}");
                     break;
             }
 
