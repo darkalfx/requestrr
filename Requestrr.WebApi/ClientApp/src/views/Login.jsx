@@ -216,7 +216,7 @@ class Login extends React.Component {
                   }
                 </FormGroup>
                 <div className="text-center">
-                  <button type="submit" class="btn btn-icon btn-primary" disabled={this.state.isLoading}>
+                  <button type="submit" className="btn btn-icon btn-primary" disabled={this.state.isLoading}>
                     <span className="btn-inner--icon"><i className="fas fa-sign-in-alt"></i></span>
                     <span className="btn-inner--text">Sign in</span>
                   </button>

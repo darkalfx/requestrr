@@ -397,7 +397,7 @@ class ChatClients extends React.Component {
                               value={this.state.statusMessage} onChange={this.onStatusMessageChange}
                               className="form-control-alternative"
                               id="input-status-message"
-                              placeholder="Enter status message"
+                              placeholder="Enter status message (Optional)"
                               type="text"
                             />
                           </FormGroup>
@@ -501,7 +501,7 @@ class ChatClients extends React.Component {
                               value={this.state.commandPrefix} onChange={this.onCommandPrefixChange}
                               className="form-control-alternative"
                               id="input-command-prefix"
-                              placeholder="Enter command prefix"
+                              placeholder="Enter command prefix (Optional)"
                               type="text"
                             />
                           </FormGroup>

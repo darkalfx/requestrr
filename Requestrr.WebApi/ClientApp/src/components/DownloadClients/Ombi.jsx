@@ -203,7 +203,7 @@ class Ombi extends React.Component {
             <Col lg="6">
               <Textbox
                 name="Api Username"
-                placeholder="Enter api username"
+                placeholder="Enter api username (Optional)"
                 value={this.state.apiUsername}
                 onChange={newApiUsername => this.setState({ apiUsername: newApiUsername }, this.onValueChange)}/>
             </Col>

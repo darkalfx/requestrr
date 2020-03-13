@@ -82,27 +82,16 @@ class Sidebar extends React.Component {
   createLinks = routes => {
     return routes.filter(r => r.layout != "/auth").map((prop, key) => {
       return (
-        <>
-          {
-            prop.path === "/logout"
-              ? <>
-                <li class="nav-item"><a class="nav-link" target="_blank" href="https://discord.gg/ATCM64M"><i style={{ color: '#7289DA' }} class="fab big fa-discord"></i>Support</a></li>
-                <li class="nav-item"><a class="nav-link" target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ELFGQ65FJFPVQ&currency_code=CAD&source=url"><i class="fas big fa-heart text-red"></i>Donate</a></li>
-                </>
-              : null
-          }
-          <NavItem key={key}>
-            <NavLink
-              to={prop.layout + prop.path}
-              tag={NavLinkRRD}
-              onClick={this.closeCollapse}
-              activeClassName="active"
-            >
-              <i className={prop.icon} />
-              {prop.name}
-            </NavLink>
-          </NavItem>
-        </>
+        <NavItem key={key}>
+          <NavLink
+            to={prop.layout + prop.path}
+            tag={NavLinkRRD}
+            onClick={this.closeCollapse}
+            activeClassName="active">
+            <i className={prop.icon} />
+            {prop.name}
+          </NavLink>
+        </NavItem>
       );
     });
   };
@@ -179,6 +168,19 @@ class Sidebar extends React.Component {
             <Nav navbar>
               {this.createLinks(routes)}
             </Nav>
+            <hr className="my-3" />
+            <h6 className="navbar-heading text-muted">Support</h6>
+            <ul className="mb-md-3 navbar-nav">
+              <li className="nav-item">
+                <a className="nav-link" target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ELFGQ65FJFPVQ&currency_code=CAD&source=url"><i className="fas big fa-heart text-red"></i>Donate</a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link" target="_blank" href="https://discord.gg/ATCM64M"><i className="fab big fa-discord" style={{ color: '#7289DA' }}></i>Discord</a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link" target="_blank" href="https://github.com/darkalfx/requestrr/issues"><i className="fab big fa-github" style={{ color: 'black' }} ></i>Github</a>
+              </li>
+            </ul>
           </Collapse>
         </Container>
       </Navbar>
