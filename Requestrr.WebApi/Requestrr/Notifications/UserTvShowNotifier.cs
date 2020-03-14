@@ -18,7 +18,7 @@ namespace Requestrr.WebApi.Requestrr.Notifications
         {
             var user = _discordClient.GetUser(ulong.Parse(userId));
             var channel = await user.GetOrCreateDMChannelAsync();
-            await channel.SendMessageAsync($"The **season {seasonNumber}** of **{tvShow.Title}** that you requested has finished downloading and will be available in a few minutes!", false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
+            await channel.SendMessageAsync($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** that you requested has finished downloading and will be available in a few minutes!", false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
         }
     }
 }
