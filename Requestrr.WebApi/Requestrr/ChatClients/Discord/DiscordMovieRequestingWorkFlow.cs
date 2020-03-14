@@ -34,19 +34,22 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             _discordSettings = discordSettingsProvider.Provide();
         }
 
-        public Task HandleMovieRequestAsync(string movieName)
+        public async Task HandleMovieRequestAsync(string movieName)
         {
             if (!_discordSettings.EnableDirectMessageSupport && this.Context.Guild == null)
             {
-                return ReplyToUserAsync($"This command is only available within a server.");
+                await ReplyToUserAsync($"This command is only available within a server.");
+                return;
             }
             else if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
             {
-                return Task.CompletedTask;
+                return;
             }
+            
+            await DeleteSafeAsync(this.Context.Message);
 
             var workFlow = new MovieRequestingWorkflow(new MovieUserRequester(this.Context.Message.Author.Id.ToString(), this.Context.Message.Author.Username), _movieSearcher, _movieRequester, this, _notificationRequestRepository);
-            return workFlow.HandleMovieRequestAsync(movieName);
+            await workFlow.HandleMovieRequestAsync(movieName);
         }
 
         public Task WarnNoMovieFoundAsync(string movieName)
@@ -102,7 +105,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 {
                     await DeleteSafeAsync(reply);
                     await DeleteSafeAsync(selectionMessage);
-                    
+
                     return new MovieSelection
                     {
                         Movie = movies[selectedMovie - 1]
