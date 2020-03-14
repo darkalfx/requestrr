@@ -45,9 +45,6 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 return Task.CompletedTask;
             }
 
-            if (string.IsNullOrWhiteSpace(tvShowName))
-                return ReplyToUserAsync($"Here's how to use the tv command! You must type ```!tv``` followed by the name of the tv show you're looking for, like this ```!tv putnamehere```");
-
             var workFlow = new TvShowRequestingWorkflow(new TvShowUserRequester(this.Context.Message.Author.Id.ToString(), this.Context.Message.Author.Username), _tvShowSearcher, _tvShowRequester, this, _notificationsRepository);
             return workFlow.HandleTvShowRequestAsync(tvShowName);
         }
@@ -59,7 +56,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
         public async Task<TvShowSelection> GetTvShowSelectionAsync(IReadOnlyList<SearchedTvShow> searchedTvShows)
         {
-             var embedContent = new StringBuilder();
+            var embedContent = new StringBuilder();
 
             for (int i = 0; i < searchedTvShows.Take(10).Count(); i++)
             {
@@ -72,41 +69,44 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 tvRow.Append($"[[TheTVDb](https://www.thetvdb.com/?id={searchedTvShows[i].TheTvDbId}&tab=series)]");
                 tvRow.AppendLine();
 
-                if(tvRow.Length + embedContent.Length <= 1000)
+                if (tvRow.Length + embedContent.Length <= 1000)
                     embedContent.Append(tvRow.ToString());
             }
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle("Tv Show Search")
-                .WithDescription("Please select one of the search results by typing one of the numbers shown on the left. To abort type **cancel**")
+                .WithDescription($"Please select one of the search results by typing one of the numbers shown on the left. (ex: {_discordSettings.CommandPrefix}2) To abort type **{_discordSettings.CommandPrefix}cancel**")
                 .AddField("__Search Results__", embedContent.ToString())
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());
 
             var selectionMessage = await NextMessageAsync(Context);
-            var selectionMessageContent = selectionMessage?.Content ?? "cancel";
+            var selectionMessageContent = selectionMessage?.Content ?? $"{_discordSettings.CommandPrefix}cancel";
 
-            if (selectionMessageContent.ToLower().StartsWith("cancel"))
+            if (selectionMessageContent.StartsWith($"{_discordSettings.CommandPrefix}"))
             {
-                await DeleteSafeAsync(selectionMessage);
-                await DeleteSafeAsync(reply);
-                await ReplyToUserAsync("Your request has been cancelled!!");
-
-                return new TvShowSelection
+                if (selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty).ToLower().StartsWith("cancel"))
                 {
-                    IsCancelled = true
-                };
-            }
-            else if (int.TryParse(selectionMessageContent, out var selectedTvShow) && selectedTvShow <= searchedTvShows.Count)
-            {
-                await DeleteSafeAsync(selectionMessage);
-                await DeleteSafeAsync(reply);
+                    await DeleteSafeAsync(selectionMessage);
+                    await DeleteSafeAsync(reply);
+                    await ReplyToUserAsync("Your request has been cancelled!!");
 
-                return new TvShowSelection
+                    return new TvShowSelection
+                    {
+                        IsCancelled = true
+                    };
+                }
+                else if (int.TryParse(selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty), out var selectedTvShow) && selectedTvShow <= searchedTvShows.Count)
                 {
-                    SelectedTvShow = searchedTvShows[selectedTvShow - 1]
-                };
+                    await DeleteSafeAsync(selectionMessage);
+                    await DeleteSafeAsync(reply);
+
+                    return new TvShowSelection
+                    {
+                        SelectedTvShow = searchedTvShows[selectedTvShow - 1]
+                    };
+                }
             }
 
             return new TvShowSelection();
@@ -170,28 +170,28 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle($"{tvShow.Title} Seasons")
-                .WithDescription("Please select one of the available seasons below by typing one of the numbers shown on the left. To abort type **cancel**")
+                .WithDescription($"Please select one of the available seasons below by typing one of the numbers shown on the left. (ex: {_discordSettings.CommandPrefix}2) To abort type **{_discordSettings.CommandPrefix}cancel**")
                 .AddField("__Seasons__", fieldContent)
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());
             var selectionMessage = await NextMessageAsync(Context);
-            var selectionMessageContent = selectionMessage?.Content ?? "cancel";
+            var selectionMessageContent = selectionMessage?.Content ?? $"{_discordSettings.CommandPrefix}cancel";
 
-            if (selectionMessageContent.ToLower().StartsWith("cancel"))
+            if (selectionMessageContent.StartsWith($"{_discordSettings.CommandPrefix}"))
             {
-                await DeleteSafeAsync(selectionMessage);
-                await DeleteSafeAsync(reply);
-                await ReplyToUserAsync("Your request has been cancelled!!");
-
-                return new TvSeasonsSelection
+                if (selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty).ToLower().StartsWith("cancel"))
                 {
-                    IsCancelled = true
-                };
-            }
-            else
-            {
-                if (int.TryParse(selectionMessageContent, out var selectedSeasonNumber) && tvShowSeasons.Any(x => x.SeasonNumber == selectedSeasonNumber))
+                    await DeleteSafeAsync(selectionMessage);
+                    await DeleteSafeAsync(reply);
+                    await ReplyToUserAsync("Your request has been cancelled!!");
+
+                    return new TvSeasonsSelection
+                    {
+                        IsCancelled = true
+                    };
+                }
+                else if (int.TryParse(selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty), out var selectedSeasonNumber) && tvShowSeasons.Any(x => x.SeasonNumber == selectedSeasonNumber))
                 {
                     await DeleteSafeAsync(selectionMessage);
                     await DeleteSafeAsync(reply);

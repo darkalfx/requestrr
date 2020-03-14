@@ -45,9 +45,6 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 return Task.CompletedTask;
             }
 
-            if (string.IsNullOrWhiteSpace(movieName))
-                return ReplyToUserAsync($"Here's how to use the movie command! You must type ```!movie``` followed by the name of the movie you're looking for, like this ```!movie putnamehere```");
-
             var workFlow = new MovieRequestingWorkflow(new MovieUserRequester(this.Context.Message.Author.Id.ToString(), this.Context.Message.Author.Username), _movieSearcher, _movieRequester, this, _notificationRequestRepository);
             return workFlow.HandleMovieRequestAsync(movieName);
         }
@@ -73,40 +70,44 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 movieRow.Append($"[[TheMovieDb](https://www.themoviedb.org/movie/{arrayMovies[i].TheMovieDbId})]");
                 movieRow.AppendLine();
 
-                if(movieRow.Length + embedContent.Length <= 1000)
+                if (movieRow.Length + embedContent.Length <= 1000)
                     embedContent.Append(movieRow.ToString());
             }
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle("Movie Search")
-                .WithDescription("Please select one of the search results by typing one of the numbers shown on the left. To abort type **cancel**")
+                .WithDescription($"Please select one of the search results by typing one of the numbers shown on the left. (ex: {_discordSettings.CommandPrefix}2) To abort type **{_discordSettings.CommandPrefix}cancel**")
                 .AddField("__Search Results__", embedContent.ToString())
                 .WithThumbnailUrl("https://i.imgur.com/44ueTES.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());
 
             var selectionMessage = await NextMessageAsync(Context);
-            var selectionMessageContent = selectionMessage?.Content ?? "cancel";
+            var selectionMessageContent = selectionMessage?.Content ?? $"{_discordSettings.CommandPrefix}cancel";
 
-            if (selectionMessageContent.ToLower().StartsWith("cancel"))
+            if (selectionMessageContent.StartsWith($"{_discordSettings.CommandPrefix}"))
             {
-                await DeleteSafeAsync(reply);
-                await DeleteSafeAsync(selectionMessage);
-                await ReplyToUserAsync("Your request has been cancelled!!");
+                if (selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty).ToLower().StartsWith("cancel"))
+                {
+                    await DeleteSafeAsync(reply);
+                    await DeleteSafeAsync(selectionMessage);
+                    await ReplyToUserAsync("Your request has been cancelled!!");
 
-                return new MovieSelection
+                    return new MovieSelection
+                    {
+                        IsCancelled = true
+                    };
+                }
+                else if (int.TryParse(selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty), out var selectedMovie) && selectedMovie <= movies.Count)
                 {
-                    IsCancelled = true
-                };
-            }
-            else if (int.TryParse(selectionMessageContent, out var selectedMovie) && selectedMovie <= movies.Count)
-            {
-                await DeleteSafeAsync(reply);
-                await DeleteSafeAsync(selectionMessage);
-                return new MovieSelection
-                {
-                    Movie = movies[selectedMovie - 1]
-                };
+                    await DeleteSafeAsync(reply);
+                    await DeleteSafeAsync(selectionMessage);
+                    
+                    return new MovieSelection
+                    {
+                        Movie = movies[selectedMovie - 1]
+                    };
+                }
             }
 
             return new MovieSelection();
