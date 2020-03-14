@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -58,23 +59,27 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
         public async Task<TvShowSelection> GetTvShowSelectionAsync(IReadOnlyList<SearchedTvShow> searchedTvShows)
         {
-            var fieldContent = string.Empty;
+             var embedContent = new StringBuilder();
 
             for (int i = 0; i < searchedTvShows.Take(10).Count(); i++)
             {
-                fieldContent += $"{i + 1}) {searchedTvShows[i].Title} ";
+                var tvRow = new StringBuilder();
+                tvRow.Append($"{i + 1}) {searchedTvShows[i].Title} ");
 
                 if (!string.IsNullOrWhiteSpace(searchedTvShows[i].FirstAired))
-                    fieldContent += $"({searchedTvShows[i].FirstAired.Substring(0, 4)}) ";
+                    tvRow.Append($"({searchedTvShows[i].FirstAired.Substring(0, 4)}) ");
 
-                fieldContent += $"[[TheTVDb](https://www.thetvdb.com/?id={searchedTvShows[i].TheTvDbId}&tab=series)]";
-                fieldContent += System.Environment.NewLine;
+                tvRow.Append($"[[TheTVDb](https://www.thetvdb.com/?id={searchedTvShows[i].TheTvDbId}&tab=series)]");
+                tvRow.AppendLine();
+
+                if(tvRow.Length + embedContent.Length <= 1000)
+                    embedContent.Append(tvRow.ToString());
             }
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle("Tv Show Search")
                 .WithDescription("Please select one of the search results by typing one of the numbers shown on the left. To abort type **cancel**")
-                .AddField("__Search Results__", fieldContent)
+                .AddField("__Search Results__", embedContent.ToString())
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());

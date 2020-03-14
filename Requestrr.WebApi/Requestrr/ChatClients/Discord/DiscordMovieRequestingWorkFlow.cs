@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -58,24 +59,28 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
         public async Task<MovieSelection> GetMovieSelectionAsync(IReadOnlyList<Movie> movies)
         {
-            var fieldContent = string.Empty;
             var arrayMovies = movies.ToArray();
+            var embedContent = new StringBuilder();
 
             for (int i = 0; i < movies.Take(10).Count(); i++)
             {
-                fieldContent += $"{i + 1}) {arrayMovies[i].Title} ";
+                var movieRow = new StringBuilder();
+                movieRow.Append($"{i + 1}) {arrayMovies[i].Title} ");
 
                 if (!string.IsNullOrWhiteSpace(arrayMovies[i].ReleaseDate))
-                    fieldContent += $"({arrayMovies[i].ReleaseDate.Substring(0, 4)}) ";
+                    movieRow.Append($"({arrayMovies[i].ReleaseDate.Substring(0, 4)}) ");
 
-                fieldContent += $"[[TheMovieDb](https://www.themoviedb.org/movie/{arrayMovies[i].TheMovieDbId})]";
-                fieldContent += System.Environment.NewLine;
+                movieRow.Append($"[[TheMovieDb](https://www.themoviedb.org/movie/{arrayMovies[i].TheMovieDbId})]");
+                movieRow.AppendLine();
+
+                if(movieRow.Length + embedContent.Length <= 1000)
+                    embedContent.Append(movieRow.ToString());
             }
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle("Movie Search")
                 .WithDescription("Please select one of the search results by typing one of the numbers shown on the left. To abort type **cancel**")
-                .AddField("__Search Results__", fieldContent)
+                .AddField("__Search Results__", embedContent.ToString())
                 .WithThumbnailUrl("https://i.imgur.com/44ueTES.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());
