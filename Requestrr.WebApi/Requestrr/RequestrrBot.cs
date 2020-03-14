@@ -212,6 +212,12 @@ namespace Requestrr.WebApi.Requestrr
                     break;
                 case LogSeverity.Warning:
                     _logger.LogWarning(log.Exception, $"[Discord] {log.Message}");
+
+                    if (log.Message.Contains("unhandled", StringComparison.InvariantCultureIgnoreCase) && _client.ConnectionState == ConnectionState.Connected)
+                    {
+                        _logger.LogWarning($"[Discord] Disconnecting from Discord due to error");
+                        _client.StopAsync().ContinueWith(x => _client.LogoutAsync());
+                    }
                     break;
                 case LogSeverity.Info:
                     _logger.LogInformation(log.Exception, $"[Discord] {log.Message}");
