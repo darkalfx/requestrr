@@ -73,7 +73,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle("Tv Show Search")
-                .WithDescription("Please select one of the search results. To abort answer **cancel**")
+                .WithDescription("Please select one of the search results by typing one of the numbers shown on the left. To abort type **cancel**")
                 .AddField("__Search Results__", fieldContent)
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
 
@@ -165,7 +165,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle($"{tvShow.Title} Seasons")
-                .WithDescription("Please select one of the available seasons below. To abort answer **cancel**")
+                .WithDescription("Please select one of the available seasons below by typing one of the numbers shown on the left. To abort type **cancel**")
                 .AddField("__Seasons__", fieldContent)
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
 

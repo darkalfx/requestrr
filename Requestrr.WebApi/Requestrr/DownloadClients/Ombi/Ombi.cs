@@ -101,6 +101,11 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             throw new System.Exception("An error occurred while searching for movies from Ombi");
         }
 
+        public Task<MovieDetails> GetMovieDetails(string theMovieDbId)
+        {
+            return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId);
+        }
+
         public async Task<Movie> GetMovieAsync(int movieId)
         {
             var retryCount = 0;

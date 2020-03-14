@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -148,6 +149,11 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             throw new System.Exception("An error occurred while searching for movies with Radarr");
         }
 
+        public Task<MovieDetails> GetMovieDetails(string theMovieDbId)
+        {
+            return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId);
+        }
+
         public async Task<Dictionary<int, Movie>> SearchAvailableMoviesAsync(HashSet<int> theMovieDbIds, System.Threading.CancellationToken token)
         {
             var retryCount = 0;
@@ -217,7 +223,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
 
         private async Task CreateMovieInRadarr(Movie movie)
         {
-            var response = await GetMovieFromTheMovieDb(movie.TheMovieDbId);
+            var response = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
 
             if (!response.IsSuccessStatusCode)
                 throw new Exception(response.ReasonPhrase);
@@ -277,7 +283,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             var jsonResponse = await response.Content.ReadAsStringAsync();
             dynamic radarrMovie = JObject.Parse(jsonResponse);
 
-            response = await GetMovieFromTheMovieDb(movie.TheMovieDbId);
+            response = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
 
             if (!response.IsSuccessStatusCode)
                 throw new Exception(response.ReasonPhrase);
@@ -366,11 +372,6 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<JSONMovie>(jsonResponse);
-        }
-
-        private async Task<HttpResponseMessage> GetMovieFromTheMovieDb(string theMovieDbId)
-        {
-            return await HttpGetAsync($"https://api.themoviedb.org/3/movie/{theMovieDbId}?api_key=0d3ad5bb96218b24cd6917ccd6d673bc&language=en-US");
         }
 
         private Task<HttpResponseMessage> HttpGetAsync(string url)

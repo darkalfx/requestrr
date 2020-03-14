@@ -74,7 +74,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle("Movie Search")
-                .WithDescription("Please select one of the search results. To abort answer **cancel**")
+                .WithDescription("Please select one of the search results by typing one of the numbers shown on the left. To abort type **cancel**")
                 .AddField("__Search Results__", fieldContent)
                 .WithThumbnailUrl("https://i.imgur.com/44ueTES.png");
 
@@ -115,10 +115,10 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
         public async Task DisplayMovieDetails(Movie movie)
         {
             var message = Context.Message;
-            _lastCommandMessage = await ReplyAsync(string.Empty, false, GenerateMovieDetails(movie, message.Author));
+            _lastCommandMessage = await ReplyAsync(string.Empty, false, await GenerateMovieDetailsAsync(movie, message.Author, _movieSearcher));
         }
 
-        public static Embed GenerateMovieDetails(Movie movie, SocketUser user)
+        public static async Task<Embed> GenerateMovieDetailsAsync(Movie movie, SocketUser user, IMovieSearcher movieSearcher = null)
         {
             var embedBuilder = new EmbedBuilder()
                 .WithTitle($"{movie.Title} {(!string.IsNullOrWhiteSpace(movie.ReleaseDate) ? $"({movie.ReleaseDate.Split("T")[0].Substring(0, 4)})" : string.Empty)}")
@@ -132,6 +132,28 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             if (!string.IsNullOrWhiteSpace(movie.Quality)) embedBuilder.AddField("__Quality__", $"{movie.Quality}p", true);
             if (!string.IsNullOrWhiteSpace(movie.PlexUrl)) embedBuilder.AddField("__Plex__", $"[Watch now]({movie.PlexUrl})", true);
             if (!string.IsNullOrWhiteSpace(movie.EmbyUrl)) embedBuilder.AddField("__Emby__", $"[Watch now]({movie.EmbyUrl})", true);
+
+            if (movieSearcher != null)
+            {
+                try
+                {
+                    var details = await movieSearcher.GetMovieDetails(movie.TheMovieDbId);
+
+                    if (!string.IsNullOrWhiteSpace(details.InTheatersDate))
+                    {
+                        embedBuilder.AddField("__In Theaters__", $"{details.InTheatersDate}", true);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(details.PhysicalReleaseName) && !string.IsNullOrWhiteSpace(details.PhysicalReleaseDate))
+                    {
+                        embedBuilder.AddField($"__{details.PhysicalReleaseName} Release__", $"{details.PhysicalReleaseDate}", true);
+                    }
+                }
+                catch
+                {
+                    // Ignore
+                }
+            }
 
             return embedBuilder.Build();
         }

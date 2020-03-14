@@ -18,7 +18,7 @@ namespace Requestrr.WebApi.Requestrr.Notifications
         {
             var user = _discordClient.GetUser(ulong.Parse(userId));
             var channel = await user.GetOrCreateDMChannelAsync();
-            await channel.SendMessageAsync($"The movie **{movie.Title}** you requested has finished downloading and will be available in a few minutes!", false, DiscordMovieRequestingWorkFlow.GenerateMovieDetails(movie, user));
+            await channel.SendMessageAsync($"The movie **{movie.Title}** you requested has finished downloading and will be available in a few minutes!", false, await DiscordMovieRequestingWorkFlow.GenerateMovieDetailsAsync(movie, user));
         }
     } 
 }
