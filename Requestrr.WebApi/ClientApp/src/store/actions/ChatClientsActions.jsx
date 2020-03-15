@@ -70,6 +70,8 @@ export function save(saveModel) {
                 'StatusMessage': saveModel.statusMessage,
                 'CommandPrefix': saveModel.commandPrefix,
                 'MonitoredChannels': saveModel.monitoredChannels,
+                'TvShowRoles': saveModel.tvShowRoles,
+                'MovieRoles': saveModel.movieRoles,
                 'EnableDirectMessageSupport': saveModel.enableDirectMessageSupport,
             })
         })
@@ -83,6 +85,8 @@ export function save(saveModel) {
                         commandPrefix: saveModel.commandPrefix,
                         statusMessage: saveModel.statusMessage,
                         monitoredChannels: saveModel.monitoredChannels,
+                        tvShowRoles: saveModel.tvShowRoles,
+                        movieRoles: saveModel.movieRoles,
                         enableDirectMessageSupport: saveModel.enableDirectMessageSupport
                     }));
                     return { ok: true };

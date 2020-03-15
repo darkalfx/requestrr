@@ -16,6 +16,8 @@ public class TestOmbiSettingsModel
     [Required]
     public string ApiKey { get; set; }
     [Required]
+    public string BaseUrl { get; set; }
+    [Required]
     public bool UseSSL { get; set; }
     [Required]
     public string Version { get; set; }
@@ -30,6 +32,8 @@ public class SaveOmbiSettingsModel
     [Required]
     public string ApiKey { get; set; }
     public string ApiUsername { get; set; }
+    [Required]
+    public string BaseUrl { get; set; }
     [Required]
     public bool UseSSL { get; set; }
     [Required]
@@ -66,6 +70,7 @@ namespace Requestrr.WebApi.Controllers
                     ApiKey = model.ApiKey.Trim(),
                     Hostname = model.Hostname.Trim(),
                     Port = model.Port,
+                    BaseUrl = model.BaseUrl.Trim(),
                     UseSSL = model.UseSSL,
                     Version = model.Version,
                 });
@@ -118,6 +123,7 @@ namespace Requestrr.WebApi.Controllers
                 ApiKey = model.ApiKey.Trim(),
                 ApiUsername = model.ApiUsername.Trim(),
                 Port = model.Port,
+                BaseUrl = model.BaseUrl.Trim(),
                 UseSSL = model.UseSSL,
                 Version = model.Version
             };

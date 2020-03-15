@@ -350,7 +350,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
         private static string GetBaseURL(OmbiSettings settings)
         {
             var protocol = settings.UseSSL ? "https" : "http";
-            return $"{protocol}://{settings.Hostname}:{settings.Port}";
+            return $"{protocol}://{settings.Hostname}:{settings.Port}{settings.BaseUrl}";
         }
 
         private Task<HttpResponseMessage> HttpGetAsync(string url)

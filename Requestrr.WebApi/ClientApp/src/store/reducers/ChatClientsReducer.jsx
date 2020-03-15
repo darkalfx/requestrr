@@ -9,6 +9,8 @@ export default function ChatClientsReducer(state = {}, action) {
       commandPrefix: action.payload.commandPrefix,
       statusMessage: action.payload.statusMessage,
       monitoredChannels: action.payload.monitoredChannels,
+      tvShowRoles: action.payload.tvShowRoles,
+      movieRoles: action.payload.movieRoles,
       enableDirectMessageSupport: action.payload.enableDirectMessageSupport
     }
   }

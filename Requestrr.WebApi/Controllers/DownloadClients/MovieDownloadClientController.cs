@@ -37,6 +37,7 @@ namespace Requestrr.WebApi.Controllers
                 Radarr = new RadarrSettings
                 {
                     Hostname = _downloadClientsSettings.Radarr.Hostname,
+                    BaseUrl = _downloadClientsSettings.Radarr.BaseUrl,
                     Port = _downloadClientsSettings.Radarr.Port,
                     ApiKey = _downloadClientsSettings.Radarr.ApiKey,
                     MoviePath = _downloadClientsSettings.Radarr.MovieRootFolder,
@@ -48,11 +49,15 @@ namespace Requestrr.WebApi.Controllers
                     AnimeMinAvailability = _downloadClientsSettings.Radarr.AnimeMinimumAvailability,
                     AnimeTags = _downloadClientsSettings.Radarr.AnimeTags ?? Array.Empty<int>(),
                     UseSSL = _downloadClientsSettings.Radarr.UseSSL,
+                    SearchNewRequests = _downloadClientsSettings.Radarr.SearchNewRequests,
+                    MonitorNewRequests = _downloadClientsSettings.Radarr.MonitorNewRequests,
+                    AllowRequestUpdates = _downloadClientsSettings.Radarr.AllowRequestUpdates,
                     Version = _downloadClientsSettings.Radarr.Version
                 },
                 Ombi = new OmbiSettings
                 {
                     Hostname = _downloadClientsSettings.Ombi.Hostname,
+                    BaseUrl = _downloadClientsSettings.Ombi.BaseUrl,
                     Port = _downloadClientsSettings.Ombi.Port,
                     ApiKey = _downloadClientsSettings.Ombi.ApiKey,
                     ApiUsername = _downloadClientsSettings.Ombi.ApiUsername,

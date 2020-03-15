@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Requestrr.WebApi.Requestrr.DownloadClients;
 using Requestrr.WebApi.Requestrr.Movies;
 using Requestrr.WebApi.Requestrr.Notifications;
 
@@ -45,7 +46,12 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             {
                 return;
             }
-            
+            else if (this.Context.Guild != null && _discordSettings.MovieRoles.Any() && Context.Message.Author is SocketGuildUser guildUser && _discordSettings.MovieRoles.All(r => !guildUser.Roles.Any(ur => r.Equals(ur.Name, StringComparison.InvariantCultureIgnoreCase))))
+            {
+                await ReplyToUserAsync($"You do not have the required role to request movies, please ask the server owner.");
+                return;
+            }
+
             await DeleteSafeAsync(this.Context.Message);
 
             var workFlow = new MovieRequestingWorkflow(new MovieUserRequester(this.Context.Message.Author.Id.ToString(), this.Context.Message.Author.Username), _movieSearcher, _movieRequester, this, _notificationRequestRepository);

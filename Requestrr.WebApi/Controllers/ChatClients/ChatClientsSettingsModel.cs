@@ -17,7 +17,11 @@ namespace Requestrr.WebApi.Controllers
 
         public string CommandPrefix { get; set; }
 
-        public string MonitoredChannels { get; set; }
+        public string[] MonitoredChannels { get; set; }
+        
+        public string[] TvShowRoles { get; set; }
+
+        public string[] MovieRoles { get; set; }
 
         public bool EnableDirectMessageSupport { get; set; }
     }

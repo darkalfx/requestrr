@@ -9,7 +9,6 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
         public DiscordSettings Provide()
         {
             dynamic settings = SettingsFile.Read();
-            string monitoredChannels = settings.BotClient.MonitoredChannels;
 
             return new DiscordSettings
             {
@@ -22,7 +21,9 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 TvShowCommand = settings.TvShows.Command,
                 TvShowDownloadClientConfigurationHash = ComputeTvClientConfigurationHashCode(settings),
                 StatusMessage = settings.ChatClients.Discord.StatusMessage,
-                MonitoredChannels = monitoredChannels.Split(" ").Where(s => !string.IsNullOrWhiteSpace(s)).ToArray(),
+                MonitoredChannels = settings.ChatClients.Discord.MonitoredChannels.ToObject<string[]>(),
+                TvShowRoles = settings.ChatClients.Discord.TvShowRoles.ToObject<string[]>(),
+                MovieRoles = settings.ChatClients.Discord.MovieRoles.ToObject<string[]>(),
                 ClientID = settings.ChatClients.Discord.ClientId,
                 EnableDirectMessageSupport = settings.ChatClients.Discord.EnableDirectMessageSupport
             };

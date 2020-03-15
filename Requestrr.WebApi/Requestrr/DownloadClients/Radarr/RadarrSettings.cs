@@ -5,6 +5,7 @@
         public string Hostname { get; set; }
         public int Port { get; set; }
         public string ApiKey { get; set; }
+        public string BaseUrl { get; set; }
         public int MovieProfileId { get; set; }
         public string MovieRootFolder { get; set; }
         public string MovieMinimumAvailability { get; set; }

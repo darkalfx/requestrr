@@ -6,11 +6,11 @@ using Discord.WebSocket;
 
 namespace Requestrr.WebApi.Requestrr.ChatClients
 {
-    public class DiscordPingWorkFlow : RequestrrModuleBase<SocketCommandContext>
+    public class DiscordDisableCommandWorkFlow : RequestrrModuleBase<SocketCommandContext>
     {
         private readonly DiscordSettings _discordSettings;
 
-        public DiscordPingWorkFlow(
+        public DiscordDisableCommandWorkFlow(
             SocketCommandContext context,
             DiscordSocketClient discord,
             DiscordSettingsProvider discordSettingsProvider)
@@ -19,7 +19,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             _discordSettings = discordSettingsProvider.Provide();
         }
 
-        public Task HandlePingAsync() 
+        public Task HandleDisabledCommandAsync()
         {
             if (!_discordSettings.EnableDirectMessageSupport && this.Context.Guild == null)
             {
@@ -30,7 +30,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 return Task.CompletedTask;
             }
 
-            return ReplyToUserAsync($"pong");
+            return ReplyToUserAsync($"This command has been disabled by the server owner.");
         }
     }
 }

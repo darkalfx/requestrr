@@ -1,4 +1,5 @@
-﻿using Requestrr.WebApi.Config;
+﻿using Newtonsoft.Json.Linq;
+using Requestrr.WebApi.Config;
 
 namespace Requestrr.WebApi.Controllers
 {
@@ -11,10 +12,11 @@ namespace Requestrr.WebApi.Controllers
                 settings.ChatClients.Discord.BotToken = chatClientsSettings.Discord.BotToken;
                 settings.ChatClients.Discord.ClientId = chatClientsSettings.Discord.ClientId;
                 settings.ChatClients.Discord.StatusMessage = chatClientsSettings.Discord.StatusMessage;
+                settings.ChatClients.Discord.MonitoredChannels = JToken.FromObject(chatClientsSettings.Discord.MonitoredChannels);
+                settings.ChatClients.Discord.TvShowRoles = JToken.FromObject(chatClientsSettings.Discord.TvShowRoles);
+                settings.ChatClients.Discord.MovieRoles = JToken.FromObject(chatClientsSettings.Discord.MovieRoles);
                 settings.ChatClients.Discord.EnableDirectMessageSupport = chatClientsSettings.Discord.EnableDirectMessageSupport;
-
                 settings.BotClient.Client = botClientSettings.Client;
-                settings.BotClient.MonitoredChannels = botClientSettings.MonitoredChannels;
                 settings.BotClient.CommandPrefix = botClientSettings.CommandPrefix;
             });
         }

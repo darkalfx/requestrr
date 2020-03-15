@@ -20,6 +20,8 @@ namespace Requestrr.WebApi.Controllers
         [Required]
         public string ApiKey { get; set; }
         [Required]
+        public string BaseUrl { get; set; }
+        [Required]
         public bool UseSSL { get; set; }
         [Required]
         public string Version { get; set; }
@@ -33,6 +35,8 @@ namespace Requestrr.WebApi.Controllers
         public int Port { get; set; }
         [Required]
         public string ApiKey { get; set; }
+        [Required]
+        public string BaseUrl { get; set; }
         [Required]
         public string TvPath { get; set; }
         [Required]
@@ -49,6 +53,9 @@ namespace Requestrr.WebApi.Controllers
         public int AnimeLanguage { get; set; }
         public bool AnimeUseSeasonFolders { get; set; }
         public bool UseSSL { get; set; }
+        public bool SearchNewRequests { get; set; }
+        public bool MonitorNewRequests { get; set; }
+        public bool AllowRequestUpdates { get; set; }
         [Required]
         public string Version { get; set; }
         [Required]
@@ -208,6 +215,7 @@ namespace Requestrr.WebApi.Controllers
                 Hostname = model.Hostname.Trim(),
                 Port = model.Port,
                 ApiKey = model.ApiKey.Trim(),
+                BaseUrl = model.BaseUrl.Trim(),
                 TvPath = model.TvPath,
                 TvProfile = model.TvProfile,
                 TvTags = model.TvTags ?? Array.Empty<int>(),
@@ -218,6 +226,9 @@ namespace Requestrr.WebApi.Controllers
                 AnimeTags = model.AnimeTags ?? Array.Empty<int>(),
                 AnimeLanguage = model.AnimeLanguage,
                 AnimeUseSeasonFolders = model.AnimeUseSeasonFolders,
+                SearchNewRequests = model.SearchNewRequests,
+                MonitorNewRequests = model.MonitorNewRequests,
+                AllowRequestUpdates = model.AllowRequestUpdates,
                 UseSSL = model.UseSSL,
                 Version = model.Version
             };
@@ -233,6 +244,7 @@ namespace Requestrr.WebApi.Controllers
             {
                 ApiKey = model.ApiKey.Trim(),
                 Hostname = model.Hostname.Trim(),
+                BaseUrl = model.BaseUrl.Trim(),
                 Port = model.Port,
                 UseSSL = model.UseSSL,
                 Version = model.Version

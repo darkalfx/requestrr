@@ -5,6 +5,7 @@
         public string Hostname { get; set; }
         public int Port { get; set; }
         public string ApiKey { get; set; }
+        public string BaseUrl { get; set; }
         public int TvProfileId { get; set; }
         public string TvRootFolder { get; set; }
         public int TvLanguageId { get; set; }

@@ -26,6 +26,8 @@ namespace Requestrr.WebApi.Controllers
         [Required]
         public string ApiKey { get; set; }
         [Required]
+        public string BaseUrl { get; set; }
+        [Required]
         public string MovieMinAvailability { get; set; }
         [Required]
         public string MoviePath { get; set; }
@@ -41,6 +43,9 @@ namespace Requestrr.WebApi.Controllers
         public int AnimeProfile { get; set; }
         [Required]
         public int[] AnimeTags { get; set; }
+        public bool SearchNewRequests { get; set; }
+        public bool MonitorNewRequests { get; set; }
+        public bool AllowRequestUpdates { get; set; }
         public bool UseSSL { get; set; }
         [Required]
         public string Version { get; set; }

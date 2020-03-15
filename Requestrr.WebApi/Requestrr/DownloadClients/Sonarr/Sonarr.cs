@@ -627,7 +627,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             var version = settings.Version == "2" ? string.Empty : $"/v{settings.Version}";
             var protocol = settings.UseSSL ? "https" : "http";
 
-            return $"{protocol}://{settings.Hostname}:{settings.Port}/api{version}";
+            return $"{protocol}://{settings.Hostname}:{settings.Port}{settings.BaseUrl}/api{version}";
         }
 
         private Task<HttpResponseMessage> HttpGetAsync(string url)

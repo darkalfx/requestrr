@@ -37,6 +37,7 @@ namespace Requestrr.WebApi.Controllers
                 Sonarr = new SonarrSettings
                 {
                     Hostname = _downloadClientsSettings.Sonarr.Hostname,
+                    BaseUrl = _downloadClientsSettings.Sonarr.BaseUrl,
                     Port = _downloadClientsSettings.Sonarr.Port,
                     ApiKey = _downloadClientsSettings.Sonarr.ApiKey,
                     TvPath = _downloadClientsSettings.Sonarr.TvRootFolder,
@@ -50,11 +51,15 @@ namespace Requestrr.WebApi.Controllers
                     AnimeLanguage = _downloadClientsSettings.Sonarr.AnimeLanguageId,
                     AnimeUseSeasonFolders = _downloadClientsSettings.Sonarr.AnimeUseSeasonFolders,
                     UseSSL = _downloadClientsSettings.Sonarr.UseSSL,
+                    SearchNewRequests = _downloadClientsSettings.Sonarr.SearchNewRequests,
+                    MonitorNewRequests = _downloadClientsSettings.Sonarr.MonitorNewRequests,
+                    AllowRequestUpdates = _downloadClientsSettings.Sonarr.AllowRequestUpdates,
                     Version = _downloadClientsSettings.Sonarr.Version
                 },
                 Ombi = new OmbiSettings
                 {
                     Hostname = _downloadClientsSettings.Ombi.Hostname,
+                    BaseUrl = _downloadClientsSettings.Ombi.BaseUrl,
                     Port = _downloadClientsSettings.Ombi.Port,
                     ApiKey = _downloadClientsSettings.Ombi.ApiKey,
                     ApiUsername = _downloadClientsSettings.Ombi.ApiUsername,

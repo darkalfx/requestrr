@@ -136,6 +136,16 @@ namespace Requestrr.WebApi.Requestrr
                         }
                     }, c => c.WithName("movie").WithSummary($"The correct usage of this command is: ```{discordSettings.CommandPrefix}{discordSettings.MovieCommand} name of movie```").WithRunMode(RunMode.Async).AddParameter<string>("movieName", p => p.WithIsRemainder(true).WithIsOptional(false)));
                 }
+                else
+                {
+                    x.AddCommand(discordSettings.MovieCommand, async (commandContext, message, serviceProvider, commandInfo) =>
+                    {
+                        using (var command = new DiscordDisableCommandWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
+                        {
+                            await command.HandleDisabledCommandAsync();
+                        }
+                    }, c => c.WithName("movie").WithRunMode(RunMode.Sync).AddParameter<string>("movieName", p => p.WithIsRemainder(true).WithIsOptional(true)));
+                }
 
                 if (discordSettings.TvShowDownloadClient != DownloadClient.Disabled)
                 {
@@ -152,6 +162,16 @@ namespace Requestrr.WebApi.Requestrr
                             await command.HandleTvShowRequestAsync(message[0].ToString());
                         }
                     }, c => c.WithName("tv").WithSummary($"The correct usage of this command is: ```{discordSettings.CommandPrefix}{discordSettings.TvShowCommand} name of tv show```").WithRunMode(RunMode.Async).AddParameter<string>("tvShowName", p => p.WithIsRemainder(true).WithIsOptional(false)));
+                }
+                else
+                {
+                    x.AddCommand(discordSettings.TvShowCommand, async (commandContext, message, serviceProvider, commandInfo) =>
+                    {
+                        using (var command = new DiscordDisableCommandWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
+                        {
+                            await command.HandleDisabledCommandAsync();
+                        }
+                    }, c => c.WithName("tv").WithRunMode(RunMode.Sync).AddParameter<string>("tvShowName", p => p.WithIsRemainder(true).WithIsOptional(true)));
                 }
             });
         }

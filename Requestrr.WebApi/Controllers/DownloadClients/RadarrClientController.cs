@@ -20,6 +20,8 @@ namespace Requestrr.WebApi.Controllers
         [Required]
         public string ApiKey { get; set; }
         [Required]
+        public string BaseUrl { get; set; }
+        [Required]
         public bool UseSSL { get; set; }
         [Required]
         public string Version { get; set; }
@@ -49,7 +51,12 @@ namespace Requestrr.WebApi.Controllers
         public int AnimeProfile { get; set; }
         [Required]
         public int[] AnimeTags { get; set; }
+        [Required]
+        public string BaseUrl { get; set; }
         public bool UseSSL { get; set; }
+        public bool SearchNewRequests { get; set; }
+        public bool MonitorNewRequests { get; set; }
+        public bool AllowRequestUpdates { get; set; }
         [Required]
         public string Version { get; set; }
         [Required]
@@ -181,6 +188,7 @@ namespace Requestrr.WebApi.Controllers
             {
                 Hostname = model.Hostname.Trim(),
                 ApiKey = model.ApiKey.Trim(),
+                BaseUrl = model.BaseUrl.Trim(),
                 Port = model.Port,
                 MoviePath = model.MoviePath,
                 MovieProfile = model.MovieProfile,
@@ -190,6 +198,9 @@ namespace Requestrr.WebApi.Controllers
                 AnimeProfile = model.AnimeProfile,
                 AnimeMinAvailability = model.AnimeMinAvailability,
                 AnimeTags = model.AnimeTags ?? Array.Empty<int>(),
+                SearchNewRequests = model.SearchNewRequests,
+                MonitorNewRequests = model.MonitorNewRequests,
+                AllowRequestUpdates = model.AllowRequestUpdates,
                 UseSSL = model.UseSSL,
                 Version = model.Version
             };
@@ -205,6 +216,7 @@ namespace Requestrr.WebApi.Controllers
             {
                 ApiKey = model.ApiKey.Trim(),
                 Hostname = model.Hostname.Trim(),
+                BaseUrl = model.BaseUrl.Trim(),
                 Port = model.Port,
                 UseSSL = model.UseSSL,
                 Version = model.Version

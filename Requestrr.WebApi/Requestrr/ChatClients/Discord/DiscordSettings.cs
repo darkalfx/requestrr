@@ -10,6 +10,8 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
         public string ClientID { get; set; }
         public string StatusMessage { get; set; }
         public string[] MonitoredChannels { get; set; }
+        public string[] TvShowRoles { get; set; }
+        public string[] MovieRoles { get; set; }
         public string CommandPrefix { get; set; }
         public string MovieDownloadClient { get; set; }
         public string MovieCommand { get; set; }
@@ -26,6 +28,8 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                    ClientID == settings.ClientID &&
                    StatusMessage == settings.StatusMessage &&
                    MonitoredChannels.SequenceEqual(settings.MonitoredChannels) &&
+                   TvShowRoles.SequenceEqual(settings.TvShowRoles) &&
+                   MovieRoles.SequenceEqual(settings.MovieRoles) &&
                    CommandPrefix == settings.CommandPrefix &&
                    MovieDownloadClient == settings.MovieDownloadClient &&
                    MovieCommand == settings.MovieCommand &&
@@ -43,6 +47,8 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             hash.Add(ClientID);
             hash.Add(StatusMessage);
             hash.Add(MonitoredChannels);
+            hash.Add(MovieRoles);
+            hash.Add(TvShowRoles);
             hash.Add(CommandPrefix);
             hash.Add(MovieDownloadClient);
             hash.Add(MovieCommand);

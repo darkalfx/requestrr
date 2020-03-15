@@ -56,7 +56,7 @@ class ChatClients extends React.Component {
       testSettingsSuccess: false,
       testSettingsError: "",
       commandPrefix: "",
-      monitoredChannels: "",
+      monitoredChannels: [],
       statusMessage: "",
       enableDirectMessageSupport: true,
       chatClient: "",
@@ -68,6 +68,8 @@ class ChatClients extends React.Component {
       botToken: "",
       botTokenChanged: false,
       botTokenInvalid: false,
+      tvShowRoles: [],
+      movieRoles: [],
     };
 
     this.onSaving = this.onSaving.bind(this);
@@ -93,6 +95,8 @@ class ChatClients extends React.Component {
           commandPrefix: this.props.settings.commandPrefix,
           monitoredChannels: this.props.settings.monitoredChannels,
           enableDirectMessageSupport: this.props.settings.enableDirectMessageSupport,
+          tvShowRoles: this.props.settings.tvShowRoles,
+          movieRoles: this.props.settings.movieRoles,
         });
       });
   }
@@ -152,10 +156,6 @@ class ChatClients extends React.Component {
     return /\S/.test(this.state.botToken);
   }
 
-  onMonitoredChannelsChange = event => {
-    this.setState({ monitoredChannels: event.target.value });
-  }
-
   onCommandPrefixChange = event => {
     this.setState({ commandPrefix: event.target.value });
   }
@@ -186,6 +186,8 @@ class ChatClients extends React.Component {
         statusMessage: this.state.statusMessage,
         commandPrefix: this.state.commandPrefix,
         monitoredChannels: this.state.monitoredChannels,
+        tvShowRoles: this.state.tvShowRoles,
+        movieRoles: this.state.movieRoles,
         enableDirectMessageSupport: this.state.enableDirectMessageSupport,
       })
         .then(data => {
@@ -310,6 +312,7 @@ class ChatClients extends React.Component {
                 </CardHeader>
                 <CardBody className={this.state.isLoading ? "fade" : "fade show"}>
                   <Form onSubmit={this.onSaving} className="complex">
+                    <button type="submit" disabled style={{ display: "none" }} aria-hidden="true" />
                     <h6 className="heading-small text-muted mb-4">
                       General Settings
                     </h6>
@@ -388,6 +391,61 @@ class ChatClients extends React.Component {
                       <Row>
                         <Col lg="6">
                           <FormGroup>
+                            <div className="input-group-select-box">
+                              <MultiDropdown
+                                name="Roles allowed to request tv shows"
+                                create={true}
+                                searchable={true}
+                                placeholder="Enter roles here. Leave blank for all roles."
+                                labelField="name"
+                                valueField="id"
+                                dropdownHandle={false}
+                                selectedItems={this.state.tvShowRoles.map(x => { return { name: x, id: x } })}
+                                items={this.state.tvShowRoles.map(x => { return { name: x, id: x } })}
+                                onChange={newTvShowRoles => this.setState({ tvShowRoles: newTvShowRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
+                            </div>
+                          </FormGroup>
+                        </Col>
+                        <Col lg="6">
+                          <FormGroup>
+                            <div className="input-group-select-box">
+                              <MultiDropdown
+                                name="Roles allowed to request movies"
+                                create={true}
+                                searchable={true}
+                                placeholder="Enter roles here. Leave blank for all roles."
+                                labelField="name"
+                                valueField="id"
+                                dropdownHandle={false}
+                                selectedItems={this.state.movieRoles.map(x => { return { name: x, id: x } })}
+                                items={this.state.movieRoles.map(x => { return { name: x, id: x } })}
+                                onChange={newMovieRoles => this.setState({ movieRoles: newMovieRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
+                            </div>
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col md="12">
+                          <FormGroup>
+                            <div className="input-group-select-box">
+                              <MultiDropdown
+                                name="Channel(s) to monitor"
+                                create={true}
+                                searchable={true}
+                                placeholder="Enter channels here. Leave blank for all channels."
+                                labelField="name"
+                                valueField="id"
+                                dropdownHandle={false}
+                                selectedItems={this.state.monitoredChannels.map(x => { return { name: x, id: x } })}
+                                items={this.state.monitoredChannels.map(x => { return { name: x, id: x } })}
+                                onChange={newMonitoredChannels => this.setState({ monitoredChannels: newMonitoredChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')) })} />
+                            </div>
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col lg="6">
+                          <FormGroup>
                             <label
                               className="form-control-label"
                               htmlFor="input-status-message"
@@ -418,7 +476,7 @@ class ChatClients extends React.Component {
                               className="custom-control-label"
                               htmlFor="enableDM"
                             >
-                              <span className="text-muted">Enable direct messages support</span>
+                              <span className="text-muted">Enable anyone to request via direct messaging. <strong>(This will ignore configured roles)</strong></span>
                             </label>
                           </FormGroup>
                         </Col>
@@ -441,7 +499,7 @@ class ChatClients extends React.Component {
                       <Row>
                         <Col>
                           <FormGroup className="text-right">
-                            <button onClick={this.onTestSettings} disabled={!(this.validateBotToken() && this.validateClientId())} className="btn mt-3 btn-icon btn-3 btn-default" type="submit">
+                            <button onClick={this.onTestSettings} disabled={!(this.validateBotToken() && this.validateClientId())} className="btn mt-3 btn-icon btn-3 btn-default" type="button">
                               <span className="btn-inner--icon">
                                 {
                                   this.state.isTestingSettings ? (
@@ -470,25 +528,6 @@ class ChatClients extends React.Component {
                       Chat Command Options
                     </h6>
                     <div className="pl-lg-4">
-                      <Row>
-                        <Col md="12">
-                          <FormGroup>
-                            <div className="input-group-select-box">
-                              <MultiDropdown
-                                name="Channel(s) to monitor" 
-                                create={true}
-                                searchable={true}
-                                placeholder="Enter channels here. Leave blank for all channels."
-                                labelField="name"
-                                valueField="id"
-                                dropdownHandle={false}
-                                selectedItems={this.state.monitoredChannels.split(" ").filter(x => /\S/.test(x)).map(x => { return { name: x, id: x } })}
-                                items={this.state.monitoredChannels.split(" ").filter(x => /\S/.test(x)).map(x => { return { name: x, id: x } })}
-                                onChange={newMonitoredChannels => this.setState({ monitoredChannels: newMonitoredChannels.filter(x => /\S/.test(x)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')).join(" ") })} />
-                            </div>
-                          </FormGroup>
-                        </Col>
-                      </Row>
                       <Row>
                         <Col lg="4">
                           <FormGroup>

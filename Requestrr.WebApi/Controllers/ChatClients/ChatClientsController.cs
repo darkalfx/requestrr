@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -14,6 +15,12 @@ namespace Requestrr.WebApi.Controllers
     [Route("/api/chatclients")]
     public class ChatClientsController : ControllerBase
     {
+        public class TestDiscordSettingsModel
+        {
+            [Required]
+            public string BotToken { get; set; }
+        }
+
         private readonly ChatClientsSettings _chatClientsSettings;
         private readonly BotClientSettings _botClientsSettings;
 
@@ -36,14 +43,10 @@ namespace Requestrr.WebApi.Controllers
                 ClientId = _chatClientsSettings.Discord.ClientId,
                 EnableDirectMessageSupport = _chatClientsSettings.Discord.EnableDirectMessageSupport,
                 CommandPrefix = _botClientsSettings.CommandPrefix,
-                MonitoredChannels = _botClientsSettings.MonitoredChannels
+                TvShowRoles = _chatClientsSettings.Discord.TvShowRoles ?? Array.Empty<string>(),
+                MovieRoles = _chatClientsSettings.Discord.MovieRoles ?? Array.Empty<string>(),
+                MonitoredChannels = _chatClientsSettings.Discord.MonitoredChannels ?? Array.Empty<string>(),
             });
-        }
-
-        public class TestDiscordSettingsModel
-        {
-            [Required]
-            public string BotToken { get; set; }
         }
 
         [HttpPost("discord/test")]
@@ -76,10 +79,12 @@ namespace Requestrr.WebApi.Controllers
             _chatClientsSettings.Discord.BotToken = model.BotToken.Trim();
             _chatClientsSettings.Discord.ClientId = model.ClientId;
             _chatClientsSettings.Discord.StatusMessage = model.StatusMessage.Trim();
+            _chatClientsSettings.Discord.TvShowRoles = model.TvShowRoles ?? Array.Empty<string>();
+            _chatClientsSettings.Discord.MovieRoles = model.MovieRoles ?? Array.Empty<string>();
             _chatClientsSettings.Discord.EnableDirectMessageSupport = model.EnableDirectMessageSupport;
+            _chatClientsSettings.Discord.MonitoredChannels = model.MonitoredChannels ?? Array.Empty<string>();
 
             _botClientsSettings.Client = model.Client;
-            _botClientsSettings.MonitoredChannels = model.MonitoredChannels.Trim();
             _botClientsSettings.CommandPrefix = model.CommandPrefix.Trim();
 
             ChatClientsSettingsRepository.Update(_botClientsSettings, _chatClientsSettings);

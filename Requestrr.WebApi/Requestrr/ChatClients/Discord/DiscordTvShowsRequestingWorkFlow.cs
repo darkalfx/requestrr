@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Requestrr.WebApi.Requestrr.DownloadClients;
 using Requestrr.WebApi.Requestrr.Notifications;
 using Requestrr.WebApi.Requestrr.TvShows;
 
@@ -43,6 +44,11 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             }
             else if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
             {
+                return;
+            }
+            else if (this.Context.Guild != null && _discordSettings.TvShowRoles.Any() && Context.Message.Author is SocketGuildUser guildUser && _discordSettings.TvShowRoles.All(r => !guildUser.Roles.Any(ur => r.Equals(ur.Name, StringComparison.InvariantCultureIgnoreCase))))
+            {
+                await ReplyToUserAsync($"You do not have the required role to request tv shows, please ask the server owner.");
                 return;
             }
 

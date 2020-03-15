@@ -23,6 +23,8 @@ namespace Requestrr.WebApi.Controllers
         [Required]
         public string ApiKey { get; set; }
         [Required]
+        public string BaseUrl { get; set; }
+        [Required]
         public string TvPath { get; set; }
         [Required]
         public int TvProfile { get; set; }
@@ -38,6 +40,9 @@ namespace Requestrr.WebApi.Controllers
         public int AnimeLanguage { get; set; }
         public bool AnimeUseSeasonFolders { get; set; }
         public bool UseSSL { get; set; }
+        public bool SearchNewRequests { get; set; }
+        public bool MonitorNewRequests { get; set; }
+        public bool AllowRequestUpdates { get; set; }
         [Required]
         public string Version { get; set; }
     }
