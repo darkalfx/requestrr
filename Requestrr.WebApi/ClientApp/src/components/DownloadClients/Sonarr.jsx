@@ -537,6 +537,7 @@ class Sonarr extends React.Component {
                     <div className="input-group-select-box mt-4">
                       <MultiDropdown
                         name="Tags"
+                        placeholder=""
                         labelField="name"
                         valueField="id"
                         selectedItems={this.state.tags.filter(x => this.state.tvTags.includes(x.id))}
@@ -719,6 +720,7 @@ class Sonarr extends React.Component {
                     <div className="input-group-select-box mt-4">
                       <MultiDropdown
                         name="Tags"
+                        placeholder=""
                         labelField="name"
                         valueField="id"
                         selectedItems={this.state.tags.filter(x => this.state.animeTags.includes(x.id))}

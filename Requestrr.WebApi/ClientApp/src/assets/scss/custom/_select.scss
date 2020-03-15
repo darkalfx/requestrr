@@ -19,6 +19,14 @@
   font-weight: 400;
   font-size: 0.875rem;
 
+  .react-dropdown-select-input {
+    color:#8898aa;
+    font-weight: 400;
+    font-size: 0.875rem;
+    padding-left: 1px;
+    width: auto !important;
+  }
+
   div[role="list"] {
     width: 100%;
     padding: 0;
@@ -81,6 +89,12 @@
         stroke: none !important;
       }
     }
+  }
+}
+
+.react-dropdown-select.dropdown.react-dropdown-create {
+  .react-dropdown-select-item {
+    display: none !important;
   }
 }
 

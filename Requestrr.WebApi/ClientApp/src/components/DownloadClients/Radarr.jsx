@@ -487,6 +487,7 @@ class Radarr extends React.Component {
                     <div className="input-group-select-box">
                       <MultiDropdown
                         name="Tags"
+                        placeholder=""
                         labelField="name"
                         valueField="id"
                         selectedItems={this.state.tags.filter(x => this.state.movieTags.includes(x.id))}
@@ -620,6 +621,7 @@ class Radarr extends React.Component {
                     <div className="input-group-select-box">
                       <MultiDropdown
                         name="Tags"
+                        placeholder=""
                         labelField="name"
                         valueField="id"
                         selectedItems={this.state.tags.filter(x => this.state.animeTags.includes(x.id))}

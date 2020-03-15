@@ -58,7 +58,7 @@ namespace Requestrr.WebApi
         public async Task<SocketReaction> WaitForReactionAsync(SocketCommandContext context, IMessage message, IEmote expectedEmote)
         {
             var token = new CancellationToken();
-            var timeout = TimeSpan.FromSeconds(30);
+            var timeout = TimeSpan.FromSeconds(120);
 
             var eventTrigger = new TaskCompletionSource<SocketReaction>();
             var cancelTrigger = new TaskCompletionSource<bool>();
@@ -139,7 +139,7 @@ namespace Requestrr.WebApi
             TimeSpan? timeout = null,
             CancellationToken token = default)
         {
-            timeout = timeout ?? TimeSpan.FromSeconds(30);
+            timeout = timeout ?? TimeSpan.FromSeconds(120);
 
             var eventTrigger = new TaskCompletionSource<SocketMessage>();
             var cancelTrigger = new TaskCompletionSource<bool>();

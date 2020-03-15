@@ -48,12 +48,14 @@ class MultiDropdown extends React.Component {
         <Select
           multi="true"
           placeholder=""
-          className="dropdown dropdown-multi"
+          className={this.props.create === true ? "dropdown react-dropdown-create" : "dropdown"}
           options={this.props.items}
+          placeholder={this.props.placeholder}
           values={this.state.selectedItems}
           labelField={this.props.labelField}
           valueField={this.props.valueField}
-          searchable={false}
+          searchable={this.props.searchable === true}
+          create={this.props.create === true}
           clearable={false}
           color="#5e72e4"
           onChange={(values) => this.onSelectedItemsChange(values)}

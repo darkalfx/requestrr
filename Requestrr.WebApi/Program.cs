@@ -26,7 +26,7 @@ namespace Requestrr.WebApi
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
-                .UseUrls("http://localhost:5060")
+                .UseUrls("http://*:5060", "https://*:5061")
                 .ConfigureAppConfiguration((hostingContext, config) => 
             {
                 config.AddJsonFile(SettingsFile.FilePath, optional: false, reloadOnChange: true);

@@ -22,6 +22,7 @@ import { Alert } from "reactstrap";
 import { testSettings } from "../store/actions/ChatClientsActions"
 import { getSettings } from "../store/actions/ChatClientsActions"
 import { save } from "../store/actions/ChatClientsActions"
+import MultiDropdown from "../components/Inputs/MultiDropdown"
 
 // reactstrap components
 import {
@@ -472,19 +473,18 @@ class ChatClients extends React.Component {
                       <Row>
                         <Col md="12">
                           <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-channels"
-                            >
-                              Channel(s) to monitor
-                            </label>
-                            <Input
-                              value={this.state.monitoredChannels} onChange={this.onMonitoredChannelsChange}
-                              className="form-control-alternative"
-                              id="input-channels"
-                              placeholder="Enter channels here, separated by spaces. Leave blank for all channels."
-                              type="text"
-                            />
+                            <div className="input-group-select-box">
+                              <MultiDropdown
+                                name="Channel(s) to monitor" 
+                                create={true}
+                                searchable={true}
+                                placeholder="Enter channels here. Leave blank for all channels."
+                                labelField="name"
+                                valueField="id"
+                                selectedItems={this.state.monitoredChannels.split(" ").filter(x => /\S/.test(x)).map(x => { return { name: x, id: x } })}
+                                items={this.state.monitoredChannels.split(" ").filter(x => /\S/.test(x)).map(x => { return { name: x, id: x } })}
+                                onChange={newMonitoredChannels => this.setState({ monitoredChannels: newMonitoredChannels.filter(x => /\S/.test(x)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')).join(" ") })} />
+                            </div>
                           </FormGroup>
                         </Col>
                       </Row>
