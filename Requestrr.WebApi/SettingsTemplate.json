@@ -8,7 +8,7 @@
     "Discord": {
       "BotToken": "",
       "ClientId": "",
-      "StatusMessage": "",
+      "StatusMessage": "!help",
       "EnableDirectMessageSupport": true
     }
   },

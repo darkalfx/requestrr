@@ -481,6 +481,7 @@ class ChatClients extends React.Component {
                                 placeholder="Enter channels here. Leave blank for all channels."
                                 labelField="name"
                                 valueField="id"
+                                dropdownHandle={false}
                                 selectedItems={this.state.monitoredChannels.split(" ").filter(x => /\S/.test(x)).map(x => { return { name: x, id: x } })}
                                 items={this.state.monitoredChannels.split(" ").filter(x => /\S/.test(x)).map(x => { return { name: x, id: x } })}
                                 onChange={newMonitoredChannels => this.setState({ monitoredChannels: newMonitoredChannels.filter(x => /\S/.test(x)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')).join(" ") })} />

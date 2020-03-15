@@ -54,6 +54,7 @@ class MultiDropdown extends React.Component {
           values={this.state.selectedItems}
           labelField={this.props.labelField}
           valueField={this.props.valueField}
+          dropdownHandle={this.props.dropdownHandle !== false}
           searchable={this.props.searchable === true}
           create={this.props.create === true}
           clearable={false}
