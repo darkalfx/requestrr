@@ -93,6 +93,7 @@ export function loadSonarrLanguages(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                'BaseUrl': settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -130,6 +131,7 @@ export function loadSonarrRootPaths(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                'BaseUrl': settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -167,6 +169,7 @@ export function loadSonarrProfiles(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                'BaseUrl': settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -204,6 +207,7 @@ export function loadSonarrTags(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                'BaseUrl': settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -241,6 +245,7 @@ export function testSonarrSettings(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                'BaseUrl': settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -295,6 +300,7 @@ export function saveSonarrClient(saveModel) {
             },
             body: JSON.stringify({
                 'Hostname': saveModel.sonarr.hostname,
+                'BaseUrl': saveModel.sonarr.baseUrl,
                 'Port': Number(saveModel.sonarr.port),
                 'ApiKey': saveModel.sonarr.apiKey,
                 'TvPath': saveModel.sonarr.tvPath,
@@ -308,6 +314,8 @@ export function saveSonarrClient(saveModel) {
                 'AnimeLanguage': saveModel.sonarr.animeLanguage,
                 'AnimeUseSeasonFolders': saveModel.sonarr.animeUseSeasonFolders,
                 'UseSSL': saveModel.sonarr.useSSL,
+                'SearchNewRequests': saveModel.sonarr.searchNewRequests,
+                'MonitorNewRequests': saveModel.sonarr.monitorNewRequests,
                 "Version": saveModel.sonarr.version,
                 'Command': saveModel.command,
             })
@@ -318,6 +326,7 @@ export function saveSonarrClient(saveModel) {
                     dispatch(setSonarrClient({
                         sonarr: {
                             hostname: saveModel.sonarr.hostname,
+                            baseUrl: saveModel.sonarr.baseUrl,
                             port: saveModel.sonarr.port,
                             apiKey: saveModel.sonarr.apiKey,
                             path: saveModel.sonarr.path,
@@ -334,6 +343,8 @@ export function saveSonarrClient(saveModel) {
                             animeTags: saveModel.sonarr.animeTags,
                             animeLanguage: saveModel.sonarr.animeLanguage,
                             animeUseSeasonFolders: saveModel.sonarr.animeUseSeasonFolders,
+                            searchNewRequests: saveModel.sonarr.searchNewRequests,
+                            monitorNewRequests: saveModel.sonarr.monitorNewRequests,
                             useSSL: saveModel.sonarr.useSSL,
                             version: saveModel.sonarr.version
                         },

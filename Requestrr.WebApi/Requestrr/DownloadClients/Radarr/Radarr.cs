@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -32,8 +33,9 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
 
             try
             {
-                var response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}/system/status");
-                testSuccessful = response.IsSuccessStatusCode;
+                var response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}/config/host");
+                dynamic jsonResponse = JObject.Parse(await response.Content.ReadAsStringAsync());
+                testSuccessful = jsonResponse.urlBase.ToString().Equals(settings.BaseUrl, StringComparison.InvariantCultureIgnoreCase);
             }
             catch (System.Exception ex)
             {

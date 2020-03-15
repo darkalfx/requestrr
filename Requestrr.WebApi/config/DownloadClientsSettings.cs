@@ -35,7 +35,6 @@
         public bool UseSSL { get; set; }
         public bool SearchNewRequests { get; set; }
         public bool MonitorNewRequests { get; set; }
-        public bool AllowRequestUpdates { get; set; }
         public string Version { get; set; }
     }
 
@@ -58,7 +57,6 @@
         public bool UseSSL { get; set; }
         public bool SearchNewRequests { get; set; }
         public bool MonitorNewRequests { get; set; }
-        public bool AllowRequestUpdates { get; set; }
         public string Version { get; set; }
     }
 }

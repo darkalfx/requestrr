@@ -19,7 +19,6 @@ namespace Requestrr.WebApi.Controllers
         public int Port { get; set; }
         [Required]
         public string ApiKey { get; set; }
-        [Required]
         public string BaseUrl { get; set; }
         [Required]
         public bool UseSSL { get; set; }
@@ -35,7 +34,6 @@ namespace Requestrr.WebApi.Controllers
         public int Port { get; set; }
         [Required]
         public string ApiKey { get; set; }
-        [Required]
         public string BaseUrl { get; set; }
         [Required]
         public string TvPath { get; set; }
@@ -55,7 +53,6 @@ namespace Requestrr.WebApi.Controllers
         public bool UseSSL { get; set; }
         public bool SearchNewRequests { get; set; }
         public bool MonitorNewRequests { get; set; }
-        public bool AllowRequestUpdates { get; set; }
         [Required]
         public string Version { get; set; }
         [Required]
@@ -228,7 +225,6 @@ namespace Requestrr.WebApi.Controllers
                 AnimeUseSeasonFolders = model.AnimeUseSeasonFolders,
                 SearchNewRequests = model.SearchNewRequests,
                 MonitorNewRequests = model.MonitorNewRequests,
-                AllowRequestUpdates = model.AllowRequestUpdates,
                 UseSSL = model.UseSSL,
                 Version = model.Version
             };

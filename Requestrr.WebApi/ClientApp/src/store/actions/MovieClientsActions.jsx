@@ -62,7 +62,7 @@ export function testOmbiSettings(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
-                "BaseUrl" : settings.baseUrl,
+                "BaseUrl": settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -93,6 +93,7 @@ export function loadRadarrRootPaths(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                'BaseUrl': settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -130,6 +131,7 @@ export function loadRadarrProfiles(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                'BaseUrl': settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -167,6 +169,7 @@ export function loadRadarrTags(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                'BaseUrl': settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -204,6 +207,7 @@ export function testRadarrSettings(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                'BaseUrl': settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -258,6 +262,7 @@ export function saveRadarrClient(saveModel) {
             },
             body: JSON.stringify({
                 'Hostname': saveModel.radarr.hostname,
+                'BaseUrl': saveModel.radarr.baseUrl,
                 'Port': Number(saveModel.radarr.port),
                 'ApiKey': saveModel.radarr.apiKey,
                 'UseSSL': saveModel.radarr.useSSL,
@@ -270,6 +275,8 @@ export function saveRadarrClient(saveModel) {
                 'AnimeMinAvailability': saveModel.radarr.animeMinAvailability,
                 'AnimeTags': saveModel.radarr.animeTags,
                 "Version": saveModel.radarr.version,
+                'SearchNewRequests': saveModel.radarr.searchNewRequests,
+                'MonitorNewRequests': saveModel.radarr.monitorNewRequests,
                 'Command': saveModel.command,
             })
         })
@@ -279,6 +286,7 @@ export function saveRadarrClient(saveModel) {
                     dispatch(setRadarrClient({
                         radarr: {
                             hostname: saveModel.radarr.hostname,
+                            baseUrl: saveModel.radarr.baseUrl,
                             port: saveModel.radarr.port,
                             apiKey: saveModel.radarr.apiKey,
                             useSSL: saveModel.radarr.useSSL,
@@ -290,6 +298,8 @@ export function saveRadarrClient(saveModel) {
                             animeProfile: saveModel.radarr.animeProfile,
                             animeMinAvailability: saveModel.radarr.animeMinAvailability,
                             animeTags: saveModel.radarr.animeTags,
+                            searchNewRequests: saveModel.radarr.searchNewRequests,
+                            monitorNewRequests: saveModel.radarr.monitorNewRequests,
                             version: saveModel.radarr.version
                         },
                         command: saveModel.command

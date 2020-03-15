@@ -19,6 +19,7 @@ export default function TvShowsClientsReducer(state = {}, action) {
       },
       sonarr: {
         hostname: action.payload.sonarr.hostname,
+        baseUrl: action.payload.sonarr.baseUrl,
         port: action.payload.sonarr.port,
         apiKey: action.payload.sonarr.apiKey,
         tvPath: action.payload.sonarr.tvPath,
@@ -31,6 +32,8 @@ export default function TvShowsClientsReducer(state = {}, action) {
         animeTags: action.payload.sonarr.animeTags,
         animeLanguage: action.payload.sonarr.animeLanguage,
         animeUseSeasonFolders: action.payload.sonarr.animeUseSeasonFolders,
+        searchNewRequests: action.payload.sonarr.searchNewRequests,
+        monitorNewRequests: action.payload.sonarr.monitorNewRequests,
         useSSL: action.payload.sonarr.useSSL,
         version: action.payload.sonarr.version
       },

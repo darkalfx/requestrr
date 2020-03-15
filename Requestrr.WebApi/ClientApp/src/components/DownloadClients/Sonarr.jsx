@@ -8,6 +8,7 @@ import { loadSonarrRootPaths } from "../../store/actions/TvShowsClientsActions"
 import { loadSonarrLanguages } from "../../store/actions/TvShowsClientsActions"
 import { loadSonarrTags } from "../../store/actions/TvShowsClientsActions"
 import ValidatedTextbox from "../Inputs/ValidatedTextbox"
+import Textbox from "../Inputs/Textbox"
 import Dropdown from "../Inputs/Dropdown"
 import MultiDropdown from "../Inputs/MultiDropdown"
 
@@ -56,7 +57,10 @@ class Sonarr extends React.Component {
       tvTags: [],
       animeTags: [],
       tags: [],
-      apiVersion: ""
+      apiVersion: "",
+      baseUrl: "",
+      searchNewRequests: true,
+      monitorNewRequests: true,
     };
 
     this.onTestSettings = this.onTestSettings.bind(this);
@@ -102,7 +106,10 @@ class Sonarr extends React.Component {
       animeTags: props.settings.animeTags,
       animeLanguage: props.settings.animeLanguage,
       animeUseSeasonFolders: props.settings.animeUseSeasonFolders,
-      apiVersion: props.settings.version
+      apiVersion: props.settings.version,
+      baseUrl: props.settings.baseUrl,
+      searchNewRequests: props.settings.searchNewRequests,
+      monitorNewRequests: props.settings.monitorNewRequests,
     }, () => {
       if (this.validateNonEmptyString(this.state.hostname) && this.validateNonEmptyString(this.state.apiKey) && this.validatePort(this.state.port)) {
         this.onLoadPaths();
@@ -140,6 +147,7 @@ class Sonarr extends React.Component {
 
       this.props.loadProfiles({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -178,6 +186,7 @@ class Sonarr extends React.Component {
 
       this.props.loadRootPaths({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -216,6 +225,7 @@ class Sonarr extends React.Component {
 
       this.props.loadLanguages({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -254,6 +264,7 @@ class Sonarr extends React.Component {
 
       this.props.loadTags({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -304,6 +315,7 @@ class Sonarr extends React.Component {
 
       this.props.testSettings({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -338,6 +350,7 @@ class Sonarr extends React.Component {
   onValueChange() {
     this.props.onChange({
       hostname: this.state.hostname,
+      baseUrl: this.state.baseUrl,
       port: this.state.port,
       apiKey: this.state.apiKey,
       tvPath: this.state.tvPath,
@@ -352,6 +365,8 @@ class Sonarr extends React.Component {
       animeUseSeasonFolders: this.state.animeUseSeasonFolders,
       useSSL: this.state.useSSL,
       version: this.state.apiVersion,
+      searchNewRequests: this.state.searchNewRequests,
+      monitorNewRequests: this.state.monitorNewRequests,
     });
 
     this.onValidate();
@@ -423,6 +438,17 @@ class Sonarr extends React.Component {
                 validation={this.validatePort}
                 onChange={newPort => this.setState({ port: newPort }, this.onValueChange)}
                 onValidate={isValid => this.setState({ isPortValid: isValid }, this.onValidate)} />
+            </Col>
+          </Row>
+          <Row>
+            <Col lg="6">
+              <Textbox
+                name="Base Url"
+                placeholder="Enter base url configured in Sonarr, leave empty if none configured."
+                value={this.state.baseUrl}
+                onChange={newBaseUrl => this.setState({ baseUrl: newBaseUrl }, this.onValueChange)} />
+            </Col>
+            <Col lg="6">
             </Col>
           </Row>
           <Row>
@@ -810,9 +836,43 @@ class Sonarr extends React.Component {
               </FormGroup>
             </Col>
           </Row>
+        </div>
+        <div>
+          <h6 className="heading-small text-muted mt-4">
+            Sonarr Requests Permissions Settings
+          </h6>
+        </div>
+        <div className="pl-lg-4">
           <Row>
             <Col lg="6">
-
+              <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                <Input
+                  className="custom-control-input"
+                  id="MonitorNewRequests"
+                  type="checkbox"
+                  onChange={e => { this.setState({ monitorNewRequests: !this.state.monitorNewRequests }, this.onValueChange); }}
+                  checked={this.state.monitorNewRequests}
+                />
+                <label
+                  className="custom-control-label"
+                  htmlFor="MonitorNewRequests">
+                  <span className="text-muted">Automatically monitor newly added tv shows/seasons</span>
+                </label>
+              </FormGroup>
+              <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                <Input
+                  className="custom-control-input"
+                  id="SearchNewRequests"
+                  type="checkbox"
+                  onChange={e => { this.setState({ searchNewRequests: !this.state.searchNewRequests }, this.onValueChange); }}
+                  checked={this.state.searchNewRequests}
+                />
+                <label
+                  className="custom-control-label"
+                  htmlFor="SearchNewRequests">
+                  <span className="text-muted">Automatically search for tv shows seasons when a request is made</span>
+                </label>
+              </FormGroup>
             </Col>
           </Row>
           <Row>
@@ -835,7 +895,7 @@ class Sonarr extends React.Component {
           <Row>
             <Col>
               <FormGroup className="text-right">
-                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid} className="btn btn-icon btn-3 btn-default" type="submit">
+                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid} className="btn btn-icon btn-3 btn-default" type="button">
                   <span className="btn-inner--icon">
                     {
                       this.state.isTestingSettings ? (

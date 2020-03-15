@@ -210,7 +210,7 @@ class Account extends React.Component {
                   </Row>
                 </CardHeader>
                 <CardBody>
-                  <Form onSubmit={this.onSaving} className="complex">
+                  <Form className="complex">
                     <h6 className="heading-small text-muted mb-4">
                       Change Password
                     </h6>
@@ -316,7 +316,7 @@ class Account extends React.Component {
                             }
                           </FormGroup>
                           <FormGroup className="text-right">
-                            <button className="btn btn-icon btn-3 btn-primary" disabled={this.state.isSaving} type="submit">
+                            <button className="btn btn-icon btn-3 btn-primary" onClick={this.onSaving} disabled={this.state.isSaving} type="button">
                               <span className="btn-inner--icon"><i className="fas fa-save"></i></span>
                               <span className="btn-inner--text">Save Changes</span>
                             </button>

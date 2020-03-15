@@ -179,7 +179,7 @@ class Movies extends React.Component {
                   </Row>
                 </CardHeader>
                 <CardBody className={this.state.isLoading ? "fade" : "fade show"}>
-                  <Form onSubmit={this.onSaving} className="complex">
+                  <Form className="complex">
                     <h6 className="heading-small text-muted mb-4">
                       General Settings
                     </h6>
@@ -258,7 +258,7 @@ class Movies extends React.Component {
                             }
                           </FormGroup>
                           <FormGroup className="text-right">
-                            <button className="btn btn-icon btn-3 btn-primary" disabled={this.state.isSaving} type="submit">
+                            <button className="btn btn-icon btn-3 btn-primary" onClick={this.onSaving} disabled={this.state.isSaving} type="button">
                               <span className="btn-inner--icon"><i className="fas fa-save"></i></span>
                               <span className="btn-inner--text">Save Changes</span>
                             </button>

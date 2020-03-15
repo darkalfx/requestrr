@@ -51,7 +51,6 @@ namespace Requestrr.WebApi.Controllers
                     UseSSL = _downloadClientsSettings.Radarr.UseSSL,
                     SearchNewRequests = _downloadClientsSettings.Radarr.SearchNewRequests,
                     MonitorNewRequests = _downloadClientsSettings.Radarr.MonitorNewRequests,
-                    AllowRequestUpdates = _downloadClientsSettings.Radarr.AllowRequestUpdates,
                     Version = _downloadClientsSettings.Radarr.Version
                 },
                 Ombi = new OmbiSettings

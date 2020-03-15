@@ -311,8 +311,7 @@ class ChatClients extends React.Component {
                   </Row>
                 </CardHeader>
                 <CardBody className={this.state.isLoading ? "fade" : "fade show"}>
-                  <Form onSubmit={this.onSaving} className="complex">
-                    <button type="submit" disabled style={{ display: "none" }} aria-hidden="true" />
+                  <Form className="complex">
                     <h6 className="heading-small text-muted mb-4">
                       General Settings
                     </h6>
@@ -476,7 +475,7 @@ class ChatClients extends React.Component {
                               className="custom-control-label"
                               htmlFor="enableDM"
                             >
-                              <span className="text-muted">Enable anyone to request via direct messaging. <strong>(This will ignore configured roles)</strong></span>
+                              <span className="text-muted">Enable anyone to request via direct messaging. <strong>(DMs will ignore configured roles)</strong></span>
                             </label>
                           </FormGroup>
                         </Col>
@@ -565,7 +564,7 @@ class ChatClients extends React.Component {
                             }
                           </FormGroup>
                           <FormGroup className="text-right">
-                            <button className="btn btn-icon btn-3 btn-primary" disabled={this.state.isSaving} type="submit">
+                            <button className="btn btn-icon btn-3 btn-primary" onClick={this.onSaving} disabled={this.state.isSaving} type="button">
                               <span className="btn-inner--icon"><i className="fas fa-save"></i></span>
                               <span className="btn-inner--text">Save Changes</span>
                             </button>

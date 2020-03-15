@@ -45,7 +45,6 @@ namespace Requestrr.WebApi.Controllers
 
                 settings.DownloadClients.Radarr.SearchNewRequests = radarrSettings.SearchNewRequests;
                 settings.DownloadClients.Radarr.MonitorNewRequests = radarrSettings.MonitorNewRequests;
-                settings.DownloadClients.Radarr.AllowRequestUpdates = radarrSettings.AllowRequestUpdates;
 
                 settings.DownloadClients.Radarr.UseSSL = radarrSettings.UseSSL;
                 settings.DownloadClients.Radarr.Version = radarrSettings.Version;
@@ -97,7 +96,6 @@ namespace Requestrr.WebApi.Controllers
 
                 settings.DownloadClients.Sonarr.SearchNewRequests = sonarrSettings.SearchNewRequests;
                 settings.DownloadClients.Sonarr.MonitorNewRequests = sonarrSettings.MonitorNewRequests;
-                settings.DownloadClients.Sonarr.AllowRequestUpdates = sonarrSettings.AllowRequestUpdates;
 
                 settings.DownloadClients.Sonarr.UseSSL = sonarrSettings.UseSSL;
                 settings.DownloadClients.Sonarr.Version = sonarrSettings.Version;

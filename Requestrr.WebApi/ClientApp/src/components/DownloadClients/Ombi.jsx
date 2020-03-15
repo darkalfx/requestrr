@@ -259,7 +259,7 @@ class Ombi extends React.Component {
           <Row>
             <Col>
               <FormGroup className="text-right">
-                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid} className="btn btn-icon btn-3 btn-default" type="submit">
+                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid} className="btn btn-icon btn-3 btn-default" type="button">
                   <span className="btn-inner--icon">
                     {
                       this.state.isTestingSettings ? (

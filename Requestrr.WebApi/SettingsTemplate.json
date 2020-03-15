@@ -40,7 +40,6 @@
       "AnimeTags": [],
       "SearchNewRequests": true,
       "MonitorNewRequests": true,
-      "AllowRequestUpdates": true,
       "UseSSL": false,
       "Version": "2"
     },
@@ -61,7 +60,6 @@
       "AnimeUseSeasonFolders": true,
       "SearchNewRequests": true,
       "MonitorNewRequests": true,
-      "AllowRequestUpdates": true,
       "UseSSL": false,
       "Version": "3"
     }

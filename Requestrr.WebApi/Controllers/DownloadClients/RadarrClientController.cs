@@ -19,7 +19,6 @@ namespace Requestrr.WebApi.Controllers
         public int Port { get; set; }
         [Required]
         public string ApiKey { get; set; }
-        [Required]
         public string BaseUrl { get; set; }
         [Required]
         public bool UseSSL { get; set; }
@@ -35,6 +34,7 @@ namespace Requestrr.WebApi.Controllers
         public int Port { get; set; }
         [Required]
         public string ApiKey { get; set; }
+        public string BaseUrl { get; set; }
         [Required]
         public string MovieMinAvailability { get; set; }
         [Required]
@@ -51,12 +51,9 @@ namespace Requestrr.WebApi.Controllers
         public int AnimeProfile { get; set; }
         [Required]
         public int[] AnimeTags { get; set; }
-        [Required]
-        public string BaseUrl { get; set; }
         public bool UseSSL { get; set; }
         public bool SearchNewRequests { get; set; }
         public bool MonitorNewRequests { get; set; }
-        public bool AllowRequestUpdates { get; set; }
         [Required]
         public string Version { get; set; }
         [Required]
@@ -200,7 +197,6 @@ namespace Requestrr.WebApi.Controllers
                 AnimeTags = model.AnimeTags ?? Array.Empty<int>(),
                 SearchNewRequests = model.SearchNewRequests,
                 MonitorNewRequests = model.MonitorNewRequests,
-                AllowRequestUpdates = model.AllowRequestUpdates,
                 UseSSL = model.UseSSL,
                 Version = model.Version
             };

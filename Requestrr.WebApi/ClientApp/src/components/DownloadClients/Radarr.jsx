@@ -7,6 +7,7 @@ import { loadRadarrProfiles } from "../../store/actions/MovieClientsActions"
 import { loadRadarrRootPaths } from "../../store/actions/MovieClientsActions"
 import { loadRadarrTags } from "../../store/actions/MovieClientsActions"
 import ValidatedTextbox from "../Inputs/ValidatedTextbox"
+import Textbox from "../Inputs/Textbox"
 import Dropdown from "../Inputs/Dropdown"
 import MultiDropdown from "../Inputs/MultiDropdown"
 
@@ -51,6 +52,9 @@ class Radarr extends React.Component {
       movieMinAvailability: "announced",
       animeMinAvailability: "announced",
       apiVersion: "",
+      baseUrl: "",
+      searchNewRequests: true,
+      monitorNewRequests: true,
     };
 
     this.onTestSettings = this.onTestSettings.bind(this);
@@ -92,6 +96,9 @@ class Radarr extends React.Component {
       animeMinAvailability: props.settings.animeMinAvailability,
       animeTags: props.settings.animeTags,
       apiVersion: props.settings.version,
+      baseUrl: props.settings.baseUrl,
+      searchNewRequests: props.settings.searchNewRequests,
+      monitorNewRequests: props.settings.monitorNewRequests,
     }, () => {
       if (!this.validateNonEmptyString(this.state.movieMinAvailability)) {
         this.setState({ movieMinAvailability: "announced" });
@@ -124,6 +131,7 @@ class Radarr extends React.Component {
 
       this.props.loadProfiles({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -162,6 +170,7 @@ class Radarr extends React.Component {
 
       this.props.loadRootPaths({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -200,6 +209,7 @@ class Radarr extends React.Component {
 
       this.props.loadTags({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -250,6 +260,7 @@ class Radarr extends React.Component {
 
       this.props.testSettings({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -285,6 +296,7 @@ class Radarr extends React.Component {
     this.props.onChange({
       client: this.state.client,
       hostname: this.state.hostname,
+      baseUrl: this.state.baseUrl,
       port: this.state.port,
       apiKey: this.state.apiKey,
       useSSL: this.state.useSSL,
@@ -297,6 +309,8 @@ class Radarr extends React.Component {
       animeMinAvailability: this.state.animeMinAvailability,
       animeTags: this.state.animeTags,
       version: this.state.apiVersion,
+      searchNewRequests: this.state.searchNewRequests,
+      monitorNewRequests: this.state.monitorNewRequests,
     });
 
     this.onValidate();
@@ -365,6 +379,17 @@ class Radarr extends React.Component {
                 validation={this.validatePort}
                 onChange={newPort => this.setState({ port: newPort }, this.onValueChange)}
                 onValidate={isValid => this.setState({ isPortValid: isValid }, this.onValidate)} />
+            </Col>
+          </Row>
+          <Row>
+            <Col lg="6">
+              <Textbox
+                name="Base Url"
+                placeholder="Enter base url configured in Radarr, leave empty if none configured."
+                value={this.state.baseUrl}
+                onChange={newBaseUrl => this.setState({ baseUrl: newBaseUrl }, this.onValueChange)} />
+            </Col>
+            <Col lg="6">
             </Col>
           </Row>
           <Row>
@@ -512,7 +537,7 @@ class Radarr extends React.Component {
                     {
                       !this.state.areTagsValid ? (
                         <Alert className="mt-3 mb-0" color="warning">
-                          <strong>Could not load tags, cannot reach Sonarr.</strong>
+                          <strong>Could not load tags, cannot reach Radarr.</strong>
                         </Alert>)
                         : null
                     }
@@ -646,13 +671,52 @@ class Radarr extends React.Component {
                     {
                       !this.state.areTagsValid ? (
                         <Alert className="mt-3 mb-0" color="warning">
-                          <strong>Could not load tags, cannot reach Sonarr.</strong>
+                          <strong>Could not load tags, cannot reach Radarr.</strong>
                         </Alert>)
                         : null
                     }
                   </>
                   : null
               }
+            </Col>
+          </Row>
+        </div>
+        <div>
+          <h6 className="heading-small text-muted mt-4">
+            Radarr Requests Permissions Settings
+          </h6>
+        </div>
+        <div className="pl-lg-4">
+          <Row>
+            <Col lg="6">
+              <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                <Input
+                  className="custom-control-input"
+                  id="MonitorNewRequests"
+                  type="checkbox"
+                  onChange={e => { this.setState({ monitorNewRequests: !this.state.monitorNewRequests }, this.onValueChange); }}
+                  checked={this.state.monitorNewRequests}
+                />
+                <label
+                  className="custom-control-label"
+                  htmlFor="MonitorNewRequests">
+                  <span className="text-muted">Automatically monitor newly added movies</span>
+                </label>
+              </FormGroup>
+              <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+              <Input
+                  className="custom-control-input"
+                  id="SearchNewRequests"
+                  type="checkbox"
+                  onChange={e => { this.setState({ searchNewRequests: !this.state.searchNewRequests }, this.onValueChange); }}
+                  checked={this.state.searchNewRequests}
+                />
+                <label
+                  className="custom-control-label"
+                  htmlFor="SearchNewRequests">
+                  <span className="text-muted">Automatically search for movie when request is made</span>
+                </label>
+              </FormGroup>
             </Col>
           </Row>
           <Row>
@@ -675,7 +739,7 @@ class Radarr extends React.Component {
           <Row>
             <Col>
               <FormGroup className="text-right">
-                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid} className="btn btn-icon btn-3 btn-default" type="submit">
+                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid} className="btn btn-icon btn-3 btn-default" type="button">
                   <span className="btn-inner--icon">
                     {
                       this.state.isTestingSettings ? (

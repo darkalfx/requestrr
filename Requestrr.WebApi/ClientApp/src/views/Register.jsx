@@ -199,7 +199,7 @@ class Register extends React.Component {
               <div className="text-center text-muted mb-4">
                 <small>Use the form below to create the admin account</small>
               </div>
-              <Form onSubmit={this.onRegister} role="form">
+              <Form role="form">
                 <FormGroup className={this.state.usernameInvalid ? "has-danger" : this.state.usernameChanged ? "has-success" : ""}>
                   <InputGroup className="input-group-alternative mb-3">
                     <InputGroupAddon addonType="prepend">
@@ -287,7 +287,7 @@ class Register extends React.Component {
                   }
                 </FormGroup>
                 <div className="text-center">
-                  <button type="submit" class="btn btn-icon btn-primary" disabled={this.state.isLoading}>
+                  <button type="button" class="btn btn-icon btn-primary" onClick={this.onRegister} disabled={this.state.isLoading}>
                     <span className="btn-inner--icon"><i className="fas fa-file-signature"></i></span>
                     <span className="btn-inner--text">Create account</span>
                   </button>

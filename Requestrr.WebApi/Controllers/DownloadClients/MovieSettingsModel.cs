@@ -45,7 +45,6 @@ namespace Requestrr.WebApi.Controllers
         public int[] AnimeTags { get; set; }
         public bool SearchNewRequests { get; set; }
         public bool MonitorNewRequests { get; set; }
-        public bool AllowRequestUpdates { get; set; }
         public bool UseSSL { get; set; }
         [Required]
         public string Version { get; set; }
