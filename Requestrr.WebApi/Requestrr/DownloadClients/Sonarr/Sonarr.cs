@@ -354,7 +354,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 profileId = tvMazeShow.isAnime ? SonarrSettings.AnimeProfileId : SonarrSettings.TvProfileId,
                 languageProfileId = tvMazeShow.isAnime ? SonarrSettings.AnimeLanguageId : SonarrSettings.TvLanguageId,
                 titleSlug = jsonTvShow.titleSlug,
-                monitored = true,
+                monitored = SonarrSettings.MonitorNewRequests,
                 images = new string[0],
                 tvdbId = tvShow.TheTvDbId,
                 tags = tags,
@@ -370,7 +370,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 }),
                 addOptions = new
                 {
-                    searchForMissingEpisodes = true
+                    searchForMissingEpisodes = SonarrSettings.SearchNewRequests
                 }
             }));
 
@@ -428,7 +428,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 sonarrSeries.languageProfileId = isAnime ? SonarrSettings.AnimeLanguageId : SonarrSettings.TvLanguageId;
             }
 
-            sonarrSeries.monitored = true;
+            sonarrSeries.monitored = SonarrSettings.MonitorNewRequests;
             sonarrSeries.seasonFolder = isAnime ? SonarrSettings.AnimeUseSeasonFolders : SonarrSettings.TvUseSeasonFolders;
 
             if (seasons.Any())
@@ -452,32 +452,35 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             response = await HttpPutAsync($"{BaseURL}/series/{tvShow.DownloadClientId}", JsonConvert.SerializeObject(sonarrSeries));
             await response.ThrowIfNotSuccessfulAsync("SonarrSeriesUpdate failed", x => x.error);
 
-            var episodes = await GetSonarrEpisodesAsync(int.Parse(tvShow.DownloadClientId));
-
-            await Task.WhenAll(seasons.Select(async s =>
+            if (SonarrSettings.SearchNewRequests)
             {
+                var episodes = await GetSonarrEpisodesAsync(int.Parse(tvShow.DownloadClientId));
+
+                await Task.WhenAll(seasons.Select(async s =>
                 {
-                    try
                     {
-                        if (episodes[s.SeasonNumber].Any())
+                        try
                         {
-                            var undownloadedEpisodes = episodes[s.SeasonNumber].Where(x => !x.hasFile).Select(x => x.id).ToArray();
-
-                            response = await HttpPostAsync($"{BaseURL}/command", JsonConvert.SerializeObject(new
+                            if (episodes[s.SeasonNumber].Any())
                             {
-                                name = "EpisodeSearch",
-                                episodeIds = undownloadedEpisodes,
-                            }));
+                                var undownloadedEpisodes = episodes[s.SeasonNumber].Where(x => !x.hasFile).Select(x => x.id).ToArray();
 
-                            await response.ThrowIfNotSuccessfulAsync("SonarrSearchEpisodeCommand failed", x => x.error);
+                                response = await HttpPostAsync($"{BaseURL}/command", JsonConvert.SerializeObject(new
+                                {
+                                    name = "EpisodeSearch",
+                                    episodeIds = undownloadedEpisodes,
+                                }));
+
+                                await response.ThrowIfNotSuccessfulAsync("SonarrSearchEpisodeCommand failed", x => x.error);
+                            }
+                        }
+                        catch (System.Exception ex)
+                        {
+                            _logger.LogWarning(ex.Message);
                         }
                     }
-                    catch (System.Exception ex)
-                    {
-                        _logger.LogWarning(ex.Message);
-                    }
-                }
-            }));
+                }));
+            }
         }
 
         private async Task<JSONTvShow> FindSeriesInSonarrAsync(int tvDbId, string downloadClientId = null)
@@ -561,6 +564,9 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
 
         private TvShow Convert(JSONTvShow jsonTvShow, IReadOnlyList<JSONSeason> seasons, IDictionary<int, JSONEpisode[]> episodesToSeason)
         {
+            var downloadClientId = jsonTvShow.id?.ToString();
+            var isTvShowMonitored = (string.IsNullOrWhiteSpace(downloadClientId) || SonarrSettings.MonitorNewRequests) ? jsonTvShow.monitored : true;
+
             var tvSeasons = seasons.Where(x => x.seasonNumber > 0).Select(x =>
             {
                 var episodes = episodesToSeason.ContainsKey(x.seasonNumber) ? episodesToSeason[x.seasonNumber] : Array.Empty<JSONEpisode>();
@@ -572,7 +578,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                     {
                         SeasonNumber = x.seasonNumber,
                         IsAvailable = tvEpisodes.First().IsAvailable,
-                        IsRequested = jsonTvShow.monitored ? tvEpisodes.All(x => x.IsRequested || x.IsAvailable) : tvEpisodes.All(x => x.IsAvailable),
+                        IsRequested = isTvShowMonitored ? tvEpisodes.All(x => x.IsRequested || x.IsAvailable) : tvEpisodes.All(x => x.IsAvailable),
                     };
                 }
                 else if (jsonTvShow.ExistsInSonarr())
@@ -581,7 +587,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                     {
                         SeasonNumber = x.seasonNumber,
                         IsAvailable = false,
-                        IsRequested = jsonTvShow.monitored ? x.monitored : false,
+                        IsRequested = isTvShowMonitored ? x.monitored : false,
                     };
                 }
                 else
@@ -599,11 +605,11 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             return new TvShow
             {
                 TheTvDbId = jsonTvShow.tvdbId.Value,
-                DownloadClientId = jsonTvShow.id?.ToString(),
+                DownloadClientId = downloadClientId,
                 Title = jsonTvShow.title,
                 Overview = jsonTvShow.overview,
                 Quality = "",
-                IsRequested = jsonTvShow.monitored,
+                IsRequested = isTvShowMonitored,
                 PlexUrl = "",
                 EmbyUrl = "",
                 Seasons = tvSeasons.OrderBy(x => x.SeasonNumber).ToArray(),

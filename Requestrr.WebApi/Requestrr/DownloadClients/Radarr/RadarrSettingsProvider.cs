@@ -20,6 +20,8 @@
                 AnimeRootFolder = settings.DownloadClients.Radarr.AnimeRootFolder,
                 AnimeMinimumAvailability = settings.DownloadClients.Radarr.AnimeMinimumAvailability,
                 AnimeTags = settings.DownloadClients.Radarr.AnimeTags.ToObject<int[]>(),
+                SearchNewRequests  = settings.DownloadClients.Radarr.SearchNewRequests,
+                MonitorNewRequests  = settings.DownloadClients.Radarr.MonitorNewRequests,
                 UseSSL = (bool)settings.DownloadClients.Radarr.UseSSL,
                 Version = settings.DownloadClients.Radarr.Version,
             };

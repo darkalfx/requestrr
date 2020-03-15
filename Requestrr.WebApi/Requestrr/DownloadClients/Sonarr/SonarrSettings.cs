@@ -16,6 +16,8 @@
         public int AnimeLanguageId { get; set; }
         public int[] AnimeTags { get; set; }
         public bool AnimeUseSeasonFolders { get; set; }
+        public bool SearchNewRequests { get; set; }
+        public bool MonitorNewRequests { get; set; }
         public bool UseSSL { get; set; }
         public string Version { get; set; }
     }

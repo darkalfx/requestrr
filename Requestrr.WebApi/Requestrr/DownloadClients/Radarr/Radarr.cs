@@ -241,7 +241,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 title = jsonMovie.title,
                 qualityProfileId = theMovieDbMovie.IsAnime ? RadarrSettings.AnimeProfileId : RadarrSettings.MovieProfileId,
                 titleSlug = jsonMovie.titleSlug,
-                monitored = true,
+                monitored = RadarrSettings.MonitorNewRequests,
                 tags = tags,
                 images = new string[0],
                 tmdbId = int.Parse(movie.TheMovieDbId),
@@ -252,7 +252,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 {
                     ignoreEpisodesWithFiles = false,
                     ignoreEpisodesWithoutFiles = false,
-                    searchForMovie = true
+                    searchForMovie = RadarrSettings.SearchNewRequests
                 }
             }));
 
@@ -322,15 +322,17 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             var isDownloaded = jsonMovie.downloaded.HasValue ? jsonMovie.downloaded.Value : jsonMovie.movieFile != null;
             var isMonitored = jsonMovie.monitored;
 
+            var downloadClientId = jsonMovie.id?.ToString();
+
             return new Movie
             {
-                DownloadClientId = jsonMovie.id?.ToString(),
+                DownloadClientId = downloadClientId,
                 Title = jsonMovie.title,
                 Available = isDownloaded,
                 Overview = jsonMovie.overview,
                 TheMovieDbId = jsonMovie.tmdbId.ToString(),
                 Quality = "",
-                Requested = !isDownloaded && isMonitored,
+                Requested = !isDownloaded && (string.IsNullOrWhiteSpace(downloadClientId) || RadarrSettings.MonitorNewRequests) ? isMonitored : true,
                 Approved = false,
                 PlexUrl = "",
                 EmbyUrl = "",
@@ -403,7 +405,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
         {
             var version = settings.Version == "2" ? string.Empty : $"/v{settings.Version}";
             var protocol = settings.UseSSL ? "https" : "http";
-            
+
             return $"{protocol}://{settings.Hostname}:{settings.Port}{settings.BaseUrl}/api{version}";
         }
 

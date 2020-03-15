@@ -22,6 +22,8 @@
                 AnimeLanguageId = settings.DownloadClients.Sonarr.AnimeLanguageId,
                 AnimeTags = settings.DownloadClients.Sonarr.AnimeTags.ToObject<int[]>(),
                 AnimeUseSeasonFolders = settings.DownloadClients.Sonarr.AnimeUseSeasonFolders,
+                SearchNewRequests  = settings.DownloadClients.Sonarr.SearchNewRequests,
+                MonitorNewRequests  = settings.DownloadClients.Sonarr.MonitorNewRequests,
                 UseSSL = (bool)settings.DownloadClients.Sonarr.UseSSL,
                 Version = settings.DownloadClients.Sonarr.Version,
             };

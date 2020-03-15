@@ -856,7 +856,7 @@ class Sonarr extends React.Component {
                 <label
                   className="custom-control-label"
                   htmlFor="MonitorNewRequests">
-                  <span className="text-muted">Automatically monitor newly added tv shows/seasons</span>
+                  <span className="text-muted">Automatically monitor newly added tv shows</span>
                 </label>
               </FormGroup>
               <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
@@ -870,7 +870,7 @@ class Sonarr extends React.Component {
                 <label
                   className="custom-control-label"
                   htmlFor="SearchNewRequests">
-                  <span className="text-muted">Automatically search for tv shows seasons when a request is made</span>
+                  <span className="text-muted">Automatically search for episodes when a request is made</span>
                 </label>
               </FormGroup>
             </Col>
