@@ -151,9 +151,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 try
                 {
                     var response = await HttpGetAsync($"http://api.tvmaze.com/search/shows?q={tvShowName}");
-
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
+                    await response.ThrowIfNotSuccessfulAsync("TvMazeSearch failed", x => x.message);
 
                     var jsonResponse = await response.Content.ReadAsStringAsync();
                     var tvMazeShows = JsonConvert.DeserializeObject<List<TvMazeSearchedTvShow>>(jsonResponse).Where(x => x.Show.externals.thetvdb.HasValue).ToArray();
@@ -330,17 +328,13 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
         private async Task CreateSonarrTvSeriesAsync(TvShow tvShow, IReadOnlyList<TvSeason> seasons)
         {
             var response = await HttpGetAsync($"http://api.tvmaze.com/lookup/shows?thetvdb={tvShow.TheTvDbId}");
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("TvMazeLookup failed", x => x.message);
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var tvMazeShow = JsonConvert.DeserializeObject<TvMazeTvShow>(jsonResponse);
 
             response = await HttpGetAsync($"{BaseURL}/series/lookup?term=tvdb:{tvShow.TheTvDbId}");
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookup failed", x => x.error);
 
             jsonResponse = await response.Content.ReadAsStringAsync();
             var jsonTvShow = JsonConvert.DeserializeObject<IEnumerable<JSONTvShow>>(jsonResponse).First();
@@ -379,8 +373,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 }
             }));
 
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("SonarrSeriesCreation failed", x => x.error);
 
             jsonResponse = await response.Content.ReadAsStringAsync();
             dynamic sonarrTvShow = JObject.Parse(jsonResponse);
@@ -415,7 +408,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                     }
                 }
 
-                throw new Exception(response.ReasonPhrase);
+                await response.ThrowIfNotSuccessfulAsync("SonarrSerieGet failed", x => x.error);
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -447,9 +440,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 }
 
                 response = await HttpPutAsync($"{BaseURL}/series/{tvShow.DownloadClientId}", JsonConvert.SerializeObject(sonarrSeries));
-
-                if (!response.IsSuccessStatusCode)
-                    throw new Exception(response.ReasonPhrase);
+                await response.ThrowIfNotSuccessfulAsync("SonarrSeriesUpdate failed", x => x.error);
 
                 foreach (var season in jsonSeasons)
                 {
@@ -458,9 +449,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             }
 
             response = await HttpPutAsync($"{BaseURL}/series/{tvShow.DownloadClientId}", JsonConvert.SerializeObject(sonarrSeries));
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("SonarrSeriesUpdate failed", x => x.error);
 
             var episodes = await GetSonarrEpisodesAsync(int.Parse(tvShow.DownloadClientId));
 
@@ -479,8 +468,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                                 episodeIds = undownloadedEpisodes,
                             }));
 
-                            if (!response.IsSuccessStatusCode)
-                                throw new Exception(response.ReasonPhrase);
+                            await response.ThrowIfNotSuccessfulAsync("SonarrSearchEpisodeCommand failed", x => x.error);
                         }
                     }
                     catch (System.Exception ex)
@@ -513,7 +501,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                         : await FindSeriesInSonarrAsync(tvDbId);
                     }
 
-                    throw new Exception("Failed to get a tv show detail with Sonarr");
+                    await response.ThrowIfNotSuccessfulAsync("SonarrSerieGet failed", x => x.error);
                 }
             }
 
@@ -534,8 +522,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
         {
             var response = await HttpGetAsync($"{BaseURL}/series");
 
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("SonarrSeriesGetAll failed", x => x.error);
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<List<JSONTvShow>>(jsonResponse).Where(x => x.tvdbId.HasValue).ToArray();
@@ -545,8 +532,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
         {
             var response = await HttpGetAsync($"{BaseURL}/series/lookup?term=tvdb:{tvDbId}");
 
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookupTvDb failed", x => x.error);
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var tvShow = JsonConvert.DeserializeObject<IEnumerable<JSONTvShow>>(jsonResponse).First();
@@ -563,8 +549,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
         {
             var response = await HttpGetAsync($"{BaseURL}/episode?seriesId={sonarrId}");
 
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("SonarrGetSeriesEpisode failed", x => x.error);
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
 

@@ -36,6 +36,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             }
             catch (System.Exception ex)
             {
+
                 logger.LogWarning("Error while testing ombi connection: " + ex.Message);
                 throw new Exception("Could not connect to Radarr");
             }
@@ -55,9 +56,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 try
                 {
                     var response = await HttpPostAsync(username, $"{BaseURL}/api/v1/Request/Movie", JsonConvert.SerializeObject(new { theMovieDbId = movie.TheMovieDbId }));
-
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
+                    await response.ThrowIfNotSuccessfulAsync("OmbiCreateMovieRequest failed", x => x.error);
 
                     return;
                 }
@@ -81,9 +80,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 try
                 {
                     var response = await HttpGetAsync($"{BaseURL}/api/v1/search/movie/{movieName}");
-
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
+                    await response.ThrowIfNotSuccessfulAsync("OmbiMovieSearch failed", x => x.error);
 
                     var jsonResponse = await response.Content.ReadAsStringAsync();
                     var movies = JsonConvert.DeserializeObject<List<JSONMovie>>(jsonResponse).ToArray();
@@ -103,7 +100,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
 
         public Task<MovieDetails> GetMovieDetails(string theMovieDbId)
         {
-            return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId);
+            return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId, _logger);
         }
 
         public async Task<Movie> GetMovieAsync(int movieId)
@@ -115,9 +112,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 try
                 {
                     var response = await HttpGetAsync($"{BaseURL}/api/v1/search/movie/info/{movieId.ToString()}");
-
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
+                    await response.ThrowIfNotSuccessfulAsync("OmbiGetMovieInfo failed", x => x.error);
 
                     var jsonResponse = await response.Content.ReadAsStringAsync();
                     var jsonMovie = JsonConvert.DeserializeObject<JSONMovie>(jsonResponse);
@@ -198,8 +193,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                         }),
                     }));
 
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
+                    await response.ThrowIfNotSuccessfulAsync("OmbiCreateTvShowRequest failed", x => x.error);
 
                     return;
                 }
@@ -276,8 +270,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 {
                     var response = await HttpGetAsync($"{BaseURL}/api/v1/Search/Tv/{tvShowName}");
 
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
+                    await response.ThrowIfNotSuccessfulAsync("OmbiSearchTvShow failed", x => x.error);
 
                     var jsonResponse = await response.Content.ReadAsStringAsync();
                     var jsonTvShows = JsonConvert.DeserializeObject<List<JSONTvShow>>(jsonResponse).ToArray();
@@ -306,9 +299,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             var response = await HttpGetAsync($"{BaseURL}/api/v1/Search/tv/info/{theTvDbId}");
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("OmbiFindTvShowTvDbId failed", x => x.error);
 
             return JsonConvert.DeserializeObject<JSONTvShow>(jsonResponse);
         }

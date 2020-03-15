@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Requestrr.WebApi.Requestrr.Movies;
 
@@ -16,35 +17,41 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             return await HttpGetAsync(client, $"https://api.themoviedb.org/3/movie/{theMovieDbId}?api_key=0d3ad5bb96218b24cd6917ccd6d673bc&language=en-US");
         }
 
-        public static async Task<MovieDetails> GetMovieDetailsAsync(HttpClient client, string theMovieDbId)
+        public static async Task<MovieDetails> GetMovieDetailsAsync(HttpClient client, string theMovieDbId, ILogger logger)
         {
-            var response = await HttpGetAsync(client, $"https://api.themoviedb.org/3/movie/{theMovieDbId}/release_dates?api_key=0d3ad5bb96218b24cd6917ccd6d673bc");
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
-
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var jsonReleaseDetails = JsonConvert.DeserializeObject<MovieReleaseDetailsResult>(jsonResponse);
-
-            var usReleaseDates = jsonReleaseDetails.results.FirstOrDefault(x => x.iso_3166_1.Equals("us", StringComparison.InvariantCultureIgnoreCase));
-
-            if (usReleaseDates != null)
+            try
             {
-                var theaterRelease = usReleaseDates.release_dates.FirstOrDefault(x => x.type == 3);
-                var physicalRelease = usReleaseDates.release_dates.FirstOrDefault(x => x.type == 4 || x.type == 5);
+                var response = await HttpGetAsync(client, $"https://api.themoviedb.org/3/movie/{theMovieDbId}/release_dates?api_key=0d3ad5bb96218b24cd6917ccd6d673bc");
+                await response.ThrowIfNotSuccessfulAsync("TheMovieDbFindReleaseDates failed", x => x.status_message);
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var jsonReleaseDetails = JsonConvert.DeserializeObject<MovieReleaseDetailsResult>(jsonResponse);
+
+                var usReleaseDates = jsonReleaseDetails.results.FirstOrDefault(x => x.iso_3166_1.Equals("us", StringComparison.InvariantCultureIgnoreCase));
+
+                if (usReleaseDates != null)
+                {
+                    var theaterRelease = usReleaseDates.release_dates.FirstOrDefault(x => x.type == 3);
+                    var physicalRelease = usReleaseDates.release_dates.FirstOrDefault(x => x.type == 4 || x.type == 5);
+
+                    return new MovieDetails
+                    {
+                        InTheatersDate = theaterRelease != null ? theaterRelease.release_date.ToString("MMMM dd yyyy", DateTimeFormatInfo.InvariantInfo) : null,
+                        PhysicalReleaseName = physicalRelease != null ? physicalRelease.type == 5 ? "Physical" : "Digital" : null,
+                        PhysicalReleaseDate = physicalRelease != null ? physicalRelease.release_date.ToString("MMMM dd yyyy", DateTimeFormatInfo.InvariantInfo) : null,
+                    };
+                }
 
                 return new MovieDetails
                 {
-                    InTheatersDate = theaterRelease != null ? theaterRelease.release_date.ToString("MMMM dd yyyy", DateTimeFormatInfo.InvariantInfo) : null,
-                    PhysicalReleaseName = physicalRelease != null ? physicalRelease.type == 5 ? "Physical" : "Digital" : null,
-                    PhysicalReleaseDate = physicalRelease != null ? physicalRelease.release_date.ToString("MMMM dd yyyy", DateTimeFormatInfo.InvariantInfo) : null,
+                    InTheatersDate = ""
                 };
             }
-
-            return new MovieDetails
+            catch (System.Exception ex)
             {
-                InTheatersDate = ""
-            };
+                logger.LogWarning(ex, ex.Message);
+                throw;
+            }
         }
 
         private static async Task<HttpResponseMessage> HttpGetAsync(HttpClient client, string url)

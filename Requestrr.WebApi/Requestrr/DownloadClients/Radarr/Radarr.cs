@@ -129,9 +129,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 {
                     var searchTerm = movieName.ToLower().Trim().Replace(" ", "+");
                     var response = await HttpGetAsync($"{BaseURL}/movie/lookup?term={searchTerm}");
-
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
+                    await response.ThrowIfNotSuccessfulAsync("RadarrMovieLookup failed", x => x.error);
 
                     var jsonResponse = await response.Content.ReadAsStringAsync();
                     var jsonMovies = JsonConvert.DeserializeObject<List<JSONMovie>>(jsonResponse).ToArray();
@@ -151,7 +149,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
 
         public Task<MovieDetails> GetMovieDetails(string theMovieDbId)
         {
-            return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId);
+            return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId, _logger);
         }
 
         public async Task<Dictionary<int, Movie>> SearchAvailableMoviesAsync(HashSet<int> theMovieDbIds, System.Threading.CancellationToken token)
@@ -163,9 +161,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 try
                 {
                     var response = await HttpGetAsync($"{BaseURL}/movie");
-
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
+                    await response.ThrowIfNotSuccessfulAsync("RadarrGetAllMovies failed", x => x.error);
 
                     var jsonResponse = await response.Content.ReadAsStringAsync();
                     var jsonMovies = JsonConvert.DeserializeObject<List<JSONMovie>>(jsonResponse).ToArray();
@@ -224,9 +220,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
         private async Task CreateMovieInRadarr(Movie movie)
         {
             var response = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("TheMovieDbFindMovie failed", x => x.status_message);
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var theMovieDbMovie = JsonConvert.DeserializeObject<TheMovieDbMovie>(jsonResponse);
@@ -260,8 +254,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 }
             }));
 
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("RadarrMovieCreation failed", x => x.error);
         }
 
         private async Task UpdateExistingMovie(Movie movie)
@@ -277,16 +270,14 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                     return;
                 }
 
-                throw new Exception(response.ReasonPhrase);
+                await response.ThrowIfNotSuccessfulAsync("RadarrGetMovie failed", x => x.error);
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             dynamic radarrMovie = JObject.Parse(jsonResponse);
 
             response = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("TheMovieDbFindMovie failed", x => x.status_message);
 
             jsonResponse = await response.Content.ReadAsStringAsync();
             var theMovieDbMovie = JsonConvert.DeserializeObject<TheMovieDbMovie>(jsonResponse);
@@ -306,8 +297,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
 
             response = await HttpPutAsync($"{BaseURL}/movie/{radarrMovieId}", JsonConvert.SerializeObject(radarrMovie));
 
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("RadarrUpdateMovie failed", x => x.error);
 
             try
             {
@@ -317,8 +307,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                     movieIds = new[] { radarrMovieId },
                 }));
 
-                if (!response.IsSuccessStatusCode)
-                    throw new Exception(response.ReasonPhrase);
+                await response.ThrowIfNotSuccessfulAsync("RadarrMovieSearchCommand failed", x => x.error);
             }
             catch (System.Exception ex)
             {
@@ -366,9 +355,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
         private async Task<JSONMovie> SearchMovieByMovieDbId(int movieId)
         {
             var response = await HttpGetAsync($"{BaseURL}/movie/lookup/tmdb?tmdbId={movieId}");
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);
+            await response.ThrowIfNotSuccessfulAsync("RadarrMovieLookupTmDb failed", x => x.error);
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<JSONMovie>(jsonResponse);
