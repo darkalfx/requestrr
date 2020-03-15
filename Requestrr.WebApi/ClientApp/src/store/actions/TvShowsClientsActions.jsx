@@ -62,6 +62,7 @@ export function testOmbiSettings(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
+                "BaseUrl" : settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -358,6 +359,7 @@ export function saveOmbiClient(saveModel) {
             },
             body: JSON.stringify({
                 'Hostname': saveModel.ombi.hostname,
+                "BaseUrl" : saveModel.ombi.baseUrl,
                 'Port': Number(saveModel.ombi.port),
                 'ApiKey': saveModel.ombi.apiKey,
                 'ApiUsername': saveModel.ombi.apiUsername,
@@ -372,6 +374,7 @@ export function saveOmbiClient(saveModel) {
                     dispatch(setOmbiClient({
                         ombi: {
                             hostname: saveModel.ombi.hostname,
+                            baseUrl: saveModel.ombi.baseUrl,
                             port: saveModel.ombi.port,
                             apiKey: saveModel.ombi.apiKey,
                             apiUsername: saveModel.ombi.apiUsername,

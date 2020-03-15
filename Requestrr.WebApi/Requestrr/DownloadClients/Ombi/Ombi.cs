@@ -32,7 +32,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             try
             {
                 var response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}/api/v1/LandingPage");
-                testSuccessful = response.IsSuccessStatusCode;
+                testSuccessful = (await response.Content.ReadAsStringAsync()).Contains("serversavailable", StringComparison.InvariantCultureIgnoreCase);
             }
             catch (System.Exception ex)
             {

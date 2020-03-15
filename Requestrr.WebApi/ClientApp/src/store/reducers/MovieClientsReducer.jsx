@@ -10,6 +10,7 @@ export default function MovieClientsReducer(state = {}, action) {
       client: action.payload.client,
       ombi: {
         hostname: action.payload.ombi.hostname,
+        baseUrl: action.payload.ombi.baseUrl,
         port: action.payload.ombi.port,
         apiKey: action.payload.ombi.apiKey,
         apiUsername: action.payload.ombi.apiUsername,

@@ -15,7 +15,6 @@ public class TestOmbiSettingsModel
     public int Port { get; set; }
     [Required]
     public string ApiKey { get; set; }
-    [Required]
     public string BaseUrl { get; set; }
     [Required]
     public bool UseSSL { get; set; }
@@ -32,7 +31,6 @@ public class SaveOmbiSettingsModel
     [Required]
     public string ApiKey { get; set; }
     public string ApiUsername { get; set; }
-    [Required]
     public string BaseUrl { get; set; }
     [Required]
     public bool UseSSL { get; set; }

@@ -32,6 +32,7 @@ class Ombi extends React.Component {
       apiUsername: "",
       useSSL: "",
       apiVersion: "",
+      baseUrl: "",
     };
 
     this.onTestSettings = this.onTestSettings.bind(this);
@@ -61,6 +62,7 @@ class Ombi extends React.Component {
       apiKey: props.settings.apiKey,
       isApiKeyValid: false,
       apiUsername: props.settings.apiUsername,
+      baseUrl: props.settings.baseUrl,
       useSSL: props.settings.useSSL,
       apiVersion: props.settings.version,
     });
@@ -91,6 +93,7 @@ class Ombi extends React.Component {
 
       this.props.testSettings({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -126,6 +129,7 @@ class Ombi extends React.Component {
     this.props.onChange({
       client: this.state.client,
       hostname: this.state.hostname,
+      baseUrl: this.state.baseUrl,
       port: this.state.port,
       apiKey: this.state.apiKey,
       apiUsername: this.state.apiUsername,
@@ -201,13 +205,18 @@ class Ombi extends React.Component {
           </Row>
           <Row>
             <Col lg="6">
-              <Textbox
-                name="Api Username"
-                placeholder="Enter api username (Optional)"
-                value={this.state.apiUsername}
-                onChange={newApiUsername => this.setState({ apiUsername: newApiUsername }, this.onValueChange)}/>
+            <Textbox
+                name="Base Url"
+                placeholder="Enter base url configured in Ombi, leave empty if none configured."
+                value={this.state.baseUrl}
+                onChange={newBaseUrl => this.setState({ baseUrl: newBaseUrl }, this.onValueChange)} />
             </Col>
             <Col lg="6">
+              <Textbox
+                name="Default Api Username"
+                placeholder="Enter api username (Optional)"
+                value={this.state.apiUsername}
+                onChange={newApiUsername => this.setState({ apiUsername: newApiUsername }, this.onValueChange)} />
             </Col>
           </Row>
           <Row>
