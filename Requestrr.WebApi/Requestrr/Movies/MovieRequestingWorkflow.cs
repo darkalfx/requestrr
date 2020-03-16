@@ -61,7 +61,7 @@ namespace Requestrr.WebApi.Requestrr.Movies
 
             if (CanBeRequested(movie))
             {
-                var isRequested = await _userInterface.GetMovieRequestAsync();
+                var isRequested = await _userInterface.GetMovieRequestAsync(movie);
 
                 if (isRequested)
                 {

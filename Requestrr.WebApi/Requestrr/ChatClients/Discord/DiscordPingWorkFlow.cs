@@ -21,11 +21,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
         public Task HandlePingAsync() 
         {
-            if (!_discordSettings.EnableDirectMessageSupport && this.Context.Guild == null)
-            {
-                return ReplyToUserAsync($"This command is only available within a server.");
-            }
-            else if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
+            if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
             {
                 return Task.CompletedTask;
             }

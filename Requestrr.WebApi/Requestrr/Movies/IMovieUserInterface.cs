@@ -8,7 +8,7 @@ namespace Requestrr.WebApi.Requestrr.Movies
         Task WarnNoMovieFoundAsync(string movieName);
         Task<MovieSelection> GetMovieSelectionAsync(IReadOnlyList<Movie> movies);
         Task WarnInvalidMovieSelectionAsync();
-        Task<bool> GetMovieRequestAsync();
+        Task<bool> GetMovieRequestAsync(Movie movie);
         Task DisplayMovieDetails(Movie movie);
         Task WarnMovieAlreadyAvailable();
         Task DisplayRequestSuccess(Movie movie);

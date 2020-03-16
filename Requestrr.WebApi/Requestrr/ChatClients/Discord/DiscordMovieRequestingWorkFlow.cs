@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Requestrr.WebApi.Requestrr.DownloadClients;
 using Requestrr.WebApi.Requestrr.Movies;
 using Requestrr.WebApi.Requestrr.Notifications;
 
@@ -85,11 +84,11 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle("Movie Search")
-                .WithDescription($"Please select one of the search results by typing one of the numbers shown on the left. (ex: {_discordSettings.CommandPrefix}2) To abort type **{_discordSettings.CommandPrefix}cancel**")
                 .AddField("__Search Results__", embedContent.ToString())
                 .WithThumbnailUrl("https://i.imgur.com/44ueTES.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());
+            var replyHelp = await ReplyToUserAsync($"Please select one of the search results shown above by typing its corresponding number shown on the left. (ex: **{_discordSettings.CommandPrefix}2**) To abort type **{_discordSettings.CommandPrefix}cancel**");
 
             var selectionMessage = await NextMessageAsync(Context);
             var selectionMessageContent = selectionMessage?.Content ?? $"{_discordSettings.CommandPrefix}cancel";
@@ -99,6 +98,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 if (selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty).ToLower().StartsWith("cancel"))
                 {
                     await DeleteSafeAsync(reply);
+                    await DeleteSafeAsync(replyHelp);
                     await DeleteSafeAsync(selectionMessage);
                     await ReplyToUserAsync("Your request has been cancelled!!");
 
@@ -110,6 +110,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 else if (int.TryParse(selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty), out var selectedMovie) && selectedMovie <= movies.Count)
                 {
                     await DeleteSafeAsync(reply);
+                    await DeleteSafeAsync(replyHelp);
                     await DeleteSafeAsync(selectionMessage);
 
                     return new MovieSelection
@@ -173,10 +174,25 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             return embedBuilder.Build();
         }
 
-        public async Task<bool> GetMovieRequestAsync()
+        public async Task<bool> GetMovieRequestAsync(Movie movie)
         {
             await _lastCommandMessage?.AddReactionAsync(new Emoji("⬇"));
-            await ReplyToUserAsync("If you want to request this movie please click on the ⬇ reaction.");
+
+            if (DateTime.TryParse(movie.ReleaseDate, out var releaseDate))
+            {
+                if (releaseDate > DateTime.UtcNow)
+                {
+                    await ReplyToUserAsync("This movie has not released yet, if you want to request this movie please click on the ⬇ reaction directly above this message.");
+                }
+                else
+                {
+                    await ReplyToUserAsync("If you want to request this movie please click on the ⬇ reaction directly above this message.");
+                }
+            }
+            else
+            {
+                await ReplyToUserAsync("If you want to request this movie please click on the ⬇ reaction directly above this message.");
+            }
 
             var reaction = await WaitForReactionAsync(Context, _lastCommandMessage, new Emoji("⬇"));
 
@@ -195,10 +211,10 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
         public async Task<bool> AskForNotificationRequestAsync()
         {
-            await _lastCommandMessage?.AddReactionAsync(new Emoji("📧"));
-            await ReplyToUserAsync("This movie has already been requested, you can click on the 📧 reaction to be notified when it becomes available.");
+            await _lastCommandMessage?.AddReactionAsync(new Emoji("🔔"));
+            await ReplyToUserAsync("This movie has already been requested, you can click on the 🔔 reaction directly above this message to be notified when it becomes available.");
 
-            var reaction = await WaitForReactionAsync(Context, _lastCommandMessage, new Emoji("📧"));
+            var reaction = await WaitForReactionAsync(Context, _lastCommandMessage, new Emoji("🔔"));
 
             return reaction != null;
         }

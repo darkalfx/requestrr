@@ -60,7 +60,12 @@ namespace Requestrr.WebApi.Requestrr.TvShows
         {
             var tvShow = await GetTvShow(searchedTvShow);
 
-            if (tvShow.AllSeasonsFullyRequested())
+            if (!tvShow.Seasons.Any() && tvShow.HasEnded)
+            {
+                await _userInterface.DisplayTvShowDetailsAsync(tvShow);
+                await _userInterface.WarnShowCannotBeRequested(tvShow);
+            }
+            else if (tvShow.AllSeasonsFullyRequested())
             {
                 if (tvShow.Seasons.OfType<FutureTvSeasons>().Any())
                 {
@@ -120,16 +125,6 @@ namespace Requestrr.WebApi.Requestrr.TvShows
         {
             var tvShow = await _searcher.GetTvShowDetailsAsync(searchedTvShow);
 
-            if (tvShow.IsMultiSeasons())
-            {
-                tvShow.Seasons = tvShow.Seasons.Prepend(new AllTvSeasons
-                {
-                    SeasonNumber = 0,
-                    IsAvailable = false,
-                    IsRequested = RequestedState.None,
-                }).ToArray();
-            }
-
             if (!tvShow.HasEnded)
             {
                 tvShow.Seasons = tvShow.Seasons.Append(new FutureTvSeasons
@@ -137,6 +132,16 @@ namespace Requestrr.WebApi.Requestrr.TvShows
                     SeasonNumber = tvShow.Seasons.Max(x => x.SeasonNumber) + 1,
                     IsAvailable = false,
                     IsRequested = tvShow.IsRequested ? RequestedState.Full : RequestedState.None,
+                }).ToArray();
+            }
+
+            if (tvShow.IsMultiSeasons())
+            {
+                tvShow.Seasons = tvShow.Seasons.Prepend(new AllTvSeasons
+                {
+                    SeasonNumber = 0,
+                    IsAvailable = false,
+                    IsRequested = RequestedState.None,
                 }).ToArray();
             }
 

@@ -23,15 +23,11 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             _discord = discord;
         }
 
-        public Task HandleHelpAsync()
+        public async Task HandleHelpAsync()
         {
-            if (!_discordSettings.EnableDirectMessageSupport && this.Context.Guild == null)
+            if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
             {
-                return ReplyToUserAsync($"This command is only available within a server.");
-            }
-            else if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
-            {
-                return Task.CompletedTask;
+                return;
             }
 
             var messageBuilder = new StringBuilder();
@@ -61,7 +57,16 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             messageBuilder.AppendLine("If you encounter broken media or are getting errors with me, please notify the server owner.");
             messageBuilder.AppendLine("Feedback is always appreciated, please let the server owner know if I am doing well or not.");
 
-            return ReplyAsync(messageBuilder.ToString());
+            try
+            {
+                var channel = await Context.User.GetOrCreateDMChannelAsync();
+                await channel.SendMessageAsync(messageBuilder.ToString());
+                await ReplyToUserAsync("I sent you a DM with the help information!");
+            }
+            catch
+            {
+                await ReplyToUserAsync("I was unable to send you a DM with the help information, make sure that you haven't blocked me and that you allow direct messages from server members");
+            }
         }
     }
 }

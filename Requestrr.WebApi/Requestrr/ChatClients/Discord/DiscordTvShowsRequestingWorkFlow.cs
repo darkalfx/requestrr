@@ -83,11 +83,11 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle("Tv Show Search")
-                .WithDescription($"Please select one of the search results by typing one of the numbers shown on the left. (ex: {_discordSettings.CommandPrefix}2) To abort type **{_discordSettings.CommandPrefix}cancel**")
                 .AddField("__Search Results__", embedContent.ToString())
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());
+            var replyHelp = await ReplyToUserAsync($"Please select one of the search results shown above by typing its corresponding numbers shown on the left. (ex: **{_discordSettings.CommandPrefix}2**) To abort type **{_discordSettings.CommandPrefix}cancel**");
 
             var selectionMessage = await NextMessageAsync(Context);
             var selectionMessageContent = selectionMessage?.Content ?? $"{_discordSettings.CommandPrefix}cancel";
@@ -97,6 +97,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 if (selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty).ToLower().StartsWith("cancel"))
                 {
                     await DeleteSafeAsync(selectionMessage);
+                    await DeleteSafeAsync(replyHelp);
                     await DeleteSafeAsync(reply);
                     await ReplyToUserAsync("Your request has been cancelled!!");
 
@@ -108,6 +109,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 else if (int.TryParse(selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty), out var selectedTvShow) && selectedTvShow <= searchedTvShows.Count)
                 {
                     await DeleteSafeAsync(selectionMessage);
+                    await DeleteSafeAsync(replyHelp);
                     await DeleteSafeAsync(reply);
 
                     return new TvShowSelection
@@ -178,11 +180,11 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle($"{tvShow.Title} Seasons")
-                .WithDescription($"Please select one of the available seasons below by typing one of the numbers shown on the left. (ex: {_discordSettings.CommandPrefix}2) To abort type **{_discordSettings.CommandPrefix}cancel**")
                 .AddField("__Seasons__", fieldContent)
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());
+            var replyHelp = await ReplyToUserAsync($"Please select one of the available seasons shown above by typing its corresponding number shown on the left. (ex: **{_discordSettings.CommandPrefix}2**) To abort type **{_discordSettings.CommandPrefix}cancel**");
             var selectionMessage = await NextMessageAsync(Context);
             var selectionMessageContent = selectionMessage?.Content ?? $"{_discordSettings.CommandPrefix}cancel";
 
@@ -191,6 +193,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 if (selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty).ToLower().StartsWith("cancel"))
                 {
                     await DeleteSafeAsync(selectionMessage);
+                    await DeleteSafeAsync(replyHelp);
                     await DeleteSafeAsync(reply);
                     await ReplyToUserAsync("Your request has been cancelled!!");
 
@@ -202,6 +205,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 else if (int.TryParse(selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty), out var selectedSeasonNumber) && tvShowSeasons.Any(x => x.SeasonNumber == selectedSeasonNumber))
                 {
                     await DeleteSafeAsync(selectionMessage);
+                    await DeleteSafeAsync(replyHelp);
                     await DeleteSafeAsync(reply);
 
                     var selectedSeason = tvShowSeasons.Single(x => x.SeasonNumber == selectedSeasonNumber);
@@ -241,7 +245,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                     : $"season {season.SeasonNumber}";
 
             await _lastCommandMessage?.AddReactionAsync(new Emoji("⬇"));
-            await ReplyToUserAsync($"If you want to request **{seasonName}** of this tv show please click on the ⬇ reaction.");
+            await ReplyToUserAsync($"If you want to request **{seasonName}** of this tv show please click on the ⬇ reaction directly above this message.");
 
             var reaction = await WaitForReactionAsync(Context, _lastCommandMessage, new Emoji("⬇"));
 
@@ -250,21 +254,21 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
         public async Task<bool> AskForSeasonNotificationRequestAsync(TvShow tvShow, TvSeason requestedSeason)
         {
-            var message = $"Season {requestedSeason.SeasonNumber} has already been requested, you can click on the 🔔 reaction to be notified when it becomes available.";
+            var message = $"Season {requestedSeason.SeasonNumber} has already been requested, you can click on the 🔔 reaction directly above this message to be notified when it becomes available.";
 
             if (requestedSeason is FutureTvSeasons)
             {
                 if (tvShow.AllSeasonsAvailable())
                 {
-                    message = $"All seasons are already available, you can click on the 🔔 reaction to be notified when future seasons becomes available.";
+                    message = $"All seasons are already available, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
                 }
                 else if (tvShow.AllSeasonsFullyRequested())
                 {
-                    message = $"All seasons have been already requested, you can click on the 🔔 reaction to be notified when future seasons becomes available.";
+                    message = $"All seasons have been already requested, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
                 }
                 else
                 {
-                    message = $"Future seasons have already been requested, you can click on the 🔔 reaction to be notified when future seasons becomes available.";
+                    message = $"Future seasons have already been requested, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
                 }
             }
 
@@ -320,6 +324,11 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
         public Task WarnSeasonAlreadyAvailable(TvSeason requestedSeason)
         {
             return ReplyToUserAsync($"**Season {requestedSeason.SeasonNumber}** is already available, enjoy!");
+        }
+
+        public Task WarnShowCannotBeRequested(TvShow tvShow)
+        {
+            return ReplyToUserAsync($"This show cannot be automatically requested, please ask the server owner to manually add it.");
         }
     }
 }
