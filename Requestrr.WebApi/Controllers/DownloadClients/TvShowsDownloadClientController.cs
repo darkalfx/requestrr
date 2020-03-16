@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Requestrr.WebApi.Config;
-using Requestrr.WebApi.Requestrr.DownloadClients;
+using Requestrr.WebApi.config;
+using Requestrr.WebApi.RequestrrBot.DownloadClients;
 
-namespace Requestrr.WebApi.Controllers
+namespace Requestrr.WebApi.Controllers.DownloadClients
 {
     [ApiController]
     [Authorize]

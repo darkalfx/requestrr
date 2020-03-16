@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Requestrr.WebApi.Controllers
+namespace Requestrr.WebApi.Controllers.ChatClients
 {
     public class ChatClientsSettingsModel
     {

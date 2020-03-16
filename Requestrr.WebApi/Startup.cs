@@ -1,5 +1,4 @@
 using System.Text;
-using Discord.WebSocket;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,13 +7,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Requestrr.WebApi.Config;
-using Requestrr.WebApi.Requestrr.Movies;
-using Requestrr.WebApi.Requestrr.TvShows;
-using Requestrr.WebApi.Requestrr.DownloadClients;
-using Requestrr.WebApi.Requestrr.ChatClients;
-using Requestrr.WebApi.Requestrr;
 using System;
+using Requestrr.WebApi.config;
+using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
+using Requestrr.WebApi.RequestrrBot;
 
 namespace Requestrr.WebApi
 {
@@ -26,7 +25,7 @@ namespace Requestrr.WebApi
         }
 
         public IConfiguration Configuration { get; }
-        private RequestrrBot _requestrrBot;
+        private ChatBot _requestrrBot;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -80,7 +79,7 @@ namespace Requestrr.WebApi
             services.AddSingleton<OmbiSettingsProvider>();
             services.AddSingleton<RadarrSettingsProvider>();
             services.AddSingleton<SonarrSettingsProvider>();
-            services.AddSingleton<RequestrrBot>();
+            services.AddSingleton<RequestrrBot.ChatBot>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -123,7 +122,7 @@ namespace Requestrr.WebApi
                 }
             });
 
-            _requestrrBot = (RequestrrBot)app.ApplicationServices.GetService(typeof(RequestrrBot));
+            _requestrrBot = (RequestrrBot.ChatBot)app.ApplicationServices.GetService(typeof(RequestrrBot.ChatBot));
             _requestrrBot.Start();
         }
     }

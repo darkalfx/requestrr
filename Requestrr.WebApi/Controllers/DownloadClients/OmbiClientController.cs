@@ -4,44 +4,45 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Requestrr.WebApi.Config;
-using Requestrr.WebApi.Requestrr.DownloadClients;
+using Requestrr.WebApi.config;
+using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
 
-public class TestOmbiSettingsModel
+namespace Requestrr.WebApi.Controllers.DownloadClients
 {
-    [Required]
-    public string Hostname { get; set; }
-    [Required]
-    public int Port { get; set; }
-    [Required]
-    public string ApiKey { get; set; }
-    public string BaseUrl { get; set; }
-    [Required]
-    public bool UseSSL { get; set; }
-    [Required]
-    public string Version { get; set; }
-}
+    public class TestOmbiSettingsModel
+    {
+        [Required]
+        public string Hostname { get; set; }
+        [Required]
+        public int Port { get; set; }
+        [Required]
+        public string ApiKey { get; set; }
+        public string BaseUrl { get; set; }
+        [Required]
+        public bool UseSSL { get; set; }
+        [Required]
+        public string Version { get; set; }
+    }
 
-public class SaveOmbiSettingsModel
-{
-    [Required]
-    public string Hostname { get; set; }
-    [Required]
-    public int Port { get; set; }
-    [Required]
-    public string ApiKey { get; set; }
-    public string ApiUsername { get; set; }
-    public string BaseUrl { get; set; }
-    [Required]
-    public bool UseSSL { get; set; }
-    [Required]
-    public string Version { get; set; }
-    [Required]
-    public string Command { get; set; }
-}
+    public class SaveOmbiSettingsModel
+    {
+        [Required]
+        public string Hostname { get; set; }
+        [Required]
+        public int Port { get; set; }
+        [Required]
+        public string ApiKey { get; set; }
+        public string ApiUsername { get; set; }
+        public string BaseUrl { get; set; }
+        [Required]
+        public bool UseSSL { get; set; }
+        [Required]
+        public string Version { get; set; }
+        [Required]
+        public string Command { get; set; }
+    }
 
-namespace Requestrr.WebApi.Controllers
-{
     [ApiController]
     [Authorize]
     public class OmbiClientController : ControllerBase
@@ -63,7 +64,7 @@ namespace Requestrr.WebApi.Controllers
         {
             try
             {
-                await Ombi.TestConnectionAsync(_httpClientFactory.CreateClient(), _logger, new Requestrr.DownloadClients.OmbiSettings
+                await Ombi.TestConnectionAsync(_httpClientFactory.CreateClient(), _logger, new RequestrrBot.DownloadClients.Ombi.OmbiSettings
                 {
                     ApiKey = model.ApiKey.Trim(),
                     Hostname = model.Hostname.Trim(),

@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Requestrr.WebApi.Config;
+using Requestrr.WebApi.config;
 
-namespace Requestrr.WebApi.Controllers
+namespace Requestrr.WebApi.Controllers.Authentication
 {
     [ApiController]
     [Authorize]

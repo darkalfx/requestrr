@@ -1,6 +1,6 @@
 using System;
 
-namespace Requestrr.WebApi
+namespace Requestrr.WebApi.Extensions
 {
     public static class IServiceProviderExtensions
     {

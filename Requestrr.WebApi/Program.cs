@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Requestrr.WebApi.RequestrrBot;
 
 namespace Requestrr.WebApi
 {

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Requestrr.WebApi.Controllers
+namespace Requestrr.WebApi.Controllers.Authentication
 {
     public class RegistrationModel
     {

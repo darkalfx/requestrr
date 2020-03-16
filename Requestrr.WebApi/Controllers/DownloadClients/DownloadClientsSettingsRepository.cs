@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
-using Requestrr.WebApi.Config;
+using Requestrr.WebApi.config;
+using Requestrr.WebApi.RequestrrBot;
 
-namespace Requestrr.WebApi.Controllers
+namespace Requestrr.WebApi.Controllers.DownloadClients
 {
     public static class DownloadClientsSettingsRepository
     {

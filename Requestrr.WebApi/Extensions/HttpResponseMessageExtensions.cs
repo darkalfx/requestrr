@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace Requestrr.WebApi
+namespace Requestrr.WebApi.Extensions
 {
     public static class HttpResponseMessageExtensions
     {

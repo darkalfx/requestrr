@@ -1,4 +1,4 @@
-﻿namespace Requestrr.WebApi.Config
+﻿namespace Requestrr.WebApi.config
 {
     public class MoviesSettings
     {
