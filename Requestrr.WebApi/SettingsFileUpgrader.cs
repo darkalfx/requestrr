@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Requestrr.WebApi.RequestrrBot;
@@ -15,7 +16,10 @@ namespace Requestrr.WebApi
             if (settingsJson.Version.ToString().Equals("1.0.0", StringComparison.InvariantCultureIgnoreCase))
             {
                 var botClientJson = settingsJson["BotClient"] as JObject;
-                var monitoredChannels = !string.IsNullOrWhiteSpace(botClientJson.GetValue("MonitoredChannels").ToString()) ? botClientJson.GetValue("MonitoredChannels").ToString().Split(" ") : Array.Empty<string>();
+                
+                var monitoredChannels = !string.IsNullOrWhiteSpace(botClientJson.GetValue("MonitoredChannels").ToString())
+                    ? botClientJson.GetValue("MonitoredChannels").ToString().Split(" ").Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim())
+                    : Array.Empty<string>();
 
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Add("MonitoredChannels", JToken.FromObject(monitoredChannels));
                 ((JObject)settingsJson["BotClient"]).Remove("MonitoredChannels");
