@@ -10,12 +10,16 @@ namespace Requestrr.WebApi
     {
         public static void Main(string[] args)
         {
-            if(!File.Exists(SettingsFile.FilePath))
+            if (!File.Exists(SettingsFile.FilePath))
             {
                 File.WriteAllText(SettingsFile.FilePath, File.ReadAllText("SettingsTemplate.json").Replace("[PRIVATEKEY]", Guid.NewGuid().ToString()));
             }
+            else
+            {
+                SettingsFileUpgrader.Upgrade();
+            }
 
-            if(!File.Exists(NotificationsFile.FilePath))
+            if (!File.Exists(NotificationsFile.FilePath))
             {
                 File.WriteAllText(NotificationsFile.FilePath, File.ReadAllText("NotificationsTemplate.json"));
             }
@@ -27,7 +31,7 @@ namespace Requestrr.WebApi
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
                 .UseUrls("http://*:5060", "https://*:5061")
-                .ConfigureAppConfiguration((hostingContext, config) => 
+                .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.AddJsonFile(SettingsFile.FilePath, optional: false, reloadOnChange: true);
             });
