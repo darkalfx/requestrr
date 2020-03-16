@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Requestrr.WebApi.Requestrr.Movies;
 using Requestrr.WebApi.Requestrr.TvShows;
 
@@ -47,7 +48,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             }
         }
 
-        public async Task RequestMovieAsync(string username, Movie movie)
+        public async Task<MovieRequestResult> RequestMovieAsync(MovieUserRequester requester, Movie movie)
         {
             var retryCount = 0;
 
@@ -55,10 +56,20 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             {
                 try
                 {
-                    var response = await HttpPostAsync(username, $"{BaseURL}/api/v1/Request/Movie", JsonConvert.SerializeObject(new { theMovieDbId = movie.TheMovieDbId }));
-                    await response.ThrowIfNotSuccessfulAsync("OmbiCreateMovieRequest failed", x => x.error);
+                    var ombiUser = await FindLinkedOmbiUserAsync(requester.UserId, requester.Username);
 
-                    return;
+                    if (ombiUser.CanRequestMovies && ombiUser.MoviesQuotaRemaining > 0)
+                    {
+                        var response = await HttpPostAsync(ombiUser, $"{BaseURL}/api/v1/Request/Movie", JsonConvert.SerializeObject(new { theMovieDbId = movie.TheMovieDbId }));
+                        await response.ThrowIfNotSuccessfulAsync("OmbiCreateMovieRequest failed", x => x.error);
+
+                        return new MovieRequestResult();
+                    }
+
+                    return new MovieRequestResult
+                    {
+                        WasDenied = true
+                    };
                 }
                 catch (System.Exception ex)
                 {
@@ -164,7 +175,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             throw new System.Exception("An error occurred while searching for availables movies from Ombi");
         }
 
-        public async Task RequestTvShowAsync(string username, TvShow tvShow, TvSeason season)
+        public async Task<TvShowRequestResult> RequestTvShowAsync(TvShowUserRequester requester, TvShow tvShow, TvSeason season)
         {
             var retryCount = 0;
 
@@ -172,6 +183,8 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             {
                 try
                 {
+                    var ombiUser = await FindLinkedOmbiUserAsync(requester.UserId, requester.Username);
+
                     var jsonTvShow = await FindTvShowByTheTvDbIdAsync(tvShow.TheTvDbId.ToString());
 
                     var wantedSeasonIds = season is AllTvSeasons
@@ -180,22 +193,39 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                             ? new HashSet<int>()
                             : new HashSet<int> { season.SeasonNumber };
 
-                    var response = await HttpPostAsync(username, $"{BaseURL}/api/v1/Request/Tv", JsonConvert.SerializeObject(new
+                    var episodeToRequestCount = jsonTvShow.seasonRequests.Sum(s => wantedSeasonIds.Contains(s.seasonNumber) && s.CanBeRequested() ? s.episodes.Where(x => x.CanBeRequested()).Count() : 0);
+
+                    if (ombiUser.CanRequestTvShows && ombiUser.TvEpisodeQuotaRemaining > 0)
                     {
-                        tvDbId = tvShow.TheTvDbId,
-                        requestAll = false,
-                        latestSeason = false,
-                        firstSeason = false,
-                        seasons = jsonTvShow.seasonRequests.Select(s => new
+                        var response = await HttpPostAsync(ombiUser, $"{BaseURL}/api/v1/Request/Tv", JsonConvert.SerializeObject(new
                         {
-                            seasonNumber = s.seasonNumber,
-                            episodes = wantedSeasonIds.Contains(s.seasonNumber) && s.CanBeRequested() ? s.episodes.Select(e => new JSONTvEpisode { episodeNumber = e.episodeNumber }) : Array.Empty<JSONTvEpisode>()
-                        }),
-                    }));
+                            tvDbId = tvShow.TheTvDbId,
+                            requestAll = false,
+                            latestSeason = false,
+                            firstSeason = false,
+                            seasons = jsonTvShow.seasonRequests.Select(s =>
+                            {
+                                var episodes = wantedSeasonIds.Contains(s.seasonNumber) && s.CanBeRequested() ? s.episodes.Where(x => x.CanBeRequested()).Select(e => new JSONTvEpisode { episodeNumber = e.episodeNumber }) : Array.Empty<JSONTvEpisode>();
+                                episodes = episodes.Take(ombiUser.TvEpisodeQuotaRemaining);
+                                ombiUser.TvEpisodeQuotaRemaining -= episodes.Count();
 
-                    await response.ThrowIfNotSuccessfulAsync("OmbiCreateTvShowRequest failed", x => x.error);
+                                return new
+                                {
+                                    seasonNumber = s.seasonNumber,
+                                    episodes = episodes,
+                                };
+                            }),
+                        }));
 
-                    return;
+                        await response.ThrowIfNotSuccessfulAsync("OmbiCreateTvShowRequest failed", x => x.error);
+
+                        return new TvShowRequestResult();
+                    }
+
+                    return new TvShowRequestResult
+                    {
+                        WasDenied = true
+                    };
                 }
                 catch (System.Exception ex)
                 {
@@ -341,10 +371,113 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                 {
                     SeasonNumber = x.seasonNumber,
                     IsAvailable = x.episodes.FirstOrDefault()?.available == true,
-                    IsRequested = !x.CanBeRequested(),
+                    IsRequested = x.episodes.All(x => x.CanBeRequested()) ? RequestedState.None : x.episodes.All(x => !x.CanBeRequested()) ? RequestedState.Full : RequestedState.Partial,
                 }).ToArray(),
                 IsRequested = jsonTvShow.requested || jsonTvShow.available,
             };
+        }
+
+        public async Task<OmbiUser> FindLinkedOmbiUserAsync(string requesterUniqueId, string requesterUsername)
+        {
+            var response = await HttpGetAsync($"{BaseURL}/api/v1/Identity/Users");
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            await response.ThrowIfNotSuccessfulAsync("OmbiFindAllUsers failed", x => x.error);
+
+            JSONOmbiUser[] allOmbiUsers = JsonConvert.DeserializeObject<List<JSONOmbiUser>>(jsonResponse).ToArray();
+            OmbiUser ombiUser = null;
+
+            ombiUser = await FindLinkedUserByNotificationPreferencesAsync(requesterUniqueId, allOmbiUsers, ombiUser);
+
+            if (ombiUser == null && !string.IsNullOrEmpty(OmbiSettings.ApiUsername))
+            {
+                ombiUser = FindDefaultApiUserAsync(allOmbiUsers, requesterUsername);
+
+                if (ombiUser == null)
+                {
+                    return new OmbiUser
+                    {
+                        Username = "NO_ACCESS",
+                        ApiAlias = "NO_ACCESS",
+                        CanRequestMovies = false,
+                        MoviesQuotaRemaining = -1,
+                        CanRequestTvShows = false,
+                        TvEpisodeQuotaRemaining = -1,
+                    };
+                }
+            }
+
+            if (ombiUser == null)
+            {
+                return new OmbiUser
+                {
+                    Username = "api",
+                    ApiAlias = requesterUsername,
+                    CanRequestMovies = true,
+                    MoviesQuotaRemaining = int.MaxValue,
+                    CanRequestTvShows = true,
+                    TvEpisodeQuotaRemaining = int.MaxValue,
+                };
+            }
+
+            return ombiUser;
+        }
+
+        private async Task<OmbiUser> FindLinkedUserByNotificationPreferencesAsync(string userUniqueId, JSONOmbiUser[] allOmbiUsers, OmbiUser ombiUser)
+        {
+            await Task.WhenAll(allOmbiUsers.Select(async x =>
+            {
+                try
+                {
+                    var notifResponse = await HttpGetAsync($"{BaseURL}/api/v1/Identity/notificationpreferences/{x.id.ToString()}");
+                    var jsonNotifResponse = await notifResponse.Content.ReadAsStringAsync();
+                    await notifResponse.ThrowIfNotSuccessfulAsync("OmbiFindUserNotificationPreferences failed", x => x.error);
+
+                    IEnumerable<dynamic> notificationPreferences = JArray.Parse(jsonNotifResponse);
+                    var matchingDiscordNotification = notificationPreferences.FirstOrDefault(n => n.agent == 1 && n.value.ToString().Trim().Equals(userUniqueId.Trim(), StringComparison.InvariantCultureIgnoreCase));
+
+                    if (matchingDiscordNotification != null)
+                    {
+                        ombiUser = new OmbiUser
+                        {
+                            Username = x.userName,
+                            ApiAlias = x.alias,
+                            CanRequestMovies = x.IsDisabled ? false : x.CanRequestMovie,
+                            MoviesQuotaRemaining = x.movieRequestQuota == null || !x.movieRequestQuota.hasLimit ? int.MaxValue : x.movieRequestQuota.remaining,
+                            CanRequestTvShows = x.IsDisabled ? false : x.CanRequestTv,
+                            TvEpisodeQuotaRemaining = x.episodeRequestQuota == null || !x.episodeRequestQuota.hasLimit ? int.MaxValue : x.episodeRequestQuota.remaining,
+                        };
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogWarning(ex, ex.Message);
+                }
+            }));
+
+            return ombiUser;
+        }
+
+        private OmbiUser FindDefaultApiUserAsync(JSONOmbiUser[] allOmbiUsers, string requesterUsername)
+        {
+            OmbiUser ombiUser = null;
+
+            var defaultApiUser = allOmbiUsers.FirstOrDefault(x => x.userName.Equals(OmbiSettings.ApiUsername, StringComparison.InvariantCultureIgnoreCase));
+
+            if (defaultApiUser != null)
+            {
+                ombiUser = new OmbiUser
+                {
+                    Username = defaultApiUser.userName,
+                    ApiAlias = requesterUsername,
+                    CanRequestMovies = defaultApiUser.IsDisabled ? false : defaultApiUser.CanRequestMovie,
+                    MoviesQuotaRemaining = defaultApiUser.movieRequestQuota == null || !defaultApiUser.movieRequestQuota.hasLimit ? int.MaxValue : defaultApiUser.movieRequestQuota.remaining,
+                    CanRequestTvShows = defaultApiUser.IsDisabled ? false : defaultApiUser.CanRequestTv,
+                    TvEpisodeQuotaRemaining = defaultApiUser.episodeRequestQuota == null || !defaultApiUser.episodeRequestQuota.hasLimit ? int.MaxValue : defaultApiUser.episodeRequestQuota.remaining,
+                };
+            }
+
+            return ombiUser;
         }
 
         private static string GetBaseURL(OmbiSettings settings)
@@ -367,14 +500,14 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             return await client.SendAsync(request);
         }
 
-        private async Task<HttpResponseMessage> HttpPostAsync(string username, string url, string content)
+        private async Task<HttpResponseMessage> HttpPostAsync(OmbiUser ombiUser, string url, string content)
         {
             var postRequest = new StringContent(content);
             postRequest.Headers.Clear();
             postRequest.Headers.Add("Content-Type", "application/json");
             postRequest.Headers.Add("ApiKey", OmbiSettings.ApiKey);
-            postRequest.Headers.Add("ApiAlias", username);
-            postRequest.Headers.Add("UserName", string.IsNullOrWhiteSpace(OmbiSettings.ApiUsername) ? "api" : OmbiSettings.ApiUsername);
+            postRequest.Headers.Add("ApiAlias", ombiUser.ApiAlias);
+            postRequest.Headers.Add("UserName", ombiUser.Username);
 
             var client = _httpClientFactory.CreateClient();
             return await client.PostAsync(url, postRequest);
@@ -419,7 +552,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
 
             public bool CanBeRequested()
             {
-                return !episodes.Any(e => !e.CanBeRequested());
+                return episodes.Any(e => e.CanBeRequested());
             }
         }
 
@@ -434,6 +567,41 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             {
                 return !available && !requested && !approved;
             }
+        }
+
+        public class JSONClaim
+        {
+            public string value { get; set; }
+            public bool enabled { get; set; }
+        }
+
+        public class JSONRequestQuota
+        {
+            public bool hasLimit { get; set; }
+            public int remaining { get; set; }
+        }
+
+        public class JSONOmbiUser
+        {
+            public string id { get; set; }
+            public string userName { get; set; }
+            public string alias { get; set; }
+            public List<JSONClaim> claims { get; set; }
+            public JSONRequestQuota episodeRequestQuota { get; set; }
+            public JSONRequestQuota movieRequestQuota { get; set; }
+            public bool IsDisabled => claims?.Any(x => x.value.Equals("disabled", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false;
+            public bool CanRequestTv => claims?.Any(x => x.value.Equals("requesttv", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false;
+            public bool CanRequestMovie => claims?.Any(x => x.value.Equals("requestmovie", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false;
+        }
+
+        public class OmbiUser
+        {
+            public string Username { get; set; }
+            public string ApiAlias { get; set; }
+            public bool CanRequestTvShows { get; set; }
+            public int TvEpisodeQuotaRemaining { get; set; }
+            public bool CanRequestMovies { get; set; }
+            public int MoviesQuotaRemaining { get; set; }
         }
     }
 }

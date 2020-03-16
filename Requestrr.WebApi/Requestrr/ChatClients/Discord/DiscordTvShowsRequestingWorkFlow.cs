@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Requestrr.WebApi.Requestrr.DownloadClients;
 using Requestrr.WebApi.Requestrr.Notifications;
 using Requestrr.WebApi.Requestrr.TvShows;
 
@@ -54,7 +53,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
             await DeleteSafeAsync(this.Context.Message);
 
-            var workFlow = new TvShowRequestingWorkflow(new TvShowUserRequester(this.Context.Message.Author.Id.ToString(), this.Context.Message.Author.Username), _tvShowSearcher, _tvShowRequester, this, _notificationsRepository);
+            var workFlow = new TvShowRequestingWorkflow(new TvShowUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"), _tvShowSearcher, _tvShowRequester, this, _notificationsRepository);
             await workFlow.HandleTvShowRequestAsync(tvShowName);
         }
 
@@ -173,7 +172,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                         : $"{season.SeasonNumber}) - Season {season.SeasonNumber}";
 
                 fieldContent += seasonName;
-                fieldContent += season.IsRequested ? " ✅" : string.Empty;
+                fieldContent += season.IsRequested == RequestedState.Full ? " ✅" : season.IsRequested == RequestedState.Partial ? " ☑" : string.Empty;
                 fieldContent += System.Environment.NewLine;
             }
 
@@ -259,7 +258,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 {
                     message = $"All seasons are already available, you can click on the 🔔 reaction to be notified when future seasons becomes available.";
                 }
-                else if (tvShow.AllSeasonsAlreadyRequested())
+                else if (tvShow.AllSeasonsFullyRequested())
                 {
                     message = $"All seasons have been already requested, you can click on the 🔔 reaction to be notified when future seasons becomes available.";
                 }
@@ -287,6 +286,11 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
             return ReplyToUserAsync($"You will now receive a notification as soon as **season {requestedSeason.SeasonNumber}** becomes available to watch.");
         }
 
+        public Task DisplayRequestDeniedForSeasonAsync(TvSeason selectedSeason)
+        {
+            return ReplyToUserAsync($"Your request was denied by the provider due to an insufficient quota limit.");
+        }
+
         public Task WarnAlreadyNotifiedForSeasonsAsync(TvShow tvShow, TvSeason requestedSeason)
         {
             if (requestedSeason is FutureTvSeasons)
@@ -295,7 +299,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
                 {
                     return ReplyToUserAsync($"All seasons are available and you will be notified when new seasons become available.");
                 }
-                else if (tvShow.AllSeasonsAlreadyRequested())
+                else if (tvShow.AllSeasonsFullyRequested())
                 {
                     return ReplyToUserAsync($"All seasons have already been requested and you will be notified when new seasons become available.");
                 }

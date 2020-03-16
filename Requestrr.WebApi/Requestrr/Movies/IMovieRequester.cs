@@ -4,6 +4,11 @@ namespace Requestrr.WebApi.Requestrr.Movies
 {
     public interface IMovieRequester
     {
-        Task RequestMovieAsync(string userName, Movie movie);
+        Task<MovieRequestResult> RequestMovieAsync(MovieUserRequester requester, Movie movie);
+    }
+
+    public class MovieRequestResult
+    {
+        public bool WasDenied { get; set; }
     }
 }

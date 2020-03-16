@@ -54,7 +54,7 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
 
             await DeleteSafeAsync(this.Context.Message);
 
-            var workFlow = new MovieRequestingWorkflow(new MovieUserRequester(this.Context.Message.Author.Id.ToString(), this.Context.Message.Author.Username), _movieSearcher, _movieRequester, this, _notificationRequestRepository);
+            var workFlow = new MovieRequestingWorkflow(new MovieUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"), _movieSearcher, _movieRequester, this, _notificationRequestRepository);
             await workFlow.HandleMovieRequestAsync(movieName);
         }
 
@@ -206,6 +206,11 @@ namespace Requestrr.WebApi.Requestrr.ChatClients
         public Task DisplayNotificationSuccessAsync(Movie movie)
         {
             return ReplyToUserAsync($"You will now receive a notification as soon as **{movie.Title}** becomes available to watch.");
+        }
+
+        public Task DisplayRequestDenied(Movie movie)
+        {
+            return ReplyToUserAsync($"Your request was denied by the provider due to an insufficient quota limit.");
         }
 
         public Task WarnMovieUnavailableAndAlreadyHasNotification()

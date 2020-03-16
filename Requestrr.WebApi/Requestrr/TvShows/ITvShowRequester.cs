@@ -4,6 +4,11 @@ namespace Requestrr.WebApi.Requestrr.TvShows
 {
     public interface ITvShowRequester
     {
-        Task RequestTvShowAsync(string userName, TvShow tvShow, TvSeason seasons);
+        Task<TvShowRequestResult> RequestTvShowAsync(TvShowUserRequester requester, TvShow tvShow, TvSeason seasons);
+    }
+
+    public class TvShowRequestResult
+    {
+        public bool WasDenied { get; set; }
     }
 }

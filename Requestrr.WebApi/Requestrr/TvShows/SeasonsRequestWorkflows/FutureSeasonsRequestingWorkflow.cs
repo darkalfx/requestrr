@@ -29,7 +29,7 @@ namespace Requestrr.WebApi.Requestrr.TvShows
         public async Task HandleRequestAsync(TvShow tvShow, FutureTvSeasons selectedSeason)
         {
             await _userInterface.DisplayTvShowDetailsAsync(tvShow);
-            
+
             if (tvShow.IsRequested)
             {
                 await RequestNotificationsForSeasonAsync(tvShow, selectedSeason);
@@ -40,9 +40,17 @@ namespace Requestrr.WebApi.Requestrr.TvShows
 
                 if (wasRequested)
                 {
-                    await _requester.RequestTvShowAsync(_user.Username, tvShow, selectedSeason);
+                    var result = await _requester.RequestTvShowAsync(_user, tvShow, selectedSeason);
                     _notificationRequestRepository.AddSeasonNotification(_user.UserId, tvShow.TheTvDbId, selectedSeason);
-                    await _userInterface.DisplayRequestSuccessForSeasonAsync(selectedSeason);
+                    
+                    if (result.WasDenied)
+                    {
+                        await _userInterface.DisplayRequestDeniedForSeasonAsync(selectedSeason);
+                    }
+                    else
+                    {
+                        await _userInterface.DisplayRequestSuccessForSeasonAsync(selectedSeason);
+                    }
                 }
             }
         }

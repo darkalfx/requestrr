@@ -65,8 +65,17 @@ namespace Requestrr.WebApi.Requestrr.Movies
 
                 if (isRequested)
                 {
-                    await _requester.RequestMovieAsync(_user.Username, movie);
-                    await _userInterface.DisplayRequestSuccess(movie);
+                    var result = await _requester.RequestMovieAsync(_user, movie);
+
+                    if (result.WasDenied)
+                    {
+                        await _userInterface.DisplayRequestDenied(movie);
+                    }
+                    else
+                    {
+                        await _userInterface.DisplayRequestSuccess(movie);
+                    }
+
                     _notificationRequestRepository.AddNotification(_user.UserId, int.Parse(movie.TheMovieDbId));
                 }
             }

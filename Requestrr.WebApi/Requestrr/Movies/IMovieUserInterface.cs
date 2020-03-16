@@ -15,6 +15,7 @@ namespace Requestrr.WebApi.Requestrr.Movies
         Task<bool> AskForNotificationRequestAsync();
         Task DisplayNotificationSuccessAsync(Movie movie);
         Task WarnMovieUnavailableAndAlreadyHasNotification();
+        Task DisplayRequestDenied(Movie movie);
     }
     
     public class MovieSelection

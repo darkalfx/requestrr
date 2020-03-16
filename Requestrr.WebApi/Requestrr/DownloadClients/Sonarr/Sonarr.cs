@@ -257,7 +257,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             throw new System.Exception("An error occurred while searching available tv shows with Sonarr");
         }
 
-        public async Task RequestTvShowAsync(string userName, TvShow tvShow, TvSeason season)
+        public async Task<TvShowRequestResult> RequestTvShowAsync(TvShowUserRequester requester, TvShow tvShow, TvSeason season)
         {
             var retryCount = 0;
 
@@ -280,7 +280,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                         await UpdateSonarrTvSeriesAsync(tvShow, requestedSeasons);
                     }
 
-                    return;
+                    return new TvShowRequestResult();
                 }
                 catch (System.Exception ex)
                 {
@@ -574,11 +574,14 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
 
                 if (tvEpisodes.Any())
                 {
+                    var allEpisodesDownloaded = isTvShowMonitored ? tvEpisodes.All(x => x.IsRequested || x.IsAvailable) : tvEpisodes.All(x => x.IsAvailable);
+                    var partiallyDownloaded = isTvShowMonitored ? tvEpisodes.Any(x => x.IsRequested || x.IsAvailable) : tvEpisodes.Any(x => x.IsAvailable);
+
                     return new NormalTvSeason
                     {
                         SeasonNumber = x.seasonNumber,
                         IsAvailable = tvEpisodes.First().IsAvailable,
-                        IsRequested = isTvShowMonitored ? tvEpisodes.All(x => x.IsRequested || x.IsAvailable) : tvEpisodes.All(x => x.IsAvailable),
+                        IsRequested = allEpisodesDownloaded ? RequestedState.Full : partiallyDownloaded ? RequestedState.Partial : RequestedState.None,
                     };
                 }
                 else if (jsonTvShow.ExistsInSonarr())
@@ -587,7 +590,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                     {
                         SeasonNumber = x.seasonNumber,
                         IsAvailable = false,
-                        IsRequested = isTvShowMonitored ? x.monitored : false,
+                        IsRequested = isTvShowMonitored ? RequestedState.Full : RequestedState.None,
                     };
                 }
                 else
@@ -596,7 +599,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                     {
                         SeasonNumber = x.seasonNumber,
                         IsAvailable = false,
-                        IsRequested = false
+                        IsRequested = RequestedState.None
                     };
                 }
 

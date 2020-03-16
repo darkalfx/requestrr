@@ -19,6 +19,7 @@ namespace Requestrr.WebApi.Requestrr.TvShows
         Task WarnNoTvShowFoundAsync(string tvShowName);
         Task WarnShowHasEnded(TvShow tvShow);
         Task WarnSeasonAlreadyAvailable(TvSeason requestedSeason);
+        Task DisplayRequestDeniedForSeasonAsync(TvSeason selectedSeason);
     }
 
     public class TvShowSelection

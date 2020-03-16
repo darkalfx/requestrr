@@ -32,9 +32,9 @@ namespace Requestrr.WebApi.Requestrr.TvShows
             return Seasons.Length > 1;
         }
 
-        public bool AllSeasonsAlreadyRequested()
+        public bool AllSeasonsFullyRequested()
         {
-            return Seasons.OfType<NormalTvSeason>().All(x => x.IsRequested);
+            return Seasons.OfType<NormalTvSeason>().All(x => x.IsRequested == RequestedState.Full);
         }
 
         public bool AllSeasonsAvailable()
@@ -47,11 +47,18 @@ namespace Requestrr.WebApi.Requestrr.TvShows
     public class FutureTvSeasons : TvSeason { }
     public class NormalTvSeason : TvSeason { }
 
+    public enum RequestedState
+    {
+        None,
+        Partial,
+        Full
+    }
+
     public abstract class TvSeason
     {
         public bool IsAvailable { get; set; }
         public int SeasonNumber { get; set; }
-        public bool IsRequested { get; set; }
+        public RequestedState IsRequested { get; set; }
     }
 
     public class TvEpisode

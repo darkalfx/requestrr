@@ -189,7 +189,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
             throw new System.Exception("An error occurred while searching available movies with Radarr");
         }
 
-        public async Task RequestMovieAsync(string username, Movie movie)
+        public async Task<MovieRequestResult> RequestMovieAsync(MovieUserRequester requester, Movie movie)
         {
             var retryCount = 0;
 
@@ -206,7 +206,7 @@ namespace Requestrr.WebApi.Requestrr.DownloadClients
                         await UpdateExistingMovie(movie);
                     }
 
-                    return;
+                    return new MovieRequestResult();
                 }
                 catch (System.Exception ex)
                 {

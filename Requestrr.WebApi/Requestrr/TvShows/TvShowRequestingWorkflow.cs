@@ -60,7 +60,7 @@ namespace Requestrr.WebApi.Requestrr.TvShows
         {
             var tvShow = await GetTvShow(searchedTvShow);
 
-            if (tvShow.AllSeasonsAlreadyRequested())
+            if (tvShow.AllSeasonsFullyRequested())
             {
                 if (tvShow.Seasons.OfType<FutureTvSeasons>().Any())
                 {
@@ -126,7 +126,7 @@ namespace Requestrr.WebApi.Requestrr.TvShows
                 {
                     SeasonNumber = 0,
                     IsAvailable = false,
-                    IsRequested = false,
+                    IsRequested = RequestedState.None,
                 }).ToArray();
             }
 
@@ -136,7 +136,7 @@ namespace Requestrr.WebApi.Requestrr.TvShows
                 {
                     SeasonNumber = tvShow.Seasons.Max(x => x.SeasonNumber) + 1,
                     IsAvailable = false,
-                    IsRequested = tvShow.IsRequested,
+                    IsRequested = tvShow.IsRequested ? RequestedState.Full : RequestedState.None,
                 }).ToArray();
             }
 
