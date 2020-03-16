@@ -15,7 +15,9 @@ namespace Requestrr.WebApi
             if (settingsJson.Version.ToString().Equals("1.0.0", StringComparison.InvariantCultureIgnoreCase))
             {
                 var botClientJson = settingsJson["BotClient"] as JObject;
-                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("MonitoredChannels", JToken.FromObject(botClientJson.GetValue("MonitoredChannels").ToString().Split(" ")));
+                var monitoredChannels = !string.IsNullOrWhiteSpace(botClientJson.GetValue("MonitoredChannels").ToString()) ? botClientJson.GetValue("MonitoredChannels").ToString().Split(" ") : Array.Empty<string>();
+
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("MonitoredChannels", JToken.FromObject(monitoredChannels));
                 ((JObject)settingsJson["BotClient"]).Remove("MonitoredChannels");
 
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Add("TvShowRoles", JToken.FromObject(Array.Empty<string>()));
