@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -79,10 +80,10 @@ namespace Requestrr.WebApi.Controllers.ChatClients
             _chatClientsSettings.Discord.BotToken = model.BotToken.Trim();
             _chatClientsSettings.Discord.ClientId = model.ClientId;
             _chatClientsSettings.Discord.StatusMessage = model.StatusMessage.Trim();
-            _chatClientsSettings.Discord.TvShowRoles = model.TvShowRoles ?? Array.Empty<string>();
-            _chatClientsSettings.Discord.MovieRoles = model.MovieRoles ?? Array.Empty<string>();
+            _chatClientsSettings.Discord.TvShowRoles = (model.TvShowRoles ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
+            _chatClientsSettings.Discord.MovieRoles = (model.MovieRoles ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
             _chatClientsSettings.Discord.EnableDirectMessageSupport = model.EnableDirectMessageSupport;
-            _chatClientsSettings.Discord.MonitoredChannels = model.MonitoredChannels ?? Array.Empty<string>();
+            _chatClientsSettings.Discord.MonitoredChannels = (model.MonitoredChannels ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
 
             _botClientsSettings.Client = model.Client;
             _botClientsSettings.CommandPrefix = model.CommandPrefix.Trim();
