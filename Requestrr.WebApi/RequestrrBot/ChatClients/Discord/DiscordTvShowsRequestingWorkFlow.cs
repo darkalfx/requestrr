@@ -71,7 +71,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 var tvRow = new StringBuilder();
                 tvRow.Append($"{i + 1}) {searchedTvShows[i].Title} ");
 
-                if (!string.IsNullOrWhiteSpace(searchedTvShows[i].FirstAired))
+                if (!string.IsNullOrWhiteSpace(searchedTvShows[i].FirstAired) && searchedTvShows[i].FirstAired.Length >= 4)
                     tvRow.Append($"({searchedTvShows[i].FirstAired.Substring(0, 4)}) ");
 
                 tvRow.Append($"[[TheTVDb](https://www.thetvdb.com/?id={searchedTvShows[i].TheTvDbId}&tab=series)]");
@@ -94,7 +94,9 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             if (selectionMessageContent.StartsWith($"{_discordSettings.CommandPrefix}"))
             {
-                if (selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty).ToLower().StartsWith("cancel"))
+                selectionMessageContent = !string.IsNullOrEmpty(_discordSettings.CommandPrefix) ? selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty) : selectionMessageContent;
+
+                if (selectionMessageContent.ToLower().StartsWith("cancel"))
                 {
                     await DeleteSafeAsync(selectionMessage);
                     await DeleteSafeAsync(replyHelp);
@@ -106,7 +108,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                         IsCancelled = true
                     };
                 }
-                else if (int.TryParse(selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty), out var selectedTvShow) && selectedTvShow <= searchedTvShows.Count)
+                else if (int.TryParse(selectionMessageContent, out var selectedTvShow) && selectedTvShow <= searchedTvShows.Count)
                 {
                     await DeleteSafeAsync(selectionMessage);
                     await DeleteSafeAsync(replyHelp);
@@ -190,7 +192,9 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             if (selectionMessageContent.StartsWith($"{_discordSettings.CommandPrefix}"))
             {
-                if (selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty).ToLower().StartsWith("cancel"))
+                selectionMessageContent = !string.IsNullOrEmpty(_discordSettings.CommandPrefix) ? selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty) : selectionMessageContent;
+
+                if (selectionMessageContent.StartsWith("cancel"))
                 {
                     await DeleteSafeAsync(selectionMessage);
                     await DeleteSafeAsync(replyHelp);
@@ -202,7 +206,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                         IsCancelled = true
                     };
                 }
-                else if (int.TryParse(selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty), out var selectedSeasonNumber) && tvShowSeasons.Any(x => x.SeasonNumber == selectedSeasonNumber))
+                else if (int.TryParse(selectionMessageContent, out var selectedSeasonNumber) && tvShowSeasons.Any(x => x.SeasonNumber == selectedSeasonNumber))
                 {
                     await DeleteSafeAsync(selectionMessage);
                     await DeleteSafeAsync(replyHelp);

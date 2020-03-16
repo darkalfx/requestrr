@@ -95,7 +95,9 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             if (selectionMessageContent.StartsWith($"{_discordSettings.CommandPrefix}"))
             {
-                if (selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty).ToLower().StartsWith("cancel"))
+                selectionMessageContent = !string.IsNullOrEmpty(_discordSettings.CommandPrefix) ? selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty) : selectionMessageContent;
+
+                if (selectionMessageContent.ToLower().StartsWith("cancel"))
                 {
                     await DeleteSafeAsync(reply);
                     await DeleteSafeAsync(replyHelp);
@@ -107,7 +109,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                         IsCancelled = true
                     };
                 }
-                else if (int.TryParse(selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty), out var selectedMovie) && selectedMovie <= movies.Count)
+                else if (int.TryParse(selectionMessageContent, out var selectedMovie) && selectedMovie <= movies.Count)
                 {
                     await DeleteSafeAsync(reply);
                     await DeleteSafeAsync(replyHelp);

@@ -152,18 +152,18 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 try
                 {
-                    var response = await HttpGetAsync($"http://api.tvmaze.com/search/shows?q={tvShowName}");
-                    await response.ThrowIfNotSuccessfulAsync("TvMazeSearch failed", x => x.message);
-
+                    var response = await HttpGetAsync($"{BaseURL}/series/lookup?term={tvShowName}");
+                    await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookup failed", x => x.message);
                     var jsonResponse = await response.Content.ReadAsStringAsync();
-                    var tvMazeShows = JsonConvert.DeserializeObject<List<TvMazeSearchedTvShow>>(jsonResponse).Where(x => x.Show.externals.thetvdb.HasValue).ToArray();
 
-                    return tvMazeShows.Select(x => new SearchedTvShow
+                    var jsonTvShows = JsonConvert.DeserializeObject<List<JSONTvShow>>(jsonResponse).Where(x => x.tvdbId.HasValue).ToArray();
+
+                    return jsonTvShows.Select(x => new SearchedTvShow
                     {
-                        TheTvDbId = x.Show.externals.thetvdb.Value,
-                        Title = x.Show.name,
-                        FirstAired = x.Show.premiered,
-                        Banner = (x.Show.image != null && !string.IsNullOrEmpty(x.Show.image.original)) ? x.Show.image.original : string.Empty
+                        TheTvDbId = x.tvdbId.Value,
+                        Title = x.title,
+                        FirstAired = x.year > 0 ? x.year.ToString() : string.Empty,
+                        Banner = x.remotePoster
                     }).ToArray();
                 }
                 catch (System.Exception ex)
@@ -239,9 +239,17 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
                     await Task.WhenAll(jsonTvShows.Where(x => theTvDbIds.Contains(x.tvdbId.Value)).Select(async x =>
                     {
-                        x.images = await GetImagesFromTvMazeAsync(x.tvdbId.Value);
-
                         var convertedTvShow = Convert(x, sonarrSeriesToSonarrId[x.id.Value].seasons, await GetSonarrEpisodesAsync(x.id.Value));
+
+                        try
+                        {
+                            convertedTvShow.Banner = (await SearchSerieByTvDbIdAsync(x.tvdbId.Value)).remotePoster;
+                        }
+                        catch
+                        {
+                            // Ignore
+                        }
+
                         convertedTvShows.Add(convertedTvShow);
                     }));
 
@@ -294,75 +302,53 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while requesting a tv show from Sonarr");
         }
 
-        private async Task<List<JSONImage>> GetImagesFromTvMazeAsync(int tvdbId)
-        {
-            try
-            {
-                await Task.Delay(100);
-                var response = await HttpGetAsync($"http://api.tvmaze.com/lookup/shows?thetvdb={tvdbId}");
-
-                if (!response.IsSuccessStatusCode)
-                    return new List<JSONImage>();
-
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var tvMazeShow = JsonConvert.DeserializeObject<TvMazeTvShow>(jsonResponse);
-
-                if (tvMazeShow.image != null && !string.IsNullOrEmpty(tvMazeShow.image.original))
-                {
-                    return new List<JSONImage>
-                    {
-                        new JSONImage
-                        {
-                            coverType = "poster",
-                            url = tvMazeShow.image.original,
-                        }
-                    };
-                }
-
-                return new List<JSONImage>();
-            }
-            catch
-            {
-                return new List<JSONImage>();
-            }
-        }
-
         private async Task CreateSonarrTvSeriesAsync(TvShow tvShow, IReadOnlyList<TvSeason> seasons)
         {
-            var response = await HttpGetAsync($"http://api.tvmaze.com/lookup/shows?thetvdb={tvShow.TheTvDbId}");
-            await response.ThrowIfNotSuccessfulAsync("TvMazeLookup failed", x => x.message);
+            bool isAnime = false;
 
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var tvMazeShow = JsonConvert.DeserializeObject<TvMazeTvShow>(jsonResponse);
+            try
+            {
+                var tzMazeResponse = await HttpGetAsync($"http://api.tvmaze.com/lookup/shows?thetvdb={tvShow.TheTvDbId}");
+                await tzMazeResponse.ThrowIfNotSuccessfulAsync("TvMazeLookup failed", x => x.message);
 
-            response = await HttpGetAsync($"{BaseURL}/series/lookup?term=tvdb:{tvShow.TheTvDbId}");
+                var tvMazeJsonResponse = await tzMazeResponse.Content.ReadAsStringAsync();
+                var tvMazeShow = JsonConvert.DeserializeObject<TvMazeTvShow>(tvMazeJsonResponse);
+
+                isAnime = tvMazeShow.isAnime;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, ex.Message);
+            }
+
+            var response = await HttpGetAsync($"{BaseURL}/series/lookup?term=tvdb:{tvShow.TheTvDbId}");
             await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookup failed", x => x.error);
 
-            jsonResponse = await response.Content.ReadAsStringAsync();
+            var jsonResponse = await response.Content.ReadAsStringAsync();
             var jsonTvShow = JsonConvert.DeserializeObject<IEnumerable<JSONTvShow>>(jsonResponse).First();
 
             int[] tags = Array.Empty<int>();
 
             if (SonarrSettings.Version != "2")
             {
-                tags = tvMazeShow.isAnime ? SonarrSettings.AnimeTags : SonarrSettings.TvTags;
+                tags = isAnime ? SonarrSettings.AnimeTags : SonarrSettings.TvTags;
             }
 
             response = await HttpPostAsync($"{BaseURL}/series", JsonConvert.SerializeObject(new
             {
                 title = jsonTvShow.title,
-                qualityProfileId = tvMazeShow.isAnime ? SonarrSettings.AnimeProfileId : SonarrSettings.TvProfileId,
-                profileId = tvMazeShow.isAnime ? SonarrSettings.AnimeProfileId : SonarrSettings.TvProfileId,
-                languageProfileId = tvMazeShow.isAnime ? SonarrSettings.AnimeLanguageId : SonarrSettings.TvLanguageId,
+                qualityProfileId = isAnime ? SonarrSettings.AnimeProfileId : SonarrSettings.TvProfileId,
+                profileId = isAnime ? SonarrSettings.AnimeProfileId : SonarrSettings.TvProfileId,
+                languageProfileId = isAnime ? SonarrSettings.AnimeLanguageId : SonarrSettings.TvLanguageId,
                 titleSlug = jsonTvShow.titleSlug,
                 monitored = SonarrSettings.MonitorNewRequests,
                 images = new string[0],
                 tvdbId = tvShow.TheTvDbId,
                 tags = tags,
-                seriesType = tvMazeShow.isAnime ? "anime" : "standard",
+                seriesType = isAnime ? "anime" : "standard",
                 year = jsonTvShow.year,
-                seasonFolder = tvMazeShow.isAnime ? SonarrSettings.AnimeUseSeasonFolders : SonarrSettings.TvUseSeasonFolders,
-                rootFolderPath = tvMazeShow.isAnime ? SonarrSettings.AnimeRootFolder : SonarrSettings.TvRootFolder,
+                seasonFolder = isAnime ? SonarrSettings.AnimeUseSeasonFolders : SonarrSettings.TvUseSeasonFolders,
+                rootFolderPath = isAnime ? SonarrSettings.AnimeRootFolder : SonarrSettings.TvRootFolder,
                 id = jsonTvShow.id,
                 seasons = jsonTvShow.seasons.Select(s => new
                 {
@@ -536,7 +522,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         private async Task<JSONTvShow> SearchSerieByTvDbIdAsync(int tvDbId)
         {
             var response = await HttpGetAsync($"{BaseURL}/series/lookup?term=tvdb:{tvDbId}");
-
             await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookupTvDb failed", x => x.error);
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -617,7 +602,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 PlexUrl = "",
                 EmbyUrl = "",
                 Seasons = tvSeasons.OrderBy(x => x.SeasonNumber).ToArray(),
-                Banner = jsonTvShow.images.Where(x => ((string)x.coverType).Equals("poster", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault()?.url ?? string.Empty,
                 FirstAired = ((int)jsonTvShow.year).ToString(),
                 HasEnded = ((string)jsonTvShow.status).Equals("ended", StringComparison.InvariantCultureIgnoreCase)
             };
@@ -728,8 +712,8 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             public string title { get; set; }
             public string status { get; set; }
             public string overview { get; set; }
+            public string remotePoster { get; set; }
             public bool monitored { get; set; }
-            public List<JSONImage> images { get; set; }
             public List<JSONSeason> seasons { get; set; }
             public int year { get; set; }
             public int? tvdbId { get; set; }

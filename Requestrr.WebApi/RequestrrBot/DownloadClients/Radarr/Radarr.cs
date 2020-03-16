@@ -171,7 +171,15 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
                     foreach (var movie in jsonMovies.Where(x => theMovieDbIds.Contains(x.tmdbId)))
                     {
-                        movie.images = await GetImagesAsync(movie.tmdbId);
+                        try
+                        {
+                            movie.images = await GetImagesAsync(movie.tmdbId);
+                        }
+                        catch
+                        {
+                            // Ignore
+                        }
+
                         convertedMovies.Add(Convert(movie));
                     }
 
@@ -294,25 +302,28 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             }
 
             radarrMovie.minimumAvailability = theMovieDbMovie.IsAnime ? RadarrSettings.AnimeMinimumAvailability : RadarrSettings.MovieMinimumAvailability;
-            radarrMovie.monitored = true;
+            radarrMovie.monitored = RadarrSettings.MonitorNewRequests;
 
             response = await HttpPutAsync($"{BaseURL}/movie/{radarrMovieId}", JsonConvert.SerializeObject(radarrMovie));
 
             await response.ThrowIfNotSuccessfulAsync("RadarrUpdateMovie failed", x => x.error);
 
-            try
+            if (RadarrSettings.SearchNewRequests)
             {
-                response = await HttpPostAsync($"{BaseURL}/command", JsonConvert.SerializeObject(new
+                try
                 {
-                    name = "moviesSearch",
-                    movieIds = new[] { radarrMovieId },
-                }));
+                    response = await HttpPostAsync($"{BaseURL}/command", JsonConvert.SerializeObject(new
+                    {
+                        name = "moviesSearch",
+                        movieIds = new[] { radarrMovieId },
+                    }));
 
-                await response.ThrowIfNotSuccessfulAsync("RadarrMovieSearchCommand failed", x => x.error);
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogWarning($"An error while sending search command for movie \"{movie.Title}\" to Radarr: " + ex.Message);
+                    await response.ThrowIfNotSuccessfulAsync("RadarrMovieSearchCommand failed", x => x.error);
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogWarning($"An error while sending search command for movie \"{movie.Title}\" to Radarr: " + ex.Message);
+                }
             }
         }
 

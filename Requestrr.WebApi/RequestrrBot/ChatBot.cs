@@ -70,10 +70,10 @@ namespace Requestrr.WebApi.RequestrrBot
 
                         if (!_currentSettings.Equals(newSettings) || _client.ConnectionState == ConnectionState.Disconnected)
                         {
-                            _logger.LogWarning("Bot changes detected: restarting bot");
+                            _logger.LogWarning("Bot configuration changed/not connected to Discord: restarting bot");
                             _currentSettings = newSettings;
                             await RestartBot(newSettings);
-                            _logger.LogWarning("Bot changes detected: bot restarted");
+                            _logger.LogWarning("Bot has been restarted.");
                         }
                     }
                     catch (Exception ex)
@@ -96,10 +96,17 @@ namespace Requestrr.WebApi.RequestrrBot
                 await _commandService.RemoveModuleAsync(_moduleInfo);
             }
 
-            await ApplyBotConfigurationAsync(discordSettings);
+            if (!string.IsNullOrEmpty(discordSettings.BotToken))
+            {
+                await ApplyBotConfigurationAsync(discordSettings);
 
-            await _client.LoginAsync(TokenType.Bot, discordSettings.BotToken);
-            await _client.StartAsync();
+                await _client.LoginAsync(TokenType.Bot, discordSettings.BotToken);
+                await _client.StartAsync();
+            }
+            else
+            {
+                _logger.LogWarning("No Bot Token for Discord has been configured.");
+            }
         }
 
         private async Task ApplyBotConfigurationAsync(DiscordSettings discordSettings)

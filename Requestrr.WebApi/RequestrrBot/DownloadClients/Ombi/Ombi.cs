@@ -33,19 +33,20 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
 
             try
             {
-                var response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}/api/v1/LandingPage");
-                testSuccessful = (await response.Content.ReadAsStringAsync()).Contains("serversavailable", StringComparison.InvariantCultureIgnoreCase);
+                var response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}/api/v1/Settings/ombi");
+                dynamic jsonResponse = JObject.Parse(await response.Content.ReadAsStringAsync());
+                testSuccessful = jsonResponse.baseUrl.ToString().Equals(settings.BaseUrl, StringComparison.InvariantCultureIgnoreCase);
             }
             catch (System.Exception ex)
             {
 
                 logger.LogWarning("Error while testing ombi connection: " + ex.Message);
-                throw new Exception("Could not connect to Radarr");
+                throw new Exception("Could not connect to Ombi");
             }
 
             if (!testSuccessful)
             {
-                throw new Exception("Could not connect to Radarr");
+                throw new Exception("Could not connect to Ombi");
             }
         }
 
@@ -274,8 +275,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                     foreach (var showId in tvShowIds)
                     {
                         await Task.Delay(100);
-                        var show = await GetTvShowDetailsAsync(new SearchedTvShow { TheTvDbId = showId });
-                        tvShows.Add(show);
+
+                        try
+                        {
+                            var show = await GetTvShowDetailsAsync(new SearchedTvShow { TheTvDbId = showId });
+                            tvShows.Add(show);
+                        }
+                        catch
+                        {
+                            // Ignore
+                        }
                     }
 
                     return tvShows;

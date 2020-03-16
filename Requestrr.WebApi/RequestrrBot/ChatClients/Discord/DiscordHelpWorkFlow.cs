@@ -60,7 +60,11 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             {
                 var channel = await Context.User.GetOrCreateDMChannelAsync();
                 await channel.SendMessageAsync(messageBuilder.ToString());
-                await ReplyToUserAsync("I sent you a DM with the help information!");
+
+                if(this.Context.Guild != null)
+                {
+                    await ReplyToUserAsync("I sent you a DM with the help information!");
+                }
             }
             catch
             {
