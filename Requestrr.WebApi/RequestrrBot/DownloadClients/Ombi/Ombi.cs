@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -452,9 +453,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                         {
                             Username = x.userName,
                             ApiAlias = x.alias,
-                            CanRequestMovies = x.IsDisabled ? false : x.CanRequestMovie,
+                            CanRequestMovies = x.CanRequestMovie,
                             MoviesQuotaRemaining = x.movieRequestQuota == null || !x.movieRequestQuota.hasLimit ? int.MaxValue : x.movieRequestQuota.remaining,
-                            CanRequestTvShows = x.IsDisabled ? false : x.CanRequestTv,
+                            CanRequestTvShows = x.CanRequestTv,
                             TvEpisodeQuotaRemaining = x.episodeRequestQuota == null || !x.episodeRequestQuota.hasLimit ? int.MaxValue : x.episodeRequestQuota.remaining,
                         };
                     }
@@ -512,15 +513,23 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
 
         private async Task<HttpResponseMessage> HttpPostAsync(OmbiUser ombiUser, string url, string content)
         {
+            var apiAlias = Sanitize(ombiUser.ApiAlias);
+            var apiUsername = Sanitize(ombiUser.Username);
+
             var postRequest = new StringContent(content);
             postRequest.Headers.Clear();
             postRequest.Headers.Add("Content-Type", "application/json");
             postRequest.Headers.Add("ApiKey", OmbiSettings.ApiKey);
-            postRequest.Headers.Add("ApiAlias", ombiUser.ApiAlias);
-            postRequest.Headers.Add("UserName", ombiUser.Username);
+            postRequest.Headers.Add("ApiAlias", !string.IsNullOrWhiteSpace(apiAlias) ? apiAlias : "Unknown");
+            postRequest.Headers.Add("UserName", Sanitize(ombiUser.Username));
 
             var client = _httpClientFactory.CreateClient();
             return await client.PostAsync(url, postRequest);
+        }
+
+        private string Sanitize(string value)
+        {
+            return Regex.Replace(value, @"[^\u0000-\u007F]+", string.Empty);
         }
 
         public class JSONMovie
@@ -599,9 +608,12 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             public List<JSONClaim> claims { get; set; }
             public JSONRequestQuota episodeRequestQuota { get; set; }
             public JSONRequestQuota movieRequestQuota { get; set; }
+            public bool IsAdmin => claims?.Any(x => x.value.Equals("admin", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false;
             public bool IsDisabled => claims?.Any(x => x.value.Equals("disabled", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false;
-            public bool CanRequestTv => claims?.Any(x => x.value.Equals("requesttv", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false;
-            public bool CanRequestMovie => claims?.Any(x => x.value.Equals("requestmovie", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false;
+            public bool AutoApproveTv => claims?.Any(x => x.value.Equals("autoapprovetv", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false;
+            public bool AutoApproveMovies => claims?.Any(x => x.value.Equals("autoapprovemovie", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false;
+            public bool CanRequestTv => !IsDisabled && (IsAdmin || AutoApproveTv || (claims?.Any(x => x.value.Equals("requesttv", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false));
+            public bool CanRequestMovie => !IsDisabled && (IsAdmin || AutoApproveMovies || (claims?.Any(x => x.value.Equals("requestmovie", StringComparison.InvariantCultureIgnoreCase) && x.enabled) ?? false));
         }
 
         public class OmbiUser
