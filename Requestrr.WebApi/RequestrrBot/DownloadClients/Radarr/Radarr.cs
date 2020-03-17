@@ -343,7 +343,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 TheMovieDbId = jsonMovie.tmdbId.ToString(),
                 Quality = "",
                 Requested = !isDownloaded && (string.IsNullOrWhiteSpace(downloadClientId) || RadarrSettings.MonitorNewRequests) ? isMonitored : true,
-                Approved = false,
                 PlexUrl = "",
                 EmbyUrl = "",
                 PosterPath = jsonMovie.images.Where(x => x.coverType.Equals("poster", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault()?.url ?? string.Empty,

@@ -8,7 +8,6 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         public bool Available { get; set; }
         public string Quality { get; set; }
         public bool Requested { get; set; }
-        public bool Approved { get; set; }
         public string PlexUrl { get; set; }
         public string EmbyUrl { get; set; }
         public string Overview { get; set; }

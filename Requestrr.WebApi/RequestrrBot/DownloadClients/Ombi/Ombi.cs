@@ -354,7 +354,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 Available = jsonMovie.available,
                 Quality = jsonMovie.quality,
                 Requested = jsonMovie.requested,
-                Approved = jsonMovie.approved,
                 PlexUrl = jsonMovie.plexUrl,
                 EmbyUrl = jsonMovie.embyUrl,
                 Overview = jsonMovie.overview,
@@ -579,12 +578,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
         {
             public int episodeNumber { get; set; }
             public bool available { get; set; }
-            public bool approved { get; set; }
             public bool requested { get; set; }
 
             public bool CanBeRequested()
             {
-                return !available && !requested && !approved;
+                return !available && !requested;
             }
         }
 

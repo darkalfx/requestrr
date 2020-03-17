@@ -109,7 +109,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         private static bool CanBeRequested(Movie movie)
         {
-            return !movie.Available && !movie.Requested && !movie.Approved;
+            return !movie.Available && !movie.Requested;
         }
     }
 }
