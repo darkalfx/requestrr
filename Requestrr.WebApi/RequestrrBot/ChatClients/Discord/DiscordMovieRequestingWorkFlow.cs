@@ -34,8 +34,10 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             _discordSettings = discordSettingsProvider.Provide();
         }
 
-        public async Task HandleMovieRequestAsync(string movieName)
+        public async Task HandleMovieRequestAsync(object[] args)
         {
+            var stringArgs = args?.Where(x => !string.IsNullOrWhiteSpace(x?.ToString())).Select(x => x.ToString().Trim()).ToArray() ?? Array.Empty<string>();
+
             if (!_discordSettings.EnableDirectMessageSupport && this.Context.Guild == null)
             {
                 await ReplyToUserAsync($"This command is only available within a server.");
@@ -50,6 +52,13 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 await ReplyToUserAsync($"You do not have the required role to request movies, please ask the server owner.");
                 return;
             }
+            else if (!stringArgs.Any())
+            {
+                await ReplyToUserAsync($"The correct usage of this command is: ```{_discordSettings.CommandPrefix}{_discordSettings.MovieCommand} name of movie```");
+                return;
+            }
+
+            var movieName = stringArgs[0].ToString();
 
             await DeleteSafeAsync(this.Context.Message);
 
@@ -91,35 +100,34 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             var replyHelp = await ReplyToUserAsync($"Please select one of the search results shown above by typing its corresponding number shown on the left. (ex: **{_discordSettings.CommandPrefix}2**) To abort type **{_discordSettings.CommandPrefix}cancel**");
 
             var selectionMessage = await NextMessageAsync(Context);
-            var selectionMessageContent = selectionMessage?.Content ?? $"{_discordSettings.CommandPrefix}cancel";
+            var selectionMessageContent = selectionMessage?.Content?.Trim() ?? "cancel";
 
-            if (selectionMessageContent.StartsWith($"{_discordSettings.CommandPrefix}"))
+            selectionMessageContent = !string.IsNullOrWhiteSpace(selectionMessageContent) && !string.IsNullOrWhiteSpace(_discordSettings.CommandPrefix) && selectionMessageContent.StartsWith(_discordSettings.CommandPrefix)
+            ? selectionMessageContent.Remove(0, _discordSettings.CommandPrefix.Length)
+            : selectionMessageContent;
+
+            if (selectionMessageContent.ToLower().StartsWith("cancel"))
             {
-                selectionMessageContent = !string.IsNullOrEmpty(_discordSettings.CommandPrefix) ? selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty) : selectionMessageContent;
+                await DeleteSafeAsync(reply);
+                await DeleteSafeAsync(replyHelp);
+                await DeleteSafeAsync(selectionMessage);
+                await ReplyToUserAsync("Your request has been cancelled!!");
 
-                if (selectionMessageContent.ToLower().StartsWith("cancel"))
+                return new MovieSelection
                 {
-                    await DeleteSafeAsync(reply);
-                    await DeleteSafeAsync(replyHelp);
-                    await DeleteSafeAsync(selectionMessage);
-                    await ReplyToUserAsync("Your request has been cancelled!!");
+                    IsCancelled = true
+                };
+            }
+            else if (int.TryParse(selectionMessageContent, out var selectedMovie) && selectedMovie <= movies.Count)
+            {
+                await DeleteSafeAsync(reply);
+                await DeleteSafeAsync(replyHelp);
+                await DeleteSafeAsync(selectionMessage);
 
-                    return new MovieSelection
-                    {
-                        IsCancelled = true
-                    };
-                }
-                else if (int.TryParse(selectionMessageContent, out var selectedMovie) && selectedMovie <= movies.Count)
+                return new MovieSelection
                 {
-                    await DeleteSafeAsync(reply);
-                    await DeleteSafeAsync(replyHelp);
-                    await DeleteSafeAsync(selectionMessage);
-
-                    return new MovieSelection
-                    {
-                        Movie = movies[selectedMovie - 1]
-                    };
-                }
+                    Movie = movies[selectedMovie - 1]
+                };
             }
 
             return new MovieSelection();

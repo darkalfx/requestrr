@@ -16,7 +16,7 @@ namespace Requestrr.WebApi
             if (settingsJson.Version.ToString().Equals("1.0.0", StringComparison.InvariantCultureIgnoreCase))
             {
                 var botClientJson = settingsJson["BotClient"] as JObject;
-                
+
                 var monitoredChannels = !string.IsNullOrWhiteSpace(botClientJson.GetValue("MonitoredChannels").ToString())
                     ? botClientJson.GetValue("MonitoredChannels").ToString().Split(" ").Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim())
                     : Array.Empty<string>();
@@ -40,6 +40,12 @@ namespace Requestrr.WebApi
                 ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Add("MonitorNewRequests", true);
 
                 settingsJson.Version = "1.0.1";
+                File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
+            }
+
+            if (settingsJson.Version.ToString().Equals("1.0.1", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.0.2";
                 File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
             }
         }

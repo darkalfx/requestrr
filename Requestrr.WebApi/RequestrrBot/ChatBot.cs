@@ -143,9 +143,9 @@ namespace Requestrr.WebApi.RequestrrBot
                         serviceProvider.Get<DiscordSettingsProvider>(),
                         _movieNotificationRequestRepository))
                         {
-                            await command.HandleMovieRequestAsync(message[0].ToString());
+                            await command.HandleMovieRequestAsync(message);
                         }
-                    }, c => c.WithName("movie").WithSummary($"The correct usage of this command is: ```{discordSettings.CommandPrefix}{discordSettings.MovieCommand} name of movie```").WithRunMode(RunMode.Async).AddParameter<string>("movieName", p => p.WithIsRemainder(true).WithIsOptional(false)));
+                    }, c => c.WithName("movie").WithRunMode(RunMode.Async).AddParameter<string>("movieName", p => p.WithIsRemainder(true).WithIsOptional(true)));
                 }
                 else
                 {
@@ -170,9 +170,9 @@ namespace Requestrr.WebApi.RequestrrBot
                            serviceProvider.Get<DiscordSettingsProvider>(),
                            _tvShowNotificationRequestRepository))
                         {
-                            await command.HandleTvShowRequestAsync(message[0].ToString());
+                            await command.HandleTvShowRequestAsync(message);
                         }
-                    }, c => c.WithName("tv").WithSummary($"The correct usage of this command is: ```{discordSettings.CommandPrefix}{discordSettings.TvShowCommand} name of tv show```").WithRunMode(RunMode.Async).AddParameter<string>("tvShowName", p => p.WithIsRemainder(true).WithIsOptional(false)));
+                    }, c => c.WithName("tv").WithRunMode(RunMode.Async).AddParameter<string>("tvShowName", p => p.WithIsRemainder(true).WithIsOptional(true)));
                 }
                 else
                 {

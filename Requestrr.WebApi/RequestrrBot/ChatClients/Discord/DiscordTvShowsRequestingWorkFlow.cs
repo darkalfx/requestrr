@@ -34,8 +34,10 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             _discordSettings = discordSettingsProvider.Provide();
         }
 
-        public async Task HandleTvShowRequestAsync(string tvShowName)
+        public async Task HandleTvShowRequestAsync(object[] args)
         {
+            var stringArgs = args?.Where(x => !string.IsNullOrWhiteSpace(x?.ToString())).Select(x => x.ToString().Trim()).ToArray() ?? Array.Empty<string>();
+
             if (!_discordSettings.EnableDirectMessageSupport && this.Context.Guild == null)
             {
                 await ReplyToUserAsync($"This command is only available within a server.");
@@ -50,6 +52,13 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 await ReplyToUserAsync($"You do not have the required role to request tv shows, please ask the server owner.");
                 return;
             }
+            else if (!stringArgs.Any())
+            {
+                await ReplyToUserAsync($"The correct usage of this command is: ```{_discordSettings.CommandPrefix}{_discordSettings.TvShowCommand} name of tv show```");
+                return;
+            }
+
+            var tvShowName = stringArgs[0].ToString();
 
             await DeleteSafeAsync(this.Context.Message);
 
@@ -90,35 +99,34 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             var replyHelp = await ReplyToUserAsync($"Please select one of the search results shown above by typing its corresponding numbers shown on the left. (ex: **{_discordSettings.CommandPrefix}2**) To abort type **{_discordSettings.CommandPrefix}cancel**");
 
             var selectionMessage = await NextMessageAsync(Context);
-            var selectionMessageContent = selectionMessage?.Content ?? $"{_discordSettings.CommandPrefix}cancel";
+            var selectionMessageContent = selectionMessage?.Content?.Trim() ?? "cancel";
 
-            if (selectionMessageContent.StartsWith($"{_discordSettings.CommandPrefix}"))
+            selectionMessageContent = !string.IsNullOrWhiteSpace(selectionMessageContent) && !string.IsNullOrWhiteSpace(_discordSettings.CommandPrefix) && selectionMessageContent.StartsWith(_discordSettings.CommandPrefix)
+            ? selectionMessageContent.Remove(0, _discordSettings.CommandPrefix.Length)
+            : selectionMessageContent;
+
+            if (selectionMessageContent.ToLower().StartsWith("cancel"))
             {
-                selectionMessageContent = !string.IsNullOrEmpty(_discordSettings.CommandPrefix) ? selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty) : selectionMessageContent;
+                await DeleteSafeAsync(selectionMessage);
+                await DeleteSafeAsync(replyHelp);
+                await DeleteSafeAsync(reply);
+                await ReplyToUserAsync("Your request has been cancelled!!");
 
-                if (selectionMessageContent.ToLower().StartsWith("cancel"))
+                return new TvShowSelection
                 {
-                    await DeleteSafeAsync(selectionMessage);
-                    await DeleteSafeAsync(replyHelp);
-                    await DeleteSafeAsync(reply);
-                    await ReplyToUserAsync("Your request has been cancelled!!");
+                    IsCancelled = true
+                };
+            }
+            else if (int.TryParse(selectionMessageContent, out var selectedTvShow) && selectedTvShow <= searchedTvShows.Count)
+            {
+                await DeleteSafeAsync(selectionMessage);
+                await DeleteSafeAsync(replyHelp);
+                await DeleteSafeAsync(reply);
 
-                    return new TvShowSelection
-                    {
-                        IsCancelled = true
-                    };
-                }
-                else if (int.TryParse(selectionMessageContent, out var selectedTvShow) && selectedTvShow <= searchedTvShows.Count)
+                return new TvShowSelection
                 {
-                    await DeleteSafeAsync(selectionMessage);
-                    await DeleteSafeAsync(replyHelp);
-                    await DeleteSafeAsync(reply);
-
-                    return new TvShowSelection
-                    {
-                        SelectedTvShow = searchedTvShows[selectedTvShow - 1]
-                    };
-                }
+                    SelectedTvShow = searchedTvShows[selectedTvShow - 1]
+                };
             }
 
             return new TvShowSelection();
@@ -180,45 +188,50 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 fieldContent += System.Environment.NewLine;
             }
 
+            var descriptionBuilder = new StringBuilder();
+            descriptionBuilder.AppendLine("✅ - Fully requested");
+            descriptionBuilder.AppendLine("☑ - Partially requested");
+            descriptionBuilder.AppendLine();
+
             var embedBuilder = new EmbedBuilder()
                 .WithTitle($"{tvShow.Title} Seasons")
                 .AddField("__Seasons__", fieldContent)
+                .WithDescription(descriptionBuilder.ToString())
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());
             var replyHelp = await ReplyToUserAsync($"Please select one of the available seasons shown above by typing its corresponding number shown on the left. (ex: **{_discordSettings.CommandPrefix}2**) To abort type **{_discordSettings.CommandPrefix}cancel**");
             var selectionMessage = await NextMessageAsync(Context);
-            var selectionMessageContent = selectionMessage?.Content ?? $"{_discordSettings.CommandPrefix}cancel";
+            var selectionMessageContent = selectionMessage?.Content?.Trim() ?? "cancel";
 
-            if (selectionMessageContent.StartsWith($"{_discordSettings.CommandPrefix}"))
+            selectionMessageContent = !string.IsNullOrWhiteSpace(selectionMessageContent) && !string.IsNullOrWhiteSpace(_discordSettings.CommandPrefix) && selectionMessageContent.StartsWith(_discordSettings.CommandPrefix)
+            ? selectionMessageContent.Remove(0, _discordSettings.CommandPrefix.Length)
+            : selectionMessageContent;
+
+            if (selectionMessageContent.ToLower().StartsWith("cancel"))
             {
-                selectionMessageContent = !string.IsNullOrEmpty(_discordSettings.CommandPrefix) ? selectionMessageContent.Replace(_discordSettings.CommandPrefix, string.Empty) : selectionMessageContent;
+                await DeleteSafeAsync(selectionMessage);
+                await DeleteSafeAsync(replyHelp);
+                await DeleteSafeAsync(reply);
+                await ReplyToUserAsync("Your request has been cancelled!!");
 
-                if (selectionMessageContent.StartsWith("cancel"))
+                return new TvSeasonsSelection
                 {
-                    await DeleteSafeAsync(selectionMessage);
-                    await DeleteSafeAsync(replyHelp);
-                    await DeleteSafeAsync(reply);
-                    await ReplyToUserAsync("Your request has been cancelled!!");
+                    IsCancelled = true
+                };
+            }
+            else if (int.TryParse(selectionMessageContent, out var selectedSeasonNumber) && tvShowSeasons.Any(x => x.SeasonNumber == selectedSeasonNumber))
+            {
+                await DeleteSafeAsync(selectionMessage);
+                await DeleteSafeAsync(replyHelp);
+                await DeleteSafeAsync(reply);
 
-                    return new TvSeasonsSelection
-                    {
-                        IsCancelled = true
-                    };
-                }
-                else if (int.TryParse(selectionMessageContent, out var selectedSeasonNumber) && tvShowSeasons.Any(x => x.SeasonNumber == selectedSeasonNumber))
+                var selectedSeason = tvShowSeasons.Single(x => x.SeasonNumber == selectedSeasonNumber);
+
+                return new TvSeasonsSelection
                 {
-                    await DeleteSafeAsync(selectionMessage);
-                    await DeleteSafeAsync(replyHelp);
-                    await DeleteSafeAsync(reply);
-
-                    var selectedSeason = tvShowSeasons.Single(x => x.SeasonNumber == selectedSeasonNumber);
-
-                    return new TvSeasonsSelection
-                    {
-                        SelectedSeason = selectedSeason
-                    };
-                }
+                    SelectedSeason = selectedSeason
+                };
             }
 
             return new TvSeasonsSelection();
