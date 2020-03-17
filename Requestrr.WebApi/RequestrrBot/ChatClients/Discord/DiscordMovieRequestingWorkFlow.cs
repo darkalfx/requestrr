@@ -81,7 +81,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 var movieRow = new StringBuilder();
                 movieRow.Append($"{i + 1}) {arrayMovies[i].Title} ");
 
-                if (!string.IsNullOrWhiteSpace(arrayMovies[i].ReleaseDate))
+                if (!string.IsNullOrWhiteSpace(arrayMovies[i].ReleaseDate) && arrayMovies[i].ReleaseDate.Length >= 4)
                     movieRow.Append($"({arrayMovies[i].ReleaseDate.Substring(0, 4)}) ");
 
                 movieRow.Append($"[[TheMovieDb](https://www.themoviedb.org/movie/{arrayMovies[i].TheMovieDbId})]");
@@ -147,12 +147,16 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
         public static async Task<Embed> GenerateMovieDetailsAsync(Movie movie, SocketUser user, IMovieSearcher movieSearcher = null)
         {
             var embedBuilder = new EmbedBuilder()
-                .WithTitle($"{movie.Title} {(!string.IsNullOrWhiteSpace(movie.ReleaseDate) ? $"({movie.ReleaseDate.Split("T")[0].Substring(0, 4)})" : string.Empty)}")
-                .WithDescription(movie.Overview.Substring(0, Math.Min(movie.Overview.Length, 255)) + "(...)")
+                .WithTitle($"{movie.Title} {(!string.IsNullOrWhiteSpace(movie.ReleaseDate) && movie.ReleaseDate.Length >= 4 ? $"({movie.ReleaseDate.Split("T")[0].Substring(0, 4)})" : string.Empty)}")
                 .WithFooter(user.Username, $"https://cdn.discordapp.com/avatars/{user.Id.ToString()}/{user.AvatarId}.png")
                 .WithTimestamp(DateTime.Now)
                 .WithUrl($"https://www.themoviedb.org/movie/{movie.TheMovieDbId}")
                 .WithThumbnailUrl("https://i.imgur.com/44ueTES.png");
+
+            if(!string.IsNullOrWhiteSpace(movie.Overview))
+            {
+                embedBuilder.WithDescription(movie.Overview.Substring(0, Math.Min(movie.Overview.Length, 255)) + "(...)");
+            }
 
             if (!string.IsNullOrEmpty(movie.PosterPath) && movie.PosterPath.StartsWith("http", StringComparison.InvariantCultureIgnoreCase)) embedBuilder.WithImageUrl(movie.PosterPath);
             if (!string.IsNullOrWhiteSpace(movie.Quality)) embedBuilder.AddField("__Quality__", $"{movie.Quality}p", true);

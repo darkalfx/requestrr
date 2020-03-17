@@ -147,18 +147,25 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
         {
             var title = tvShow.Title;
 
-            if (!string.IsNullOrWhiteSpace(tvShow.FirstAired) && !title.Contains(tvShow.FirstAired.Split("T")[0].Substring(0, 4)))
+            if (!string.IsNullOrWhiteSpace(tvShow.FirstAired))
             {
-                title = $"{title} ({tvShow.FirstAired.Split("T")[0].Substring(0, 4)})";
+                if(tvShow.FirstAired.Length >= 4 && !title.Contains(tvShow.FirstAired.Split("T")[0].Substring(0, 4)))
+                {
+                    title = $"{title} ({tvShow.FirstAired.Split("T")[0].Substring(0, 4)})";
+                }
             }
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle(title)
-                .WithDescription(tvShow.Overview.Substring(0, Math.Min(tvShow.Overview.Length, 255)) + "(...)")
                 .WithFooter(user.Username, $"https://cdn.discordapp.com/avatars/{user.Id}/{user.AvatarId}.png")
                 .WithTimestamp(DateTime.Now)
                 .WithUrl($"https://www.thetvdb.com/?id={tvShow.TheTvDbId}&tab=series")
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
+
+            if(!string.IsNullOrWhiteSpace(tvShow.Overview))
+            {
+                embedBuilder.WithDescription(tvShow.Overview.Substring(0, Math.Min(tvShow.Overview.Length, 255)) + "(...)");
+            }
 
             if (!string.IsNullOrEmpty(tvShow.Banner) && tvShow.Banner.StartsWith("http", StringComparison.InvariantCultureIgnoreCase)) embedBuilder.WithImageUrl(tvShow.Banner);
             if (!string.IsNullOrWhiteSpace(tvShow.Network)) embedBuilder.AddField("__Network__", tvShow.Network, true);
