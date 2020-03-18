@@ -38,7 +38,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             }
             catch (System.Exception ex)
             {
-                logger.LogWarning("Error while testing Radarr connection: " + ex.Message);
+                logger.LogWarning(ex, "Error while testing Radarr connection: " + ex.Message);
                 throw new Exception("Could not connect to Radarr");
             }
 
@@ -63,7 +63,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 }
                 catch (System.Exception ex)
                 {
-                    logger.LogWarning("An error while getting Radarr root paths: " + ex.Message);
+                    logger.LogWarning(ex, "An error while getting Radarr root paths: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -88,7 +88,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 }
                 catch (System.Exception ex)
                 {
-                    logger.LogWarning("An error while getting Radarr profiles: " + ex.Message);
+                    logger.LogWarning(ex, "An error while getting Radarr profiles: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -111,7 +111,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 }
                 catch (System.Exception ex)
                 {
-                    logger.LogWarning("An error while getting Radarr tags: " + ex.Message);
+                    logger.LogWarning(ex, "An error while getting Radarr tags: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -139,7 +139,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning("An error occurred while searching for movies with Radarr: " + ex.Message);
+                    _logger.LogError(ex, "An error occurred while searching for movies with Radarr: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -187,7 +187,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning("An error occurred while searching available movies with Radarr: " + ex.Message);
+                    _logger.LogError(ex, "An error occurred while searching available movies with Radarr: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000, token);
                 }
@@ -217,7 +217,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning($"An error while requesting movie \"{movie.Title}\" from Radarr: " + ex.Message);
+                    _logger.LogError(ex, $"An error while requesting movie \"{movie.Title}\" from Radarr: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -322,7 +322,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning($"An error while sending search command for movie \"{movie.Title}\" to Radarr: " + ex.Message);
+                    _logger.LogError(ex, $"An error while sending search command for movie \"{movie.Title}\" to Radarr: " + ex.Message);
                 }
             }
         }

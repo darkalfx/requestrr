@@ -67,14 +67,14 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications
                                  }
                                  catch (Exception ex)
                                  {
-                                     _logger.LogWarning("An error occurred while handling a tv show notification: " + ex.Message);
+                                     _logger.LogError(ex, "An error occurred while handling a tv show notification: " + ex.Message);
                                  }
                              }
                          }
                      }
                      catch (Exception ex)
                      {
-                         _logger.LogWarning("An error occurred while retrieving all tv show notification: " + ex.Message);
+                         _logger.LogError(ex, "An error occurred while retrieving all tv show notification: " + ex.Message);
                      }
 
                      await Task.Delay(TimeSpan.FromMinutes(5), _tokenSource.Token);

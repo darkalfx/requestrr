@@ -156,7 +156,7 @@ class TvShows extends React.Component {
   render() {
     return (
       <>
-        <UserHeader title="Tv Shows" description="This page is for configuring the connection between your bot and your favorite tv shows download client" />
+        <UserHeader title="TV Shows" description="This page is for configuring the connection between your bot and your favorite tv shows download client" />
         <Container className="mt--7" fluid>
           <Row>
             <Col className="order-xl-1" xl="12">

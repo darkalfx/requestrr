@@ -40,7 +40,7 @@ var routes = [
   },
   {
     path: "/tvshows",
-    name: "Tv Shows",
+    name: "TV Shows",
     icon: "fas fa-tv text-blue",
     component: TvShows,
     layout: "/admin"

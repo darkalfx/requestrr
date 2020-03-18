@@ -86,7 +86,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 tvRow.Append($"[[TheTVDb](https://www.thetvdb.com/?id={searchedTvShows[i].TheTvDbId}&tab=series)]");
                 tvRow.AppendLine();
 
-                if (tvRow.Length + embedContent.Length <= 1000)
+                if (tvRow.Length + embedContent.Length < 1000)
                     embedContent.Append(tvRow.ToString());
             }
 

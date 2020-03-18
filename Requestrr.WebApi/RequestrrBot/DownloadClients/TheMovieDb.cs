@@ -50,7 +50,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients
             }
             catch (System.Exception ex)
             {
-                logger.LogWarning(ex, ex.Message);
+                logger.LogError(ex, "Error while getting movie details from TheMovieDb: " + ex.Message);
                 throw;
             }
         }

@@ -41,7 +41,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             catch (System.Exception ex)
             {
 
-                logger.LogWarning("Error while testing ombi connection: " + ex.Message);
+                logger.LogWarning(ex, "Error while testing ombi connection: " + ex.Message);
                 throw new Exception("Could not connect to Ombi");
             }
 
@@ -76,7 +76,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning($"An error while requesting movie \"{movie.Title}\" from Ombi: " + ex.Message);
+                    _logger.LogError(ex, $"An error while requesting movie \"{movie.Title}\" from Ombi: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -103,7 +103,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning("An error occurred while searching for movies from Ombi: " + ex.Message);
+                    _logger.LogError(ex, "An error occurred while searching for movies from Ombi: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -135,7 +135,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning("An error occurred while searching for a movie from Ombi: " + ex.Message);
+                    _logger.LogError(ex, "An error occurred while searching for a movie from Ombi: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -169,7 +169,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning("An error occurred while searching for availables movies from Ombi: " + ex.Message);
+                    _logger.LogError(ex, "An error occurred while searching for availables movies from Ombi: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000, token);
                 }
@@ -232,7 +232,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning($"An error while requesting tv show \"{tvShow.Title}\" from Ombi: " + ex.Message);
+                    _logger.LogError(ex, $"An error while requesting tv show \"{tvShow.Title}\" from Ombi: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -254,7 +254,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning("An error occurred while getting details for a tv show from Ombi: " + ex.Message);
+                    _logger.LogError(ex, "An error occurred while getting details for a tv show from Ombi: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -288,11 +288,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                         }
                     }
 
-                    return tvShows;
+                    return tvShows.Where(x => x != null).ToArray();
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning("An error occurred while getting tv show details from Ombi: " + ex.Message);
+                    _logger.LogError(ex, "An error occurred while getting tv show details from Ombi: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000, token);
                 }
@@ -326,7 +326,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning($"An error occurred while searching for tv show \"{tvShowName}\" from Ombi: " + ex.Message);
+                    _logger.LogError(ex, $"An error occurred while searching for tv show \"{tvShowName}\" from Ombi: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -364,6 +364,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
 
         private TvShow Convert(JSONTvShow jsonTvShow)
         {
+            if(jsonTvShow == null)
+            {
+                return null;
+            }
+
             return new TvShow
             {
                 TheTvDbId = jsonTvShow.id,
@@ -461,7 +466,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning(ex, ex.Message);
+                    _logger.LogError(ex, ex.Message);
                 }
             }));
 

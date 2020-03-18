@@ -78,7 +78,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex.Message);
+                        _logger.LogError(ex, "Error while restarting the bot: " + ex.Message);
                     }
 
                     await Task.Delay(5000);
@@ -281,7 +281,7 @@ namespace Requestrr.WebApi.RequestrrBot
             }
             catch (System.Exception ex)
             {
-                _logger.LogWarning("Error while starting movie notification engine: " + ex.Message);
+                _logger.LogError(ex, "Error while starting movie notification engine: " + ex.Message);
             }
 
             try
@@ -299,7 +299,7 @@ namespace Requestrr.WebApi.RequestrrBot
             }
             catch (System.Exception ex)
             {
-                _logger.LogWarning("Error while starting tv show notification engine: " + ex.Message);
+                _logger.LogError(ex, "Error while starting tv show notification engine: " + ex.Message);
             }
         }
 
@@ -331,6 +331,15 @@ namespace Requestrr.WebApi.RequestrrBot
                 return;
             }
 
+            if(result is ExecuteResult executeResult)
+            {
+                _logger.LogError(executeResult.Exception, $"An exception occurred while processing a command: {executeResult.Exception.Message}");
+            }
+            else
+            {
+                _logger.LogError($"An unknown occurred error while processing a command: {result.ErrorReason}");
+            }
+            
             await context.Channel.SendMessageAsync("An unexpected error occurred while trying to process your request.");
         }
     }

@@ -76,7 +76,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             var arrayMovies = movies.ToArray();
             var embedContent = new StringBuilder();
 
-            for (int i = 0; i < movies.Take(10).Count(); i++)
+            for (int i = 0; i < arrayMovies.Take(10).Count(); i++)
             {
                 var movieRow = new StringBuilder();
                 movieRow.Append($"{i + 1}) {arrayMovies[i].Title} ");
@@ -87,7 +87,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 movieRow.Append($"[[TheMovieDb](https://www.themoviedb.org/movie/{arrayMovies[i].TheMovieDbId})]");
                 movieRow.AppendLine();
 
-                if (movieRow.Length + embedContent.Length <= 1000)
+                if (movieRow.Length + embedContent.Length < 1000)
                     embedContent.Append(movieRow.ToString());
             }
 

@@ -42,7 +42,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             }
             catch (System.Exception ex)
             {
-                logger.LogWarning("Error while testing Sonarr connection: " + ex.Message);
+                logger.LogWarning(ex, "Error while testing Sonarr connection: " + ex.Message);
                 throw new Exception("Could not connect to Sonarr");
             }
 
@@ -66,7 +66,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 }
                 catch (System.Exception ex)
                 {
-                    logger.LogWarning("An error while getting Sonarr root paths: " + ex.Message);
+                    logger.LogWarning(ex, "An error while getting Sonarr root paths: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -89,7 +89,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 }
                 catch (System.Exception ex)
                 {
-                    logger.LogWarning("An error while getting Sonarr profiles: " + ex.Message);
+                    logger.LogWarning(ex, "An error while getting Sonarr profiles: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -112,7 +112,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 }
                 catch (System.Exception ex)
                 {
-                    logger.LogWarning("An error while getting Sonarr languages: " + ex.Message);
+                    logger.LogWarning(ex, "An error while getting Sonarr languages: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -135,7 +135,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 }
                 catch (System.Exception ex)
                 {
-                    logger.LogWarning("An error while getting Sonarr tags: " + ex.Message);
+                    logger.LogWarning(ex, "An error while getting Sonarr tags: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -168,7 +168,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning($"An error occurred while searching for tv show \"{tvShowName}\" from Sonarr: " + ex.Message);
+                    _logger.LogError(ex, $"An error occurred while searching for tv show \"{tvShowName}\" from Sonarr: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -202,7 +202,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning("An error occurred while getting tv show details with Sonarr: " + ex.Message);
+                    _logger.LogError(ex, "An error occurred while getting tv show details with Sonarr: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -257,7 +257,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning("An error occurred while searching available tv shows with Sonarr: " + ex.Message);
+                    _logger.LogError(ex, "An error occurred while searching available tv shows with Sonarr: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000, token);
                 }
@@ -293,7 +293,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogWarning($"An error while requesting tv show \"{tvShow.Title}\" from Sonarr: " + ex.Message);
+                    _logger.LogError(ex, $"An error while requesting tv show \"{tvShow.Title}\" from Sonarr: " + ex.Message);
                     retryCount++;
                     await Task.Delay(1000);
                 }
@@ -318,7 +318,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, ex.Message);
+                _logger.LogError(ex, ex.Message);
             }
 
             var response = await HttpGetAsync($"{BaseURL}/series/lookup?term=tvdb:{tvShow.TheTvDbId}");
@@ -463,7 +463,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                         }
                         catch (System.Exception ex)
                         {
-                            _logger.LogWarning(ex.Message);
+                            _logger.LogError(ex.Message);
                         }
                     }
                 }));
