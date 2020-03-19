@@ -39,11 +39,13 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             if (!string.IsNullOrWhiteSpace(_discordSettings.TvShowCommand))
             {
                 messageBuilder.AppendLine($"**{_discordSettings.CommandPrefix}{_discordSettings.TvShowCommand}**");
+                messageBuilder.AppendLine($"**{_discordSettings.CommandPrefix}{_discordSettings.TvShowCommand} tvdb**");
             }
 
             if (!string.IsNullOrWhiteSpace(_discordSettings.MovieCommand))
             {
                 messageBuilder.AppendLine($"**{_discordSettings.CommandPrefix}{_discordSettings.MovieCommand}**");
+                messageBuilder.AppendLine($"**{_discordSettings.CommandPrefix}{_discordSettings.MovieCommand} tmdbid**");
             }
 
             messageBuilder.AppendLine($"**{_discordSettings.CommandPrefix}help**");

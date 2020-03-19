@@ -120,6 +120,34 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while getting Radarr tags");
         }
 
+        public async Task<Movie> SearchMovieAsync(int theMovieDbId)
+        {
+            var retryCount = 0;
+
+            while (retryCount <= 5)
+            {
+                try
+                {
+                    var response = await HttpGetAsync($"{BaseURL}/movie/lookup/tmdb?tmdbId={theMovieDbId}");
+                    await response.ThrowIfNotSuccessfulAsync("RadarrMovieLookupByTmdbId failed", x => x.error);
+
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    var jsonMovie = JsonConvert.DeserializeObject<JSONMovie>(jsonResponse);
+
+                    var convertedMovie = Convert(jsonMovie);
+                    return convertedMovie?.TheMovieDbId == theMovieDbId.ToString() ? convertedMovie : null;
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, $"An error occurred while searching for a movie by tmdbId \"{theMovieDbId}\" with Radarr: " + ex.Message);
+                    retryCount++;
+                    await Task.Delay(1000);
+                }
+            }
+
+            throw new System.Exception("An error occurred while searching for a movie by tmdbId with Radarr");
+        }
+
         public async Task<IReadOnlyList<Movie>> SearchMovieAsync(string movieName)
         {
             var retryCount = 0;
@@ -228,11 +256,21 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
         private async Task CreateMovieInRadarr(Movie movie)
         {
-            var response = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
-            await response.ThrowIfNotSuccessfulAsync("TheMovieDbFindMovie failed", x => x.status_message);
+            var isAnime = false;
 
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var theMovieDbMovie = JsonConvert.DeserializeObject<TheMovieDbMovie>(jsonResponse);
+            try
+            {
+                var movieDbResponse = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
+                await movieDbResponse.ThrowIfNotSuccessfulAsync("TheMovieDbFindMovie failed", x => x.status_message);
+                var jsonResponse = await movieDbResponse.Content.ReadAsStringAsync();
+                var theMovieDbMovie = JsonConvert.DeserializeObject<TheMovieDbMovie>(jsonResponse);
+
+                isAnime = theMovieDbMovie.IsAnime;
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, $"An error occurred while requesting movie: " + ex.Message);
+            }
 
             var jsonMovie = await SearchMovieByMovieDbId(int.Parse(movie.TheMovieDbId));
 
@@ -240,21 +278,21 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
             if (RadarrSettings.Version != "2")
             {
-                tags = theMovieDbMovie.IsAnime ? RadarrSettings.AnimeTags : RadarrSettings.MovieTags;
+                tags = isAnime ? RadarrSettings.AnimeTags : RadarrSettings.MovieTags;
             }
 
-            response = await HttpPostAsync($"{BaseURL}/movie", JsonConvert.SerializeObject(new
+            var response = await HttpPostAsync($"{BaseURL}/movie", JsonConvert.SerializeObject(new
             {
                 title = jsonMovie.title,
-                qualityProfileId = theMovieDbMovie.IsAnime ? RadarrSettings.AnimeProfileId : RadarrSettings.MovieProfileId,
+                qualityProfileId = isAnime ? RadarrSettings.AnimeProfileId : RadarrSettings.MovieProfileId,
                 titleSlug = jsonMovie.titleSlug,
                 monitored = RadarrSettings.MonitorNewRequests,
                 tags = tags,
                 images = new string[0],
                 tmdbId = int.Parse(movie.TheMovieDbId),
                 year = jsonMovie.year,
-                rootFolderPath = theMovieDbMovie.IsAnime ? RadarrSettings.AnimeRootFolder : RadarrSettings.MovieRootFolder,
-                minimumAvailability = theMovieDbMovie.IsAnime ? RadarrSettings.AnimeMinimumAvailability : RadarrSettings.MovieMinimumAvailability,
+                rootFolderPath = isAnime ? RadarrSettings.AnimeRootFolder : RadarrSettings.MovieRootFolder,
+                minimumAvailability = isAnime ? RadarrSettings.AnimeMinimumAvailability : RadarrSettings.MovieMinimumAvailability,
                 addOptions = new
                 {
                     ignoreEpisodesWithFiles = false,
@@ -268,6 +306,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
         private async Task UpdateExistingMovie(Movie movie)
         {
+            var isAnime = false;
             var radarrMovieId = int.Parse(movie.DownloadClientId);
             var response = await HttpGetAsync($"{BaseURL}/movie/{radarrMovieId}");
 
@@ -285,23 +324,31 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             var jsonResponse = await response.Content.ReadAsStringAsync();
             dynamic radarrMovie = JObject.Parse(jsonResponse);
 
-            response = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
-            await response.ThrowIfNotSuccessfulAsync("TheMovieDbFindMovie failed", x => x.status_message);
+            try
+            {
+                var movieDbResponse = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
+                await movieDbResponse.ThrowIfNotSuccessfulAsync("TheMovieDbFindMovie failed", x => x.status_message);
+                var movieDbJsonResponse = await movieDbResponse.Content.ReadAsStringAsync();
+                var theMovieDbMovie = JsonConvert.DeserializeObject<TheMovieDbMovie>(movieDbJsonResponse);
 
-            jsonResponse = await response.Content.ReadAsStringAsync();
-            var theMovieDbMovie = JsonConvert.DeserializeObject<TheMovieDbMovie>(jsonResponse);
+                isAnime = theMovieDbMovie.IsAnime;
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, $"An error occurred while requesting movie: " + ex.Message);
+            }
 
             if (RadarrSettings.Version == "2")
             {
-                radarrMovie.profileId = theMovieDbMovie.IsAnime ? RadarrSettings.AnimeProfileId : RadarrSettings.MovieProfileId;
+                radarrMovie.profileId = isAnime ? RadarrSettings.AnimeProfileId : RadarrSettings.MovieProfileId;
             }
             else
             {
-                radarrMovie.tags = JToken.FromObject(theMovieDbMovie.IsAnime ? RadarrSettings.AnimeTags : RadarrSettings.MovieTags);
-                radarrMovie.qualityProfileId = theMovieDbMovie.IsAnime ? RadarrSettings.AnimeProfileId : RadarrSettings.MovieProfileId;
+                radarrMovie.tags = JToken.FromObject(isAnime ? RadarrSettings.AnimeTags : RadarrSettings.MovieTags);
+                radarrMovie.qualityProfileId = isAnime ? RadarrSettings.AnimeProfileId : RadarrSettings.MovieProfileId;
             }
 
-            radarrMovie.minimumAvailability = theMovieDbMovie.IsAnime ? RadarrSettings.AnimeMinimumAvailability : RadarrSettings.MovieMinimumAvailability;
+            radarrMovie.minimumAvailability = isAnime ? RadarrSettings.AnimeMinimumAvailability : RadarrSettings.MovieMinimumAvailability;
             radarrMovie.monitored = RadarrSettings.MonitorNewRequests;
 
             response = await HttpPutAsync($"{BaseURL}/movie/{radarrMovieId}", JsonConvert.SerializeObject(radarrMovie));

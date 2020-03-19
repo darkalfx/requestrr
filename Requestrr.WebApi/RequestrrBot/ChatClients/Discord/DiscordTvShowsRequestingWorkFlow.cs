@@ -71,6 +71,11 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             return ReplyToUserAsync($"I could not find any tv show with the name \"{tvShowName}\", please try something different.");
         }
 
+        public Task WarnNoTvShowFoundByTvDbIdAsync(string tvDbIdTextValue)
+        {
+            return ReplyToUserAsync($"I could not find any tv show with the TvDbId of \"{tvDbIdTextValue}\", please try something different.");
+        }
+
         public async Task<TvShowSelection> GetTvShowSelectionAsync(IReadOnlyList<SearchedTvShow> searchedTvShows)
         {
             var embedContent = new StringBuilder();

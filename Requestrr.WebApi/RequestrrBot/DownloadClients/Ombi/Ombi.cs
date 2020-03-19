@@ -85,6 +85,34 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             throw new System.Exception("An error occurred while requesting a movie from oOmbimbi");
         }
 
+        public async Task<Movie> SearchMovieAsync(int theMovieDbId)
+        {
+            var retryCount = 0;
+
+            while (retryCount <= 5)
+            {
+                try
+                {
+                    var response = await HttpGetAsync($"{BaseURL}/api/v1/search/movie/info/{theMovieDbId}");
+                    await response.ThrowIfNotSuccessfulAsync("OmbiMovieSearchByMovieDbId failed", x => x.error);
+
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    var jsonMovie = JsonConvert.DeserializeObject<JSONMovie>(jsonResponse);
+
+                    var convertedMovie = Convert(jsonMovie);
+                    return convertedMovie?.TheMovieDbId == theMovieDbId.ToString() ? convertedMovie : null;
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, $"An error occurred while searching for a movie by tmdbId \"{theMovieDbId}\" from Ombi: " + ex.Message);
+                    retryCount++;
+                    await Task.Delay(1000);
+                }
+            }
+
+            throw new System.Exception("An error occurred while searching for a movie by tmdbId from Ombi");
+        }
+
         public async Task<IReadOnlyList<Movie>> SearchMovieAsync(string movieName)
         {
             var retryCount = 0;
@@ -301,6 +329,42 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             throw new System.Exception("An error occurred while getting tv show details from Ombi");
         }
 
+
+        public async Task<SearchedTvShow> SearchTvShowAsync(int tvDbId)
+        {
+            var retryCount = 0;
+
+            while (retryCount <= 5)
+            {
+                try
+                {
+                    var response = await HttpGetAsync($"{BaseURL}/api/v1/Search/Tv/info/{tvDbId}");
+                    await response.ThrowIfNotSuccessfulAsync("OmbiSearchTvShowByTvDbId failed", x => x.error);
+
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    var jsonTvShow = JsonConvert.DeserializeObject<JSONTvShow>(jsonResponse);
+
+                    var searchedTvShow = new SearchedTvShow
+                    {
+                        Title = jsonTvShow.title,
+                        Banner = jsonTvShow.banner,
+                        TheTvDbId = jsonTvShow.id,
+                        FirstAired = jsonTvShow.firstAired,
+                    };
+
+                    return searchedTvShow.TheTvDbId == tvDbId ? searchedTvShow : null;
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, $"An error occurred while searching for tv show by tvDbId \"{tvDbId}\" from Ombi: " + ex.Message);
+                    retryCount++;
+                    await Task.Delay(1000);
+                }
+            }
+
+            throw new System.Exception("An error occurred while searching for tv show by tvDbId from Ombi");
+        }
+
         public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(string tvShowName)
         {
             var retryCount = 0;
@@ -364,7 +428,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
 
         private TvShow Convert(JSONTvShow jsonTvShow)
         {
-            if(jsonTvShow == null)
+            if (jsonTvShow == null)
             {
                 return null;
             }
@@ -456,7 +520,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                         ombiUser = new OmbiUser
                         {
                             Username = x.userName,
-                            ApiAlias = x.alias,
+                            ApiAlias = !string.IsNullOrWhiteSpace(x.alias) ? x.alias : x.userName,
                             CanRequestMovies = x.CanRequestMovie,
                             MoviesQuotaRemaining = x.movieRequestQuota == null || !x.movieRequestQuota.hasLimit ? int.MaxValue : x.movieRequestQuota.remaining,
                             CanRequestTvShows = x.CanRequestTv,
@@ -525,7 +589,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             postRequest.Headers.Add("Content-Type", "application/json");
             postRequest.Headers.Add("ApiKey", OmbiSettings.ApiKey);
             postRequest.Headers.Add("ApiAlias", !string.IsNullOrWhiteSpace(apiAlias) ? apiAlias : "Unknown");
-            postRequest.Headers.Add("UserName", Sanitize(ombiUser.Username));
+            postRequest.Headers.Add("UserName", !string.IsNullOrWhiteSpace(apiUsername) ? apiUsername : "api");
 
             var client = _httpClientFactory.CreateClient();
             return await client.PostAsync(url, postRequest);
@@ -533,6 +597,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
 
         private string Sanitize(string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
             return Regex.Replace(value, @"[^\u0000-\u007F]+", string.Empty);
         }
 

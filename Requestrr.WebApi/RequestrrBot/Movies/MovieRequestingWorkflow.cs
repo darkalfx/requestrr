@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Requestrr.WebApi.RequestrrBot.Notifications;
 
@@ -28,31 +30,74 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         public async Task HandleMovieRequestAsync(string movieName)
         {
-            var movies = await _searcher.SearchMovieAsync(movieName);
+            var movies = await SearchMoviesAsync(movieName);
 
-            if (!movies.Any())
+            if (movies.Any())
             {
-                await _userInterface.WarnNoMovieFoundAsync(movieName);
-            }
-            else if (movies.Count > 1)
-            {
-                var movieSelection = await _userInterface.GetMovieSelectionAsync(movies);
-
-                if (!movieSelection.IsCancelled && movieSelection.Movie != null)
+                if (movies.Count > 1)
                 {
-                    var movie = movieSelection.Movie;
+                    var movieSelection = await _userInterface.GetMovieSelectionAsync(movies);
+
+                    if (!movieSelection.IsCancelled && movieSelection.Movie != null)
+                    {
+                        var movie = movieSelection.Movie;
+                        await HandleMovieSelectionAsync(movie);
+                    }
+                    else if (!movieSelection.IsCancelled)
+                    {
+                        await _userInterface.WarnInvalidMovieSelectionAsync();
+                    }
+                }
+                else if (movies.Count == 1)
+                {
+                    var movie = movies.Single();
                     await HandleMovieSelectionAsync(movie);
                 }
-                else if (!movieSelection.IsCancelled)
+            }
+        }
+
+        public async Task<IReadOnlyList<Movie>> SearchMoviesAsync(string movieName)
+        {
+            IReadOnlyList<Movie> movies = Array.Empty<Movie>();
+
+            if (movieName.Trim().ToLower().StartsWith("tmdbid"))
+            {
+                var theMovieDbIdTextValue = movieName.ToLower().Split("tmdbid")[1]?.Trim();
+
+                if (int.TryParse(theMovieDbIdTextValue, out var theMovieDbId))
                 {
-                    await _userInterface.WarnInvalidMovieSelectionAsync();
+                    try
+                    {
+                        var movie = await _searcher.SearchMovieAsync(theMovieDbId);
+                        movies = new List<Movie> { movie }.Where(x => x != null).ToArray();
+                    }
+                    catch
+                    {
+                        movies = new List<Movie>();
+                    }
+
+                    if (!movies.Any())
+                    {
+                        await _userInterface.WarnNoMovieFoundByTheMovieDbIdAsync(theMovieDbIdTextValue);
+                    }
+                }
+                else
+                {
+                    await _userInterface.WarnNoMovieFoundByTheMovieDbIdAsync(theMovieDbIdTextValue);
                 }
             }
-            else if (movies.Count == 1)
+            else
             {
-                var movie = movies.Single();
-                await HandleMovieSelectionAsync(movie);
+                movieName = movieName.Replace(".", " ");
+                movies = await _searcher.SearchMovieAsync(movieName);
+
+                if (!movies.Any())
+                {
+                    await _userInterface.WarnNoMovieFoundAsync(movieName);
+                }
             }
+
+            return movies;
         }
 
         private async Task HandleMovieSelectionAsync(Movie movie)

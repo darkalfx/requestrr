@@ -8,6 +8,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         Task<IReadOnlyList<Movie>> SearchMovieAsync(string movieName);
         Task<MovieDetails> GetMovieDetails(string theMovieDbId);
         Task<Dictionary<int, Movie>> SearchAvailableMoviesAsync(HashSet<int> movies, System.Threading.CancellationToken token);
+        Task<Movie> SearchMovieAsync(int theMovieDbId);
     }
 
     public class MovieDetails

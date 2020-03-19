@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Requestrr.WebApi.RequestrrBot.Notifications;
@@ -30,31 +31,74 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
 
         public async Task HandleTvShowRequestAsync(string tvShowName)
         {
-            var searchedTvShows = await _searcher.SearchTvShowAsync(tvShowName);
+            var searchedTvShows = await SearchTvShowAsync(tvShowName);
 
-            if (!searchedTvShows.Any())
+            if (searchedTvShows.Any())
             {
-                await _userInterface.WarnNoTvShowFoundAsync(tvShowName);
-            }
-            else if (searchedTvShows.Count > 1)
-            {
-                var tvShowSelection = await _userInterface.GetTvShowSelectionAsync(searchedTvShows);
-
-                if (!tvShowSelection.IsCancelled && tvShowSelection.SelectedTvShow.IsSpecified)
+                if (searchedTvShows.Count > 1)
                 {
-                    var selection = tvShowSelection.SelectedTvShow.Value;
+                    var tvShowSelection = await _userInterface.GetTvShowSelectionAsync(searchedTvShows);
+
+                    if (!tvShowSelection.IsCancelled && tvShowSelection.SelectedTvShow.IsSpecified)
+                    {
+                        var selection = tvShowSelection.SelectedTvShow.Value;
+                        await HandleTvShowSelection(selection);
+                    }
+                    else if (!tvShowSelection.IsCancelled)
+                    {
+                        await _userInterface.WarnInvalidTvShowSelectionAsync();
+                    }
+                }
+                else if (searchedTvShows.Count == 1)
+                {
+                    var selection = searchedTvShows.Single();
                     await HandleTvShowSelection(selection);
                 }
-                else if (!tvShowSelection.IsCancelled)
+            }
+        }
+
+        public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(string tvShowName)
+        {
+            IReadOnlyList<SearchedTvShow> searchedTvShows = Array.Empty<SearchedTvShow>();
+
+            if (tvShowName.Trim().ToLower().StartsWith("tvdb"))
+            {
+                var tvDbIdTextValue = tvShowName.ToLower().Split("tvdb")[1]?.Trim();
+
+                if (int.TryParse(tvDbIdTextValue, out var tvDbId))
                 {
-                    await _userInterface.WarnInvalidTvShowSelectionAsync();
+                    try
+                    {
+                        var searchedTvShow = await _searcher.SearchTvShowAsync(tvDbId);
+                        searchedTvShows = new List<SearchedTvShow> { searchedTvShow }.Where(x => x != null).ToArray();
+                    }
+                    catch
+                    {
+                        searchedTvShows = new List<SearchedTvShow>();
+                    }
+
+                    if (!searchedTvShows.Any())
+                    {
+                        await _userInterface.WarnNoTvShowFoundByTvDbIdAsync(tvDbIdTextValue);
+                    }
+                }
+                else
+                {
+                    await _userInterface.WarnNoTvShowFoundByTvDbIdAsync(tvDbIdTextValue);
                 }
             }
-            else if (searchedTvShows.Count == 1)
+            else
             {
-                var selection = searchedTvShows.Single();
-                await HandleTvShowSelection(selection);
+                tvShowName = tvShowName.Replace(".", " ");
+                searchedTvShows = await _searcher.SearchTvShowAsync(tvShowName);
+
+                if (!searchedTvShows.Any())
+                {
+                    await _userInterface.WarnNoTvShowFoundAsync(tvShowName);
+                }
             }
+
+            return searchedTvShows;
         }
 
         private async Task HandleTvShowSelection(SearchedTvShow searchedTvShow)

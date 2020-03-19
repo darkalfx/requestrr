@@ -16,6 +16,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         Task DisplayNotificationSuccessAsync(Movie movie);
         Task WarnMovieUnavailableAndAlreadyHasNotification();
         Task DisplayRequestDenied(Movie movie);
+        Task WarnNoMovieFoundByTheMovieDbIdAsync(string theMovieDbIdTextValue);
     }
     
     public class MovieSelection

@@ -144,6 +144,37 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while getting Sonarr tags");
         }
 
+        public async Task<SearchedTvShow> SearchTvShowAsync(int tvDbId)
+        {
+            var retryCount = 0;
+
+            while (retryCount <= 5 && _loadedCache)
+            {
+                try
+                {
+                    var jsonTvShow = await SearchSerieByTvDbIdAsync(tvDbId);
+
+                    var searchedTvShow = new SearchedTvShow
+                    {
+                        TheTvDbId = jsonTvShow.tvdbId.Value,
+                        Title = jsonTvShow.title,
+                        FirstAired = jsonTvShow.year > 0 ? jsonTvShow.year.ToString() : string.Empty,
+                        Banner = jsonTvShow.remotePoster
+                    };
+
+                    return searchedTvShow.TheTvDbId == tvDbId ? searchedTvShow : null;
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, $"An error occurred while searching for tv show by tvDbId \"{tvDbId}\" from Sonarr: " + ex.Message);
+                    retryCount++;
+                    await Task.Delay(1000);
+                }
+            }
+
+            throw new System.Exception("An error occurred while searching for tv show by tvDbId from Sonarr");
+        }
+
         public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(string tvShowName)
         {
             var retryCount = 0;
@@ -522,7 +553,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         private async Task<JSONTvShow> SearchSerieByTvDbIdAsync(int tvDbId)
         {
             var response = await HttpGetAsync($"{BaseURL}/series/lookup?term=tvdb:{tvDbId}");
-            await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookupTvDb failed", x => x.error);
+            await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookupByTvDbId failed", x => x.error);
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var tvShow = JsonConvert.DeserializeObject<IEnumerable<JSONTvShow>>(jsonResponse).First();

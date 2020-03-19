@@ -45,9 +45,10 @@ namespace Requestrr.WebApi
 
             if (settingsJson.Version.ToString().Equals("1.0.1", StringComparison.InvariantCultureIgnoreCase) 
             || settingsJson.Version.ToString().Equals("1.0.2", StringComparison.InvariantCultureIgnoreCase)
-            || settingsJson.Version.ToString().Equals("1.0.3", StringComparison.InvariantCultureIgnoreCase))
+            || settingsJson.Version.ToString().Equals("1.0.3", StringComparison.InvariantCultureIgnoreCase)
+            || settingsJson.Version.ToString().Equals("1.0.4", StringComparison.InvariantCultureIgnoreCase))
             {
-                settingsJson.Version = "1.0.4";
+                settingsJson.Version = "1.0.5";
                 File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
             }
         }

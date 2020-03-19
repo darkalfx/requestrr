@@ -71,6 +71,11 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             return ReplyToUserAsync($"I could not find any movie with the name \"{movieName}\", please try something different.");
         }
 
+        public Task WarnNoMovieFoundByTheMovieDbIdAsync(string theMovieDbIdTextValue)
+        {
+            return ReplyToUserAsync($"I could not find any movie with TheMovieDbId of \"{theMovieDbIdTextValue}\", please try something different.");
+        }
+
         public async Task<MovieSelection> GetMovieSelectionAsync(IReadOnlyList<Movie> movies)
         {
             var arrayMovies = movies.ToArray();
