@@ -7,3 +7,5 @@ Requestrr.WebApi/config/settings.json
 
 .idea
 Requestrr.WebApi/MakeReleaseBuilds
+
+Requestrr.WebApi/MakeDockerBuilds
