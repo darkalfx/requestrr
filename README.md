@@ -11,6 +11,8 @@ Requestrr
 
 ![logo](https://i.imgur.com/0UzLYvw.png)
 
+Requestrr is a chatbot used to simplify using services like Sonarr/Radarr/Ombi via the use of chat!  
+
 
 Installation & Configuration
 ==================
