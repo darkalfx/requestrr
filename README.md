@@ -35,11 +35,11 @@ First pull the image from docker hub using docker push darkalfx/requestrr
 Then use the following command create and start the container:
 
     docker run --name requestrr \
-      -p 5060:5060 \
+      -p 4545:4545 \
       -v path to config:/root/config \
       --restart=unless-stopped \
       darkalfx/requestrr
 
-Then simply access the web portal at http://youraddress:5060/ to create your admin account, then you can configure everything through the web portal.
+Then simply access the web portal at http://youraddress:4545/ to create your admin account, then you can configure everything through the web portal.
 
 Once you have configured the bot and invited it to your Discord server, simply type **!help** to see all available commands.

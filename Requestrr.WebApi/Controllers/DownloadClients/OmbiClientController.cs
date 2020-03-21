@@ -76,9 +76,9 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
 
                 return Ok(new { ok = true });
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-                return BadRequest($"The specified settings are invalid");
+                return BadRequest(ex.Message);
             }
         }
 

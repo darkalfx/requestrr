@@ -76,5 +76,6 @@
     "Client": "Disabled",
     "Command": "tv"
   },
-  "Version": "1.0.3"
+  "Port": 4545,
+  "Version": "1.0.6"
 }

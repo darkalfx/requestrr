@@ -158,15 +158,13 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 .WithUrl($"https://www.themoviedb.org/movie/{movie.TheMovieDbId}")
                 .WithThumbnailUrl("https://i.imgur.com/44ueTES.png");
 
-            if(!string.IsNullOrWhiteSpace(movie.Overview))
+            if (!string.IsNullOrWhiteSpace(movie.Overview))
             {
                 embedBuilder.WithDescription(movie.Overview.Substring(0, Math.Min(movie.Overview.Length, 255)) + "(...)");
             }
 
             if (!string.IsNullOrEmpty(movie.PosterPath) && movie.PosterPath.StartsWith("http", StringComparison.InvariantCultureIgnoreCase)) embedBuilder.WithImageUrl(movie.PosterPath);
             if (!string.IsNullOrWhiteSpace(movie.Quality)) embedBuilder.AddField("__Quality__", $"{movie.Quality}p", true);
-            if (!string.IsNullOrWhiteSpace(movie.PlexUrl)) embedBuilder.AddField("__Plex__", $"[Watch now]({movie.PlexUrl})", true);
-            if (!string.IsNullOrWhiteSpace(movie.EmbyUrl)) embedBuilder.AddField("__Emby__", $"[Watch now]({movie.EmbyUrl})", true);
 
             if (movieSearcher != null)
             {
@@ -189,6 +187,9 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                     // Ignore
                 }
             }
+
+            if (!string.IsNullOrWhiteSpace(movie.PlexUrl)) embedBuilder.AddField("__Plex__", $"[Watch now]({movie.PlexUrl})", true);
+            if (!string.IsNullOrWhiteSpace(movie.EmbyUrl)) embedBuilder.AddField("__Emby__", $"[Watch now]({movie.EmbyUrl})", true);
 
             return embedBuilder.Build();
         }

@@ -172,6 +172,9 @@ class Sidebar extends React.Component {
             <h6 className="navbar-heading text-muted">Support</h6>
             <ul className="mb-md-3 navbar-nav">
               <li className="nav-item">
+                <a className="nav-link" target="_blank" href="https://github.com/darkalfx/requestrr/wiki"><i className="fas big fa-book" style={{ color: 'darkgreen' }}></i>Wiki</a>
+              </li>
+              <li className="nav-item">
                 <a className="nav-link" target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ELFGQ65FJFPVQ&currency_code=CAD&source=url"><i className="fas big fa-heart text-red"></i>Donate</a>
               </li>
               <li className="nav-item">

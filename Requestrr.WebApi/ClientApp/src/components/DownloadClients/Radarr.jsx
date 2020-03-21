@@ -337,16 +337,16 @@ class Radarr extends React.Component {
           <Row>
             <Col lg="6">
               <Dropdown
-                name="Api"
+                name="API"
                 value={this.state.apiVersion}
                 items={[{ name: "Version 2", value: "2" }, { name: "Version 3", value: "3" }]}
                 onChange={newApiVersion => this.setState({ apiVersion: newApiVersion }, this.onValueChange)} />
             </Col>
             <Col lg="6">
               <ValidatedTextbox
-                name="Api Key"
+                name="API Key"
                 placeholder="Enter api key"
-                alertClassName="mt-3 mb-0"
+                alertClassName="mt-3"
                 errorMessage="api key is required."
                 isSubmitted={this.props.isSubmitted}
                 value={this.state.apiKey}
@@ -358,8 +358,8 @@ class Radarr extends React.Component {
           <Row>
             <Col lg="6">
               <ValidatedTextbox
-                name="Hostname"
-                placeholder="Enter hostname"
+                name="Host or IP"
+                placeholder="Enter host or ip"
                 alertClassName="mt-3 mb-0"
                 errorMessage="Hostname is required."
                 isSubmitted={this.props.isSubmitted}
@@ -421,7 +421,7 @@ class Radarr extends React.Component {
         <div className="pl-lg-4">
           <Row>
             <Col lg="6" className="mb-4">
-              <div className="input-group-select-box">
+              <div className="input-group-button">
                 <Dropdown
                   name="Path"
                   value={this.state.moviePath}
@@ -459,7 +459,7 @@ class Radarr extends React.Component {
               }
             </Col>
             <Col lg="6" className="mb-4">
-              <div className="input-group-select-box">
+              <div className="input-group-button">
                 <Dropdown
                   name="Profile"
                   value={this.state.movieProfile}
@@ -509,7 +509,7 @@ class Radarr extends React.Component {
               {
                 this.state.apiVersion !== "2"
                   ? <>
-                    <div className="input-group-select-box">
+                    <div className="input-group-button">
                       <MultiDropdown
                         name="Tags"
                         placeholder=""
@@ -555,7 +555,7 @@ class Radarr extends React.Component {
         <div className="pl-lg-4">
           <Row>
             <Col lg="6" className="mb-4">
-              <div className="input-group-select-box">
+              <div className="input-group-button">
                 <Dropdown
                   name="Path"
                   value={this.state.animePath}
@@ -593,7 +593,7 @@ class Radarr extends React.Component {
               }
             </Col>
             <Col lg="6" className="mb-4">
-              <div className="input-group-select-box">
+              <div className="input-group-button">
                 <Dropdown
                   name="Profile"
                   value={this.state.animeProfile}
@@ -643,7 +643,7 @@ class Radarr extends React.Component {
               {
                 this.state.apiVersion !== "2"
                   ? <>
-                    <div className="input-group-select-box">
+                    <div className="input-group-button">
                       <MultiDropdown
                         name="Tags"
                         placeholder=""
@@ -704,7 +704,7 @@ class Radarr extends React.Component {
                 </label>
               </FormGroup>
               <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
-              <Input
+                <Input
                   className="custom-control-input"
                   id="SearchNewRequests"
                   type="checkbox"
@@ -726,7 +726,7 @@ class Radarr extends React.Component {
                   this.state.testSettingsRequested && !this.state.isTestingSettings ?
                     !this.state.testSettingsSuccess ? (
                       <Alert className="text-center" color="danger">
-                        <strong>{this.state.testSettingsError}.</strong>
+                        <strong>{this.state.testSettingsError}</strong>
                       </Alert>)
                       : <Alert className="text-center" color="success">
                         <strong>The specified settings are valid.</strong>

@@ -396,14 +396,14 @@ class Sonarr extends React.Component {
           <Row>
             <Col lg="6">
               <Dropdown
-                name="Api"
+                name="API"
                 value={this.state.apiVersion}
                 items={[{ name: "Version 2", value: "2" }, { name: "Version 3", value: "3" }]}
                 onChange={newApiVersion => this.setState({ apiVersion: newApiVersion }, this.onValueChange)} />
             </Col>
             <Col lg="6">
               <ValidatedTextbox
-                name="Api Key"
+                name="API Key"
                 placeholder="Enter api key"
                 alertClassName="mt-3 mb-0"
                 errorMessage="api key is required."
@@ -417,8 +417,8 @@ class Sonarr extends React.Component {
           <Row>
             <Col lg="6">
               <ValidatedTextbox
-                name="Hostname"
-                placeholder="Enter hostname"
+                name="Host or IP"
+                placeholder="Enter host or ip"
                 alertClassName="mt-3 mb-0"
                 errorMessage="Hostname is required."
                 isSubmitted={this.props.isSubmitted}
@@ -479,7 +479,7 @@ class Sonarr extends React.Component {
         <div className="pl-lg-4">
           <Row>
             <Col lg="6">
-              <div className="input-group-select-box mt-4">
+              <div className="input-group-button mt-4">
                 <Dropdown
                   name="Path"
                   value={this.state.tvPath}
@@ -517,7 +517,7 @@ class Sonarr extends React.Component {
               }
             </Col>
             <Col lg="6">
-              <div className="input-group-select-box mt-4">
+              <div className="input-group-button mt-4">
                 <Dropdown
                   name="Profile"
                   value={this.state.tvProfile}
@@ -560,7 +560,7 @@ class Sonarr extends React.Component {
               ? <>
                 <Row>
                   <Col lg="6">
-                    <div className="input-group-select-box mt-4">
+                    <div className="input-group-button mt-4">
                       <MultiDropdown
                         name="Tags"
                         placeholder=""
@@ -594,7 +594,7 @@ class Sonarr extends React.Component {
                     }
                   </Col>
                   <Col lg="6">
-                    <div className="input-group-select-box mt-4">
+                    <div className="input-group-button mt-4">
                       <Dropdown
                         name="Language"
                         value={this.state.tvLanguage}
@@ -662,7 +662,7 @@ class Sonarr extends React.Component {
         <div className="pl-lg-4">
           <Row>
             <Col lg="6">
-              <div className="input-group-select-box mt-4">
+              <div className="input-group-button mt-4">
                 <Dropdown
                   name="Path"
                   value={this.state.animePath}
@@ -700,7 +700,7 @@ class Sonarr extends React.Component {
               }
             </Col>
             <Col lg="6">
-              <div className="input-group-select-box mt-4">
+              <div className="input-group-button mt-4">
                 <Dropdown
                   name="Profile"
                   value={this.state.animeProfile}
@@ -743,7 +743,7 @@ class Sonarr extends React.Component {
               ? <>
                 <Row>
                   <Col lg="6">
-                    <div className="input-group-select-box mt-4">
+                    <div className="input-group-button mt-4">
                       <MultiDropdown
                         name="Tags"
                         placeholder=""
@@ -777,7 +777,7 @@ class Sonarr extends React.Component {
                     }
                   </Col>
                   <Col lg="6">
-                    <div className="input-group-select-box mt-4">
+                    <div className="input-group-button mt-4">
                       <Dropdown
                         name="Language"
                         value={this.state.animeLanguage}
@@ -882,7 +882,7 @@ class Sonarr extends React.Component {
                   this.state.testSettingsRequested && !this.state.isTestingSettings ?
                     !this.state.testSettingsSuccess ? (
                       <Alert className="text-center" color="danger">
-                        <strong>{this.state.testSettingsError}.</strong>
+                        <strong>{this.state.testSettingsError}</strong>
                       </Alert>)
                       : <Alert className="text-center" color="success">
                         <strong>The specified settings are valid.</strong>

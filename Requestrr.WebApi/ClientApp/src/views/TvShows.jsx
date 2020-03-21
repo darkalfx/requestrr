@@ -249,7 +249,7 @@ class TvShows extends React.Component {
                               this.state.savingAttempted && !this.state.isSaving ?
                                 !this.state.savingSuccess ? (
                                   <Alert className="text-center" color="danger">
-                                    <strong>{this.state.savingError}.</strong>
+                                    <strong>{this.state.savingError}</strong>
                                   </Alert>)
                                   : <Alert className="text-center" color="success">
                                     <strong>Settings updated successfully.</strong>

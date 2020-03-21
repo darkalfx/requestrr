@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:5060",
+      "applicationUrl": "http://localhost:4545",
       "sslPort": 5061
     }
   },
@@ -18,7 +18,7 @@
     "Requestrr.WebApi": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:5061;http://localhost:5060",
+      "applicationUrl": "http://localhost:4545",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

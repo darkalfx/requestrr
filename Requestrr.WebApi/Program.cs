@@ -9,6 +9,8 @@ namespace Requestrr.WebApi
 {
     public class Program
     {
+        public static int Port = 4545;
+
         public static void Main(string[] args)
         {
             if (!File.Exists(SettingsFile.FilePath))
@@ -25,13 +27,15 @@ namespace Requestrr.WebApi
                 File.WriteAllText(NotificationsFile.FilePath, File.ReadAllText("NotificationsTemplate.json"));
             }
 
+            Port = (int)SettingsFile.Read().Port;
+
             CreateWebHostBuilder(args).Build().Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
-                .UseUrls("http://*:5060")
+                .UseUrls($"http://*:{Port}")
                 .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.AddJsonFile(SettingsFile.FilePath, optional: false, reloadOnChange: true);

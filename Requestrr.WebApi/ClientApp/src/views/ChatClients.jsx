@@ -353,13 +353,13 @@ class ChatClients extends React.Component {
                               placeholder="Enter client id"
                               type="text"
                             />
-                            {
-                              this.state.clientIdInvalid ? (
-                                <Alert className="mt-3" color="warning">
-                                  <strong>Client id is required.</strong>
-                                </Alert>)
-                                : null
-                            }
+                          {
+                            this.state.clientIdInvalid ? (
+                              <Alert className="mt-3" color="warning">
+                                <strong>Client id is required.</strong>
+                              </Alert>)
+                              : null
+                          }
                           </FormGroup>
                         </Col>
                         <Col lg="6">
@@ -390,55 +390,49 @@ class ChatClients extends React.Component {
                       <Row>
                         <Col lg="6">
                           <FormGroup>
-                            <div className="input-group-select-box">
-                              <MultiDropdown
-                                name="Roles allowed to request tv shows"
-                                create={true}
-                                searchable={true}
-                                placeholder="Enter roles here. Leave blank for all roles."
-                                labelField="name"
-                                valueField="id"
-                                dropdownHandle={false}
-                                selectedItems={this.state.tvShowRoles.map(x => { return { name: x, id: x } })}
-                                items={this.state.tvShowRoles.map(x => { return { name: x, id: x } })}
-                                onChange={newTvShowRoles => this.setState({ tvShowRoles: newTvShowRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
-                            </div>
+                            <MultiDropdown
+                              name="Roles allowed to request tv shows"
+                              create={true}
+                              searchable={true}
+                              placeholder="Enter roles here. Leave blank for all roles."
+                              labelField="name"
+                              valueField="id"
+                              dropdownHandle={false}
+                              selectedItems={this.state.tvShowRoles.map(x => { return { name: x, id: x } })}
+                              items={this.state.tvShowRoles.map(x => { return { name: x, id: x } })}
+                              onChange={newTvShowRoles => this.setState({ tvShowRoles: newTvShowRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
                           </FormGroup>
                         </Col>
                         <Col lg="6">
                           <FormGroup>
-                            <div className="input-group-select-box">
-                              <MultiDropdown
-                                name="Roles allowed to request movies"
-                                create={true}
-                                searchable={true}
-                                placeholder="Enter roles here. Leave blank for all roles."
-                                labelField="name"
-                                valueField="id"
-                                dropdownHandle={false}
-                                selectedItems={this.state.movieRoles.map(x => { return { name: x, id: x } })}
-                                items={this.state.movieRoles.map(x => { return { name: x, id: x } })}
-                                onChange={newMovieRoles => this.setState({ movieRoles: newMovieRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
-                            </div>
+                            <MultiDropdown
+                              name="Roles allowed to request movies"
+                              create={true}
+                              searchable={true}
+                              placeholder="Enter roles here. Leave blank for all roles."
+                              labelField="name"
+                              valueField="id"
+                              dropdownHandle={false}
+                              selectedItems={this.state.movieRoles.map(x => { return { name: x, id: x } })}
+                              items={this.state.movieRoles.map(x => { return { name: x, id: x } })}
+                              onChange={newMovieRoles => this.setState({ movieRoles: newMovieRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
                           </FormGroup>
                         </Col>
                       </Row>
                       <Row>
                         <Col md="12">
                           <FormGroup>
-                            <div className="input-group-select-box">
-                              <MultiDropdown
-                                name="Channel(s) to monitor"
-                                create={true}
-                                searchable={true}
-                                placeholder="Enter channels here. Leave blank for all channels."
-                                labelField="name"
-                                valueField="id"
-                                dropdownHandle={false}
-                                selectedItems={this.state.monitoredChannels.map(x => { return { name: x, id: x } })}
-                                items={this.state.monitoredChannels.map(x => { return { name: x, id: x } })}
-                                onChange={newMonitoredChannels => this.setState({ monitoredChannels: newMonitoredChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')) })} />
-                            </div>
+                            <MultiDropdown
+                              name="Channel(s) to monitor"
+                              create={true}
+                              searchable={true}
+                              placeholder="Enter channels here. Leave blank for all channels."
+                              labelField="name"
+                              valueField="id"
+                              dropdownHandle={false}
+                              selectedItems={this.state.monitoredChannels.map(x => { return { name: x, id: x } })}
+                              items={this.state.monitoredChannels.map(x => { return { name: x, id: x } })}
+                              onChange={newMonitoredChannels => this.setState({ monitoredChannels: newMonitoredChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')) })} />
                           </FormGroup>
                         </Col>
                       </Row>
@@ -498,6 +492,7 @@ class ChatClients extends React.Component {
                       <Row>
                         <Col>
                           <FormGroup className="text-right">
+                            <Input id="discordlink" readOnly={true} className="d-none" value={"https://discordapp.com/oauth2/authorize?&client_id=" + this.state.clientId + "&scope=bot&permissions=522304"} />
                             <button onClick={this.onTestSettings} disabled={!(this.validateBotToken() && this.validateClientId())} className="btn mt-3 btn-icon btn-3 btn-default" type="button">
                               <span className="btn-inner--icon">
                                 {
@@ -517,7 +512,6 @@ class ChatClients extends React.Component {
                               <span className="btn-inner--icon"><i className="fas fa-copy"></i></span>
                               <span className="btn-inner--text">{this.state.isCopyingLink ? "Copied to clipboard!" : "Copy Invite Link"}</span>
                             </button>
-                            <Input id="discordlink" readOnly={true} className="d-none" value={"https://discordapp.com/oauth2/authorize?&client_id=" + this.state.clientId + "&scope=bot&permissions=522304"} />
                           </FormGroup>
                         </Col>
                       </Row>

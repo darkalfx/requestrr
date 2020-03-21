@@ -159,16 +159,16 @@ class Ombi extends React.Component {
           <Row>
             <Col lg="6">
               <Dropdown
-                name="Api"
+                name="API"
                 value={this.state.apiVersion}
                 items={[{ name: "Version 3", value: "3" }]}
                 onChange={newApiVersion => this.setState({ apiVersion: newApiVersion }, this.onValueChange)} />
             </Col>
             <Col lg="6">
               <ValidatedTextbox
-                name="Api Key"
+                name="API Key"
                 placeholder="Enter api key"
-                alertClassName="mt-3 mb-0"
+                alertClassName="mt-3"
                 errorMessage="api key is required."
                 isSubmitted={this.props.isSubmitted}
                 value={this.state.apiKey}
@@ -180,8 +180,8 @@ class Ombi extends React.Component {
           <Row>
             <Col lg="6">
               <ValidatedTextbox
-                name="Hostname"
-                placeholder="Enter hostname"
+                name="Host or IP"
+                placeholder="Enter host or ip"
                 alertClassName="mt-3 mb-0"
                 errorMessage="Hostname is required."
                 isSubmitted={this.props.isSubmitted}
@@ -205,7 +205,7 @@ class Ombi extends React.Component {
           </Row>
           <Row>
             <Col lg="6">
-            <Textbox
+              <Textbox
                 name="Base Url"
                 placeholder="Enter base url configured in Ombi, leave empty if none configured."
                 value={this.state.baseUrl}
@@ -246,7 +246,7 @@ class Ombi extends React.Component {
                   this.state.testSettingsRequested && !this.state.isTestingSettings ?
                     !this.state.testSettingsSuccess ? (
                       <Alert className="text-center" color="danger">
-                        <strong>{this.state.testSettingsError}.</strong>
+                        <strong>{this.state.testSettingsError}</strong>
                       </Alert>)
                       : <Alert className="text-center" color="success">
                         <strong>The specified settings are valid.</strong>

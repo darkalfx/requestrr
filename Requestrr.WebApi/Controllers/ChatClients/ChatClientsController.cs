@@ -65,7 +65,7 @@ namespace Requestrr.WebApi.Controllers.ChatClients
             }
             catch (System.Exception)
             {
-                return BadRequest($"The specified settings are invalid");
+                return BadRequest($"Invalid bot token");
             }
         }
 

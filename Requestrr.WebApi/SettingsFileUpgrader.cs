@@ -51,6 +51,13 @@ namespace Requestrr.WebApi
                 settingsJson.Version = "1.0.5";
                 File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
             }
+
+            if (settingsJson.Version.ToString().Equals("1.0.5", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.0.6";
+                ((JObject)settingsJson).Add("Port", 5060);
+                File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
+            }
         }
     }
 }

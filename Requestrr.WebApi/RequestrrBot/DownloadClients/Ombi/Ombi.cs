@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -30,24 +31,65 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
 
         public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<Ombi> logger, OmbiSettings settings)
         {
+            if (!string.IsNullOrWhiteSpace(settings.BaseUrl) && !settings.BaseUrl.StartsWith("/"))
+            {
+                throw new Exception("Invalid base URL, must start with /");
+            }
+
             var testSuccessful = false;
 
             try
             {
                 var response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}/api/v1/Settings/ombi");
-                dynamic jsonResponse = JObject.Parse(await response.Content.ReadAsStringAsync());
-                testSuccessful = jsonResponse.baseUrl.ToString().Equals(settings.BaseUrl, StringComparison.InvariantCultureIgnoreCase);
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new Exception("Invalid api key");
+                }
+                else if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    throw new Exception("Incorrect api version");
+                }
+
+                try
+                {
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    dynamic jsonResponse = JObject.Parse(responseString);
+
+                    if (!jsonResponse.baseUrl.ToString().Equals(settings.BaseUrl, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        throw new Exception("Base url does not match what is set in Ombi");
+                    }
+                }
+                catch
+                {
+                    throw new Exception("Base url does not match what is set in Ombi");
+                }
+
+                testSuccessful = true;
+            }
+            catch (HttpRequestException ex)
+            {
+                logger.LogWarning(ex, "Error while testing Ombi connection: " + ex.Message);
+                throw new Exception("Invalid host and/or port");
             }
             catch (System.Exception ex)
             {
+                logger.LogWarning(ex, "Error while testing Ombi connection: " + ex.Message);
 
-                logger.LogWarning(ex, "Error while testing ombi connection: " + ex.Message);
-                throw new Exception("Could not connect to Ombi");
+                if (ex.GetType() == typeof(System.Exception))
+                {
+                    throw;
+                }
+                else
+                {
+                    throw new Exception("Invalid host and/or port");
+                }
             }
 
             if (!testSuccessful)
             {
-                throw new Exception("Could not connect to Ombi");
+                throw new Exception("Invalid host and/or port");
             }
         }
 
