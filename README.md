@@ -17,17 +17,8 @@ Requestrr is a chatbot used to simplify using services like Sonarr/Radarr/Ombi v
 Installation & Configuration
 ==================
 
-For Discord, make sure that your bot has the following permissions
-
-    Read Messages
-    Embed Links
-    Read Message History
-    Use External Emojis
-    Send Messages
-    Manage Messages
-    Mention @everyone
-    Add Reactions
-
+Refer to the Wiki for detailed steps:
+https://github.com/darkalfx/requestrr/wiki
 
 Docker Setup & Start
 ==================
