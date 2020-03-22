@@ -16,7 +16,7 @@ Requestrr is a chatbot used to simplify using services like Sonarr/Radarr/Ombi v
 ### Features
 
 - Ability to request content via Discord
-- Users can get notified their requests complete
+- Users can get notified when their requests complete
 - Sonarr/Radarr V2/V3 integration
 - Ombi V3 integration with support for per user roles/quotas
 - Fully configurable via a web portal
