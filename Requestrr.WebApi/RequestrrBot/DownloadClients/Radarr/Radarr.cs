@@ -171,14 +171,33 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             {
                 try
                 {
-                    var response = await HttpGetAsync($"{BaseURL}/movie/lookup/tmdb?tmdbId={theMovieDbId}");
-                    await response.ThrowIfNotSuccessfulAsync("RadarrMovieLookupByTmdbId failed", x => x.error);
+                    var response = await HttpGetAsync($"{BaseURL}/movie");
+                    await response.ThrowIfNotSuccessfulAsync("RadarrGetAllMovies failed", x => x.error);
 
                     var jsonResponse = await response.Content.ReadAsStringAsync();
-                    var jsonMovie = JsonConvert.DeserializeObject<JSONMovie>(jsonResponse);
+                    var allRadarrMoviesJson = JsonConvert.DeserializeObject<List<JSONMovie>>(jsonResponse).ToArray();
 
-                    var convertedMovie = Convert(jsonMovie);
-                    return convertedMovie?.TheMovieDbId == theMovieDbId.ToString() ? convertedMovie : null;
+                    var foundMovieJson = allRadarrMoviesJson.FirstOrDefault(x => x.tmdbId == theMovieDbId);
+
+                    response = await HttpGetAsync($"{BaseURL}/movie/lookup/tmdb?tmdbId={theMovieDbId}");
+                    await response.ThrowIfNotSuccessfulAsync("RadarrMovieLookupByTmdbId failed", x => x.error);
+
+                    jsonResponse = await response.Content.ReadAsStringAsync();
+                    var movieFoundByIdJson = JsonConvert.DeserializeObject<JSONMovie>(jsonResponse);
+
+                    if (foundMovieJson != null)
+                    {
+                        if (movieFoundByIdJson.tmdbId == theMovieDbId)
+                        {
+                            foundMovieJson.images = movieFoundByIdJson.images;
+                        }
+                    }
+                    else
+                    {
+                        foundMovieJson = movieFoundByIdJson;
+                    }
+
+                    return foundMovieJson != null ? Convert(foundMovieJson) : null;
                 }
                 catch (System.Exception ex)
                 {

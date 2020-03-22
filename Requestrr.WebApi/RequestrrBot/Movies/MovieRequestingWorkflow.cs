@@ -60,9 +60,9 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         {
             IReadOnlyList<Movie> movies = Array.Empty<Movie>();
 
-            if (movieName.Trim().ToLower().StartsWith("tmdbid"))
+            if (movieName.Trim().ToLower().StartsWith("tmdb"))
             {
-                var theMovieDbIdTextValue = movieName.ToLower().Split("tmdbid")[1]?.Trim();
+                var theMovieDbIdTextValue = movieName.ToLower().Split("tmdb")[1]?.Trim();
 
                 if (int.TryParse(theMovieDbIdTextValue, out var theMovieDbId))
                 {
