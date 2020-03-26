@@ -1,0 +1,11 @@
+version: "3.4"
+services:
+  requestrr:
+    image: darkalfx/requestrr
+    hostname: requestrr
+    container_name: requestrr
+    ports:
+    - 4545:4545
+    volumes:
+    - /path to config:/root/config
+    restart: unless-stopped
