@@ -260,7 +260,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 ? $"Your request for **all seasons** was sent successfully, they should be available soon!"
                 : season is FutureTvSeasons
                     ? $"Your request for **future seasons** was sent successfully, you will be notified when they become available."
-                    : $"Your request for season **{season.SeasonNumber}** was sent successfully, it should be available soon!";
+                    : $"Your request for **season {season.SeasonNumber}** was sent successfully, it should be available soon!";
 
             return ReplyToUserAsync(message);
         }
@@ -283,21 +283,21 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public async Task<bool> AskForSeasonNotificationRequestAsync(TvShow tvShow, TvSeason requestedSeason)
         {
-            var message = $"Season {requestedSeason.SeasonNumber} has already been requested, you can click on the 🔔 reaction directly above this message to be notified when it becomes available.";
+            var message = $"**Season {requestedSeason.SeasonNumber}** has already been requested, you can click on the 🔔 reaction directly above this message to be notified when it becomes available.";
 
             if (requestedSeason is FutureTvSeasons)
             {
                 if (tvShow.AllSeasonsAvailable())
                 {
-                    message = $"All seasons are already available, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
+                    message = $"*All seasons** are already available, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
                 }
                 else if (tvShow.AllSeasonsFullyRequested())
                 {
-                    message = $"All seasons have been already requested, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
+                    message = $"*All seasons** have been already requested, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
                 }
                 else
                 {
-                    message = $"Future seasons have already been requested, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
+                    message = $"**Future seasons** have already been requested, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
                 }
             }
 
@@ -321,7 +321,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public Task DisplayRequestDeniedForSeasonAsync(TvSeason selectedSeason)
         {
-            return ReplyToUserAsync($"Your request was denied by the provider due to an insufficient quota limit.");
+            return ReplyToUserAsync($"Your request was denied by the provider due to an insufficient quota limit or insufficient roles.");
         }
 
         public Task WarnAlreadyNotifiedForSeasonsAsync(TvShow tvShow, TvSeason requestedSeason)
@@ -330,24 +330,24 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             {
                 if (tvShow.AllSeasonsAvailable())
                 {
-                    return ReplyToUserAsync($"All seasons are available and you will be notified when new seasons become available.");
+                    return ReplyToUserAsync($"**All seasons** are available and you will be notified when new seasons become available.");
                 }
                 else if (tvShow.AllSeasonsFullyRequested())
                 {
-                    return ReplyToUserAsync($"All seasons have already been requested and you will be notified when new seasons become available.");
+                    return ReplyToUserAsync($"**All seasons** have already been requested and you will be notified when new seasons become available.");
                 }
                 else
                 {
-                    return ReplyToUserAsync($"Future seasons have already been requested and you will be notified when they becomes available.");
+                    return ReplyToUserAsync($"**Future seasons** have already been requested and you will be notified when they becomes available.");
                 }
             }
 
-            return ReplyToUserAsync($"Season {requestedSeason.SeasonNumber} has already been requested and you will be notified when it becomes available.");
+            return ReplyToUserAsync($"**Season {requestedSeason.SeasonNumber}** has already been requested and you will be notified when it becomes available.");
         }
 
         public Task WarnShowHasEnded(TvShow tvShow)
         {
-            return ReplyToUserAsync($"This show has ended, and all seasons {(tvShow.AllSeasonsAvailable() ? "are available" : "have been requested")}.");
+            return ReplyToUserAsync($"This show has ended, and *all seasons** {(tvShow.AllSeasonsAvailable() ? "are available" : "have been requested")}.");
         }
 
         public Task WarnSeasonAlreadyAvailable(TvSeason requestedSeason)

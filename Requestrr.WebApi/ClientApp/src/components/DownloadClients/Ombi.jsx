@@ -213,7 +213,7 @@ class Ombi extends React.Component {
             </Col>
             <Col lg="6">
               <Textbox
-                name="Default Api Username"
+                name="Default Ombi User"
                 placeholder="Enter api username (Optional)"
                 value={this.state.apiUsername}
                 onChange={newApiUsername => this.setState({ apiUsername: newApiUsername }, this.onValueChange)} />
@@ -237,6 +237,7 @@ class Ombi extends React.Component {
               </FormGroup>
             </Col>
             <Col lg="6">
+              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Ombi#configuring-permissions" target="_blank">Click here to view how configure Ombi permissions with the bot</a>
             </Col>
           </Row>
           <Row>

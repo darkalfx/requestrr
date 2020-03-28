@@ -173,46 +173,54 @@ class ChatClients extends React.Component {
     this.triggerClientIdValidation();
     this.triggerBotTokenValidation();
 
-    if (!this.isSaving
-      && this.validateChatClient()
-      && this.validateBotToken()
-      && this.validateClientId()) {
-      this.setState({ isSaving: true });
+    if (!this.isSaving) {
+      if (this.validateChatClient()
+        && this.validateBotToken()
+        && this.validateClientId()) {
+        this.setState({ isSaving: true });
 
-      this.props.save({
-        chatClient: this.state.chatClient,
-        clientId: this.state.clientId,
-        botToken: this.state.botToken,
-        statusMessage: this.state.statusMessage,
-        commandPrefix: this.state.commandPrefix,
-        monitoredChannels: this.state.monitoredChannels,
-        tvShowRoles: this.state.tvShowRoles,
-        movieRoles: this.state.movieRoles,
-        enableDirectMessageSupport: this.state.enableDirectMessageSupport,
-      })
-        .then(data => {
-          this.setState({ isSaving: false });
+        this.props.save({
+          chatClient: this.state.chatClient,
+          clientId: this.state.clientId,
+          botToken: this.state.botToken,
+          statusMessage: this.state.statusMessage,
+          commandPrefix: this.state.commandPrefix,
+          monitoredChannels: this.state.monitoredChannels,
+          tvShowRoles: this.state.tvShowRoles,
+          movieRoles: this.state.movieRoles,
+          enableDirectMessageSupport: this.state.enableDirectMessageSupport,
+        })
+          .then(data => {
+            this.setState({ isSaving: false });
 
-          if (data.ok) {
-            this.setState({
-              savingAttempted: true,
-              savingError: "",
-              savingSuccess: true
-            });
-          }
-          else {
-            var error = "An unknown error occurred while saving.";
+            if (data.ok) {
+              this.setState({
+                savingAttempted: true,
+                savingError: "",
+                savingSuccess: true
+              });
+            }
+            else {
+              var error = "An unknown error occurred while saving.";
 
-            if (typeof (data.error) === "string")
-              error = data.error;
+              if (typeof (data.error) === "string")
+                error = data.error;
 
-            this.setState({
-              savingAttempted: true,
-              savingError: error,
-              savingSuccess: false
-            });
-          }
+              this.setState({
+                savingAttempted: true,
+                savingError: error,
+                savingSuccess: false
+              });
+            }
+          });
+      }
+      else {
+        this.setState({
+          savingAttempted: true,
+          savingError: "Some fields are invalid, please fix them before saving.",
+          savingSuccess: false
         });
+      }
     }
   }
 
@@ -353,13 +361,13 @@ class ChatClients extends React.Component {
                               placeholder="Enter client id"
                               type="text"
                             />
-                          {
-                            this.state.clientIdInvalid ? (
-                              <Alert className="mt-3" color="warning">
-                                <strong>Client id is required.</strong>
-                              </Alert>)
-                              : null
-                          }
+                            {
+                              this.state.clientIdInvalid ? (
+                                <Alert className="mt-3" color="warning">
+                                  <strong>Client id is required.</strong>
+                                </Alert>)
+                                : null
+                            }
                           </FormGroup>
                         </Col>
                         <Col lg="6">
@@ -549,7 +557,7 @@ class ChatClients extends React.Component {
                               this.state.savingAttempted && !this.state.isSaving ?
                                 !this.state.savingSuccess ? (
                                   <Alert className="text-center" color="danger">
-                                    <strong>{this.state.savingError}.</strong>
+                                    <strong>{this.state.savingError}</strong>
                                   </Alert>)
                                   : <Alert className="text-center" color="success">
                                     <strong>Settings updated successfully.</strong>

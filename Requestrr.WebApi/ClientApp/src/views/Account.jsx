@@ -146,41 +146,49 @@ class Account extends React.Component {
     this.triggerNewPasswordConfirmationValidation();
     this.triggerPasswordMatchValidation();
 
-    if (!this.state.isSaving
-      && this.validatePassword()
-      && this.validateNewPassword()
-      && this.validateNewPasswordConfirmation()
-      && this.validatePasswordMatch()) {
-      this.setState({ isSaving: true });
+    if (!this.state.isSaving) {
+      if (this.validatePassword()
+        && this.validateNewPassword()
+        && this.validateNewPasswordConfirmation()
+        && this.validatePasswordMatch()) {
+        this.setState({ isSaving: true });
 
-      this.props.changePassword({
-        'password': this.state.password,
-        'newPassword': this.state.newPassword,
-        'newPasswordConfirmation': this.state.newPasswordConfirmation,
-      })
-        .then(data => {
-          this.setState({ isSaving: false });
+        this.props.changePassword({
+          'password': this.state.password,
+          'newPassword': this.state.newPassword,
+          'newPasswordConfirmation': this.state.newPasswordConfirmation,
+        })
+          .then(data => {
+            this.setState({ isSaving: false });
 
-          if (data.ok) {
-            this.setState({
-              savingAttempted: true,
-              savingError: "",
-              savingSuccess: true
-            });
-          }
-          else {
-            var error = "An unknown error occurred while saving.";
+            if (data.ok) {
+              this.setState({
+                savingAttempted: true,
+                savingError: "",
+                savingSuccess: true
+              });
+            }
+            else {
+              var error = "An unknown error occurred while saving.";
 
-            if (typeof (data.error) === "string")
-              error = data.error;
+              if (typeof (data.error) === "string")
+                error = data.error;
 
-            this.setState({
-              savingAttempted: true,
-              savingError: error,
-              savingSuccess: false
-            });
-          }
+              this.setState({
+                savingAttempted: true,
+                savingError: error,
+                savingSuccess: false
+              });
+            }
+          });
+      }
+      else {
+        this.setState({
+          savingAttempted: true,
+          savingError: "Some fields are invalid, please fix them before saving.",
+          savingSuccess: false
         });
+      }
     }
   }
 

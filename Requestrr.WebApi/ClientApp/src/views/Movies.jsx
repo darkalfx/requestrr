@@ -98,8 +98,8 @@ class Movies extends React.Component {
     e.preventDefault();
     this.setState({ isSubmitted: true });
 
-    if (!this.state.isSaving
-      && (this.state.client === "Disabled"
+    if (!this.state.isSaving) {
+      if ((this.state.client === "Disabled"
         || (this.state.client === "Radarr"
           && this.state.isRadarrValid
           && this.state.isCommandValid)
@@ -107,49 +107,57 @@ class Movies extends React.Component {
           && this.state.isOmbiValid
           && this.state.isCommandValid)
       )) {
-      this.setState({ isSaving: true });
+        this.setState({ isSaving: true });
 
-      let saveAction = null;
+        let saveAction = null;
 
-      if (this.state.client === "Disabled") {
-        saveAction = this.props.saveDisabledClient();
-      }
-      else if (this.state.client === "Ombi") {
-        saveAction = this.props.saveOmbiClient({
-          ombi: this.state.ombi,
-          command: this.state.command,
-        });
-      }
-      else if (this.state.client === "Radarr") {
-        saveAction = this.props.saveRadarrClient({
-          radarr: this.state.radarr,
-          command: this.state.command,
-        });
-      }
-
-      saveAction.then(data => {
-        this.setState({ isSaving: false });
-
-        if (data.ok) {
-          this.setState({
-            savingAttempted: true,
-            savingError: "",
-            savingSuccess: true
+        if (this.state.client === "Disabled") {
+          saveAction = this.props.saveDisabledClient();
+        }
+        else if (this.state.client === "Ombi") {
+          saveAction = this.props.saveOmbiClient({
+            ombi: this.state.ombi,
+            command: this.state.command,
           });
         }
-        else {
-          var error = "An unknown error occurred while saving.";
-
-          if (typeof (data.error) === "string")
-            error = data.error;
-
-          this.setState({
-            savingAttempted: true,
-            savingError: error,
-            savingSuccess: false
+        else if (this.state.client === "Radarr") {
+          saveAction = this.props.saveRadarrClient({
+            radarr: this.state.radarr,
+            command: this.state.command,
           });
         }
-      });
+
+        saveAction.then(data => {
+          this.setState({ isSaving: false });
+
+          if (data.ok) {
+            this.setState({
+              savingAttempted: true,
+              savingError: "",
+              savingSuccess: true
+            });
+          }
+          else {
+            var error = "An unknown error occurred while saving.";
+
+            if (typeof (data.error) === "string")
+              error = data.error;
+
+            this.setState({
+              savingAttempted: true,
+              savingError: error,
+              savingSuccess: false
+            });
+          }
+        });
+      }
+      else {
+        this.setState({
+          savingAttempted: true,
+          savingError: "Some fields are invalid, please fix them before saving.",
+          savingSuccess: false
+        });
+      }
     }
   }
 

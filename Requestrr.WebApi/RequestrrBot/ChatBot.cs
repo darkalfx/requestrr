@@ -67,8 +67,26 @@ namespace Requestrr.WebApi.RequestrrBot
                     try
                     {
                         var newSettings = _discordSettingsProvider.Provide();
+                        var needsRestart = false;
 
-                        if (!_currentSettings.Equals(newSettings) || _client.ConnectionState == ConnectionState.Disconnected)
+                        if (!string.IsNullOrEmpty(newSettings.BotToken) && _client.ConnectionState != ConnectionState.Disconnected)
+                        {
+                            try
+                            {
+                                needsRestart = string.IsNullOrEmpty(_client.CurrentUser.Username);
+                            }
+                            catch
+                            {
+                                needsRestart = true;
+                            }
+
+                            if (needsRestart)
+                            {
+                                _logger.LogError("Bot no longer has a current discord user.");
+                            }
+                        }
+
+                        if (!_currentSettings.Equals(newSettings) || needsRestart || _client.ConnectionState == ConnectionState.Disconnected)
                         {
                             _logger.LogWarning("Bot configuration changed/not connected to Discord: restarting bot");
                             _currentSettings = newSettings;
@@ -331,7 +349,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 return;
             }
 
-            if(result is ExecuteResult executeResult)
+            if (result is ExecuteResult executeResult)
             {
                 _logger.LogError(executeResult.Exception, $"An exception occurred while processing a command: {executeResult.Exception.Message}");
             }
@@ -339,7 +357,7 @@ namespace Requestrr.WebApi.RequestrrBot
             {
                 _logger.LogError($"An unknown occurred error while processing a command: {result.ErrorReason}");
             }
-            
+
             await context.Channel.SendMessageAsync("An unexpected error occurred while trying to process your request.");
         }
     }

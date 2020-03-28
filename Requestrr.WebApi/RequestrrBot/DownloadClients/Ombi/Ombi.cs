@@ -48,7 +48,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 }
                 else if (response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    throw new Exception("Incorrect api version");
+                    throw new Exception("Invalid host and/or port");
                 }
 
                 try
