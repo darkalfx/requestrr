@@ -349,7 +349,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 try
                 {
                     var requestedSeasons = season is AllTvSeasons
-                                            ? tvShow.Seasons.ToList()
+                                            ? new List<TvSeason>(tvShow.Seasons.OfType<NormalTvSeason>())
                                             : season is FutureTvSeasons
                                                 ? new List<TvSeason>()
                                                 : new List<TvSeason> { season };

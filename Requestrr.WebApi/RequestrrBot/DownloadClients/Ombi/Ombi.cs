@@ -261,7 +261,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                     var jsonTvShow = await FindTvShowByTheTvDbIdAsync(tvShow.TheTvDbId.ToString());
 
                     var wantedSeasonIds = season is AllTvSeasons
-                        ? new HashSet<int>(tvShow.Seasons.Select(x => x.SeasonNumber))
+                        ? new HashSet<int>(tvShow.Seasons.OfType<NormalTvSeason>().Select(x => x.SeasonNumber))
                         : season is FutureTvSeasons
                             ? new HashSet<int>()
                             : new HashSet<int> { season.SeasonNumber };
