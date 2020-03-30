@@ -67,8 +67,26 @@ namespace Requestrr.WebApi.RequestrrBot
                     try
                     {
                         var newSettings = _discordSettingsProvider.Provide();
+                        var mustRestart = false;
 
-                        if (!_currentSettings.Equals(newSettings) || _client.ConnectionState == ConnectionState.Disconnected)
+                        try
+                        {
+                            if (_client.ConnectionState == ConnectionState.Connected)
+                            {
+                                mustRestart = string.IsNullOrEmpty(_client.CurrentUser.Username);
+                            }
+                        }
+                        catch
+                        {
+                            mustRestart = true;
+                        }
+
+                        if(mustRestart)
+                        {
+                            _logger.LogWarning("Restarting bot due to incorrect automatic reconnection.");
+                        }
+
+                        if (!_currentSettings.Equals(newSettings) || mustRestart || _client.ConnectionState == ConnectionState.Disconnected)
                         {
                             _logger.LogWarning("Bot configuration changed/not connected to Discord: restarting bot");
                             _currentSettings = newSettings;
@@ -266,6 +284,8 @@ namespace Requestrr.WebApi.RequestrrBot
 
         private async Task Connected()
         {
+            _logger.LogTrace($"[Discord] Connected - {_client.ConnectionState}");
+
             try
             {
                 if (_movieNotificationEngine != null)
