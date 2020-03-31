@@ -262,7 +262,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 case LogSeverity.Warning:
                     _logger.LogWarning(log.Exception, $"[Discord] {log.Message}");
 
-                    if (_client.ConnectionState == ConnectionState.Connected)
+                    if (log.Exception != null && _client.ConnectionState == ConnectionState.Connected)
                     {
                         _logger.LogWarning($"[Discord] Disconnecting from Discord due to error");
                         _client.StopAsync().ContinueWith(x => _client.LogoutAsync());
@@ -284,8 +284,6 @@ namespace Requestrr.WebApi.RequestrrBot
 
         private async Task Connected()
         {
-            _logger.LogTrace($"[Discord] Connected - {_client.ConnectionState}");
-
             try
             {
                 if (_movieNotificationEngine != null)
