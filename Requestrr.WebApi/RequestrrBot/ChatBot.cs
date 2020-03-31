@@ -67,26 +67,26 @@ namespace Requestrr.WebApi.RequestrrBot
                     try
                     {
                         var newSettings = _discordSettingsProvider.Provide();
-                        var needsRestart = false;
+                        var mustRestart = false;
 
-                        if (!string.IsNullOrEmpty(newSettings.BotToken) && _client.ConnectionState != ConnectionState.Disconnected)
+                        try
                         {
-                            try
+                            if (_client.ConnectionState == ConnectionState.Connected)
                             {
-                                needsRestart = string.IsNullOrEmpty(_client.CurrentUser.Username);
-                            }
-                            catch
-                            {
-                                needsRestart = true;
-                            }
-
-                            if (needsRestart)
-                            {
-                                _logger.LogError("Bot no longer has a current discord user.");
+                                mustRestart = string.IsNullOrEmpty(_client.CurrentUser.Username);
                             }
                         }
+                        catch
+                        {
+                            mustRestart = true;
+                        }
 
-                        if (!_currentSettings.Equals(newSettings) || needsRestart || _client.ConnectionState == ConnectionState.Disconnected)
+                        if(mustRestart)
+                        {
+                            _logger.LogWarning("Restarting bot due to incorrect automatic reconnection.");
+                        }
+
+                        if (!_currentSettings.Equals(newSettings) || mustRestart || _client.ConnectionState == ConnectionState.Disconnected)
                         {
                             _logger.LogWarning("Bot configuration changed/not connected to Discord: restarting bot");
                             _currentSettings = newSettings;
@@ -262,7 +262,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 case LogSeverity.Warning:
                     _logger.LogWarning(log.Exception, $"[Discord] {log.Message}");
 
-                    if (log.Message?.Contains("unhandled", StringComparison.InvariantCultureIgnoreCase) ?? false && _client.ConnectionState == ConnectionState.Connected)
+                    if (log.Exception != null && _client.ConnectionState == ConnectionState.Connected)
                     {
                         _logger.LogWarning($"[Discord] Disconnecting from Discord due to error");
                         _client.StopAsync().ContinueWith(x => _client.LogoutAsync());

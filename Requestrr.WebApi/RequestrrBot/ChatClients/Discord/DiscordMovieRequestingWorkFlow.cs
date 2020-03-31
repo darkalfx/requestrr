@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -175,6 +176,10 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                     if (!string.IsNullOrWhiteSpace(details.InTheatersDate))
                     {
                         embedBuilder.AddField("__In Theaters__", $"{details.InTheatersDate}", true);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(movie.ReleaseDate))
+                    {
+                        embedBuilder.AddField("__In Theaters__", $"{DateTime.Parse(movie.ReleaseDate).ToString("MMMM dd yyyy", DateTimeFormatInfo.InvariantInfo)}", true);
                     }
 
                     if (!string.IsNullOrWhiteSpace(details.PhysicalReleaseName) && !string.IsNullOrWhiteSpace(details.PhysicalReleaseDate))

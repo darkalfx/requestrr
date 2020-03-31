@@ -289,11 +289,11 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             {
                 if (tvShow.AllSeasonsAvailable())
                 {
-                    message = $"*All seasons** are already available, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
+                    message = $"**All seasons** are already available, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
                 }
                 else if (tvShow.AllSeasonsFullyRequested())
                 {
-                    message = $"*All seasons** have been already requested, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
+                    message = $"**All seasons** have been already requested, you can click on the 🔔 reaction directly above this message to be notified when future seasons becomes available.";
                 }
                 else
                 {
@@ -347,7 +347,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public Task WarnShowHasEnded(TvShow tvShow)
         {
-            return ReplyToUserAsync($"This show has ended, and *all seasons** {(tvShow.AllSeasonsAvailable() ? "are available" : "have been requested")}.");
+            return ReplyToUserAsync($"This show has ended, and **all seasons** {(tvShow.AllSeasonsAvailable() ? "are available" : "have been requested")}.");
         }
 
         public Task WarnSeasonAlreadyAvailable(TvSeason requestedSeason)

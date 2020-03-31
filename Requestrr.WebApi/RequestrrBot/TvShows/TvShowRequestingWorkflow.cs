@@ -174,7 +174,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             {
                 tvShow.Seasons = tvShow.Seasons.Append(new FutureTvSeasons
                 {
-                    SeasonNumber = tvShow.Seasons.Max(x => x.SeasonNumber) + 1,
+                    SeasonNumber = tvShow.Seasons?.Any() == true ? tvShow.Seasons.Max(x => x.SeasonNumber) + 1 : 1,
                     IsAvailable = false,
                     IsRequested = tvShow.IsRequested ? RequestedState.Full : RequestedState.None,
                 }).ToArray();
