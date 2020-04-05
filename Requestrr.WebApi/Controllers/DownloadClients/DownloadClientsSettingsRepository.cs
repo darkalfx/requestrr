@@ -1,5 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using Requestrr.WebApi.config;
+using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
+using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
+using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
@@ -14,7 +17,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             });
         }
 
-        public static void SetOmbi(MoviesSettings movieSettings, OmbiSettings ombiSettings)
+        public static void SetOmbi(MoviesSettings movieSettings, OmbiSettingsModel ombiSettings)
         {
             SettingsFile.Write(settings =>
             {
@@ -25,7 +28,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             });
         }
 
-        public static void SetRadarr(MoviesSettings movieSettings, RadarrSettings radarrSettings)
+        public static void SetRadarr(MoviesSettings movieSettings, RadarrSettingsModel radarrSettings)
         {
             SettingsFile.Write(settings =>
             {
@@ -63,7 +66,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             });
         }
 
-        public static void SetOmbi(TvShowsSettings tvShowsSettings, OmbiSettings ombiSettings)
+        public static void SetOmbi(TvShowsSettings tvShowsSettings, OmbiSettingsModel ombiSettings)
         {
             SettingsFile.Write(settings =>
             {
@@ -74,7 +77,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             });
         }
 
-        public static void SetSonarr(TvShowsSettings movieSettings, SonarrSettings sonarrSettings)
+        public static void SetSonarr(TvShowsSettings movieSettings, SonarrSettingsModel sonarrSettings)
         {
             SettingsFile.Write(settings =>
             {
@@ -106,7 +109,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             });
         }
 
-        private static void SetOmbiSettings(OmbiSettings ombiSettings, dynamic settings)
+        private static void SetOmbiSettings(OmbiSettingsModel ombiSettings, dynamic settings)
         {
             settings.DownloadClients.Ombi.Hostname = ombiSettings.Hostname;
             settings.DownloadClients.Ombi.Port = ombiSettings.Port;

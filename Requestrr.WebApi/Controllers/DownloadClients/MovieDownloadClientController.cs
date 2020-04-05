@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Requestrr.WebApi.config;
+using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
+using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
@@ -34,7 +36,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             return Ok(new MovieSettingsModel
             {
                 Client = _moviesSettings.Client,
-                Radarr = new RadarrSettings
+                Radarr = new RadarrSettingsModel
                 {
                     Hostname = _downloadClientsSettings.Radarr.Hostname,
                     BaseUrl = _downloadClientsSettings.Radarr.BaseUrl,
@@ -53,7 +55,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                     MonitorNewRequests = _downloadClientsSettings.Radarr.MonitorNewRequests,
                     Version = _downloadClientsSettings.Radarr.Version
                 },
-                Ombi = new OmbiSettings
+                Ombi = new OmbiSettingsModel
                 {
                     Hostname = _downloadClientsSettings.Ombi.Hostname,
                     BaseUrl = _downloadClientsSettings.Ombi.BaseUrl,

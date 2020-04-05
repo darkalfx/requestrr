@@ -5,20 +5,23 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 
 namespace Requestrr.WebApi
 {
     public class RequestrrModuleBase<T> : IDisposable
     {
         private readonly DiscordSocketClient _discord;
+        private readonly DiscordSettings _discordSettings;
         private Dictionary<ulong, IReactionCallback> _callbacks = new Dictionary<ulong, IReactionCallback>();
 
         protected SocketCommandContext Context { get; }
 
-        public RequestrrModuleBase(DiscordSocketClient discord, SocketCommandContext commandContext)
+        public RequestrrModuleBase(DiscordSocketClient discord, SocketCommandContext commandContext, DiscordSettingsProvider discordSettingsProvider)
         {
             _discord = discord;
             Context = commandContext;
+            _discordSettings = discordSettingsProvider.Provide();
             _discord.ReactionAdded += HandleReactionAsync;
         }
 
@@ -33,7 +36,7 @@ namespace Requestrr.WebApi
             {
                 if (message != null)
                 {
-                    if (!(message.Channel is IPrivateChannel))
+                    if (_discordSettings.AutomaticallyPurgeCommandMessages && !(message.Channel is IPrivateChannel))
                     {
                         await message.DeleteAsync();
                     }

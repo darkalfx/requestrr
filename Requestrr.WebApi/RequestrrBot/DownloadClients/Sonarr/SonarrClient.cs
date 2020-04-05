@@ -13,10 +13,10 @@ using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 {
-    public class Sonarr : ITvShowSearcher, ITvShowRequester
+    public class SonarrClient : ITvShowSearcher, ITvShowRequester
     {
         private IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<Sonarr> _logger;
+        private readonly ILogger<SonarrClient> _logger;
         private SonarrSettingsProvider _sonarrSettingsProvider;
         private SonarrSettings SonarrSettings => _sonarrSettingsProvider.Provide();
         private string BaseURL => GetBaseURL(SonarrSettings);
@@ -24,14 +24,14 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         private object _lock = new object();
         private bool _loadedCache = false;
 
-        public Sonarr(IHttpClientFactory httpClientFactory, ILogger<Sonarr> logger, SonarrSettingsProvider sonarrSettingsProvider)
+        public SonarrClient(IHttpClientFactory httpClientFactory, ILogger<SonarrClient> logger, SonarrSettingsProvider sonarrSettingsProvider)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
             _sonarrSettingsProvider = sonarrSettingsProvider;
         }
 
-        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<Sonarr> logger, SonarrSettings settings)
+        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
             if (!string.IsNullOrWhiteSpace(settings.BaseUrl) && !settings.BaseUrl.StartsWith("/"))
             {
@@ -95,7 +95,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             }
         }
 
-        public static async Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<Sonarr> logger, SonarrSettings settings)
+        public static async Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
             var retryCount = 0;
 
@@ -118,7 +118,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while getting Sonarr root paths");
         }
 
-        public static async Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<Sonarr> logger, SonarrSettings settings)
+        public static async Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
             var retryCount = 0;
 
@@ -141,7 +141,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while getting Sonarr profiles");
         }
 
-        public static async Task<IList<JSONLanguageProfile>> GetLanguages(HttpClient httpClient, ILogger<Sonarr> logger, SonarrSettings settings)
+        public static async Task<IList<JSONLanguageProfile>> GetLanguages(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
             var retryCount = 0;
 
@@ -164,7 +164,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while getting Sonarr languages");
         }
 
-        public static async Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<Sonarr> logger, SonarrSettings settings)
+        public static async Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
             var retryCount = 0;
 

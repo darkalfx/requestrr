@@ -58,6 +58,21 @@ namespace Requestrr.WebApi
                 ((JObject)settingsJson).Add("Port", 5060);
                 File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
             }
+
+            if (settingsJson.Version.ToString().Equals("1.0.6", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.0.9";
+                
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("AutomaticallyNotifyRequesters", true);
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("NotificationMode", "PrivateMessages");
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("NotificationChannels", JToken.FromObject(Array.Empty<int>()));
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("AutomaticallyPurgeCommandMessages", false);
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("DisplayHelpCommandInDMs", true);
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("EnableRequestsThroughDirectMessages", (bool)((JObject)settingsJson["ChatClients"]["Discord"]).GetValue("EnableDirectMessageSupport"));
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Remove("EnableDirectMessageSupport");
+                
+                File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
+            }
         }
     }
 }

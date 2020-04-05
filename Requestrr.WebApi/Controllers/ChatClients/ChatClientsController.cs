@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -16,12 +15,6 @@ namespace Requestrr.WebApi.Controllers.ChatClients
     [Route("/api/chatclients")]
     public class ChatClientsController : ControllerBase
     {
-        public class TestDiscordSettingsModel
-        {
-            [Required]
-            public string BotToken { get; set; }
-        }
-
         private readonly ChatClientsSettings _chatClientsSettings;
         private readonly BotClientSettings _botClientsSettings;
 
@@ -42,16 +35,21 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                 StatusMessage = _chatClientsSettings.Discord.StatusMessage,
                 BotToken = _chatClientsSettings.Discord.BotToken,
                 ClientId = _chatClientsSettings.Discord.ClientId,
-                EnableDirectMessageSupport = _chatClientsSettings.Discord.EnableDirectMessageSupport,
+                EnableRequestsThroughDirectMessages = _chatClientsSettings.Discord.EnableRequestsThroughDirectMessages,
                 CommandPrefix = _botClientsSettings.CommandPrefix,
                 TvShowRoles = _chatClientsSettings.Discord.TvShowRoles ?? Array.Empty<string>(),
                 MovieRoles = _chatClientsSettings.Discord.MovieRoles ?? Array.Empty<string>(),
                 MonitoredChannels = _chatClientsSettings.Discord.MonitoredChannels ?? Array.Empty<string>(),
+                AutomaticallyNotifyRequesters = _chatClientsSettings.Discord.AutomaticallyNotifyRequesters,
+                NotificationMode = _chatClientsSettings.Discord.NotificationMode,
+                NotificationChannels = _chatClientsSettings.Discord.NotificationChannels ?? Array.Empty<string>(),
+                AutomaticallyPurgeCommandMessages = _chatClientsSettings.Discord.AutomaticallyPurgeCommandMessages,
+                DisplayHelpCommandInDMs = _chatClientsSettings.Discord.DisplayHelpCommandInDMs,
             });
         }
 
         [HttpPost("discord/test")]
-        public async Task<IActionResult> TestDiscordSettings([FromBody]TestDiscordSettingsModel model)
+        public async Task<IActionResult> TestDiscordSettings([FromBody]ChatClientTestSettingsModel model)
         {
             try
             {
@@ -82,8 +80,14 @@ namespace Requestrr.WebApi.Controllers.ChatClients
             _chatClientsSettings.Discord.StatusMessage = model.StatusMessage.Trim();
             _chatClientsSettings.Discord.TvShowRoles = (model.TvShowRoles ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
             _chatClientsSettings.Discord.MovieRoles = (model.MovieRoles ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
-            _chatClientsSettings.Discord.EnableDirectMessageSupport = model.EnableDirectMessageSupport;
+            _chatClientsSettings.Discord.EnableRequestsThroughDirectMessages = model.EnableRequestsThroughDirectMessages;
             _chatClientsSettings.Discord.MonitoredChannels = (model.MonitoredChannels ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
+
+            _chatClientsSettings.Discord.AutomaticallyNotifyRequesters = model.AutomaticallyNotifyRequesters;
+            _chatClientsSettings.Discord.NotificationMode = model.NotificationMode;
+            _chatClientsSettings.Discord.NotificationChannels = (model.NotificationChannels ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();;
+            _chatClientsSettings.Discord.AutomaticallyPurgeCommandMessages = model.AutomaticallyPurgeCommandMessages;
+            _chatClientsSettings.Discord.DisplayHelpCommandInDMs = model.DisplayHelpCommandInDMs;
 
             _botClientsSettings.Client = model.Client;
             _botClientsSettings.CommandPrefix = model.CommandPrefix.Trim();

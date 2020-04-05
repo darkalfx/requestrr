@@ -67,6 +67,11 @@
   }
   
   .react-dropdown-select-content {
+    height: 23px !important;
+    overflow: hidden !important;
+  }
+
+  .react-dropdown-select-type-multi {
     height: 28px !important;
     overflow: hidden !important;
   }

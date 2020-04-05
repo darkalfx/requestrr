@@ -23,6 +23,7 @@ import { testSettings } from "../store/actions/ChatClientsActions"
 import { getSettings } from "../store/actions/ChatClientsActions"
 import { save } from "../store/actions/ChatClientsActions"
 import MultiDropdown from "../components/Inputs/MultiDropdown"
+import Dropdown from "../components/Inputs/Dropdown"
 
 // reactstrap components
 import {
@@ -58,7 +59,7 @@ class ChatClients extends React.Component {
       commandPrefix: "",
       monitoredChannels: [],
       statusMessage: "",
-      enableDirectMessageSupport: true,
+      enableRequestsThroughDirectMessages: true,
       chatClient: "",
       chatClientChanged: false,
       chatClientInvalid: false,
@@ -70,6 +71,11 @@ class ChatClients extends React.Component {
       botTokenInvalid: false,
       tvShowRoles: [],
       movieRoles: [],
+      automaticallyNotifyRequesters: true,
+      notificationMode: "PrivateMessages",
+      notificationChannels: [],
+      automaticallyPurgeCommandMessages: true,
+      displayHelpCommandInDMs: true,
     };
 
     this.onSaving = this.onSaving.bind(this);
@@ -94,9 +100,14 @@ class ChatClients extends React.Component {
           statusMessage: this.props.settings.statusMessage,
           commandPrefix: this.props.settings.commandPrefix,
           monitoredChannels: this.props.settings.monitoredChannels,
-          enableDirectMessageSupport: this.props.settings.enableDirectMessageSupport,
+          enableRequestsThroughDirectMessages: this.props.settings.enableRequestsThroughDirectMessages,
           tvShowRoles: this.props.settings.tvShowRoles,
           movieRoles: this.props.settings.movieRoles,
+          automaticallyNotifyRequesters: this.props.settings.automaticallyNotifyRequesters,
+          notificationMode: this.props.settings.notificationMode,
+          notificationChannels: this.props.settings.notificationChannels,
+          automaticallyPurgeCommandMessages: this.props.settings.automaticallyPurgeCommandMessages,
+          displayHelpCommandInDMs: this.props.settings.displayHelpCommandInDMs,
         });
       });
   }
@@ -160,12 +171,6 @@ class ChatClients extends React.Component {
     this.setState({ commandPrefix: event.target.value });
   }
 
-  onDmEnabledChanged = event => {
-    this.setState({
-      enableDirectMessageSupport: !this.state.enableDirectMessageSupport
-    });
-  }
-
   onSaving = e => {
     e.preventDefault();
 
@@ -188,7 +193,12 @@ class ChatClients extends React.Component {
           monitoredChannels: this.state.monitoredChannels,
           tvShowRoles: this.state.tvShowRoles,
           movieRoles: this.state.movieRoles,
-          enableDirectMessageSupport: this.state.enableDirectMessageSupport,
+          enableRequestsThroughDirectMessages: this.state.enableRequestsThroughDirectMessages,
+          automaticallyNotifyRequesters: this.state.automaticallyNotifyRequesters,
+          notificationMode: this.state.notificationMode,
+          notificationChannels: this.state.notificationChannels,
+          automaticallyPurgeCommandMessages: this.state.automaticallyPurgeCommandMessages,
+          displayHelpCommandInDMs: this.state.displayHelpCommandInDMs,
         })
           .then(data => {
             this.setState({ isSaving: false });
@@ -341,7 +351,7 @@ class ChatClients extends React.Component {
                     <hr className="my-4" />
                     <div>
                       <h6 className="heading-small text-muted mb-4">
-                        Discord
+                        Discord Bot Settings
                       </h6>
                     </div>
                     <div className="pl-lg-4">
@@ -463,27 +473,134 @@ class ChatClients extends React.Component {
                           </FormGroup>
                         </Col>
                       </Row>
+                    </div>
+                    <div>
+                      <h6 className="heading-small text-muted mt-4">
+                        Discord Notification Settings
+                      </h6>
+                    </div>
+                    <div className="pl-lg-4">
                       <Row>
                         <Col lg="6">
+                          <Dropdown
+                            name="Notifications"
+                            value={this.state.notificationMode}
+                            items={[{ name: "Disabled", value: "Disabled" }, { name: "Via private messages", value: "PrivateMessages" }, { name: "Via channel(s)", value: "Channels" }]}
+                            onChange={newNotificationMode => this.setState({ notificationMode: newNotificationMode }, this.onValueChange)} />
+                        </Col>
+                        <Col lg="6">
+                          {
+                            this.state.notificationMode === "Channels"
+                              ? <>
+                                <FormGroup>
+                                  <MultiDropdown
+                                    name="Channel(s) to send notifications to"
+                                    create={true}
+                                    searchable={true}
+                                    placeholder="Enter channels here"
+                                    labelField="name"
+                                    valueField="id"
+                                    dropdownHandle={false}
+                                    selectedItems={this.state.notificationChannels.map(x => { return { name: x, id: x } })}
+                                    items={this.state.notificationChannels.map(x => { return { name: x, id: x } })}
+                                    onChange={newNotificationChannels => this.setState({ notificationChannels: newNotificationChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')) })} />
+                                </FormGroup>
+                              </>
+                              : null
+                          }
+                        </Col>
+                      </Row>
+                      {
+                        this.state.notificationMode !== "Disabled"
+                          ? <>
+                            <Row>
+                              <Col md="12">
+                                <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                                  <Input
+                                    className="custom-control-input"
+                                    id="automaticRequests"
+                                    type="checkbox"
+                                    onChange={e => { this.setState({ automaticallyNotifyRequesters: !this.state.automaticallyNotifyRequesters }); }}
+                                    checked={this.state.automaticallyNotifyRequesters}
+                                  />
+                                  <label
+                                    className="custom-control-label"
+                                    htmlFor="automaticRequests"
+                                  >
+                                    <span className="text-muted">Automatically notify users of downloaded content when they make requests</span>
+                                  </label>
+                                </FormGroup>
+                              </Col>
+                            </Row>
+                          </>
+                          : null
+                      }
+                    </div>
+                    <div>
+                      <h6 className="heading-small text-muted mt-4">
+                        Discord Miscellaneous Settings
+                      </h6>
+                    </div>
+                    <div className="pl-lg-4">
+                      <Row>
+                        <Col md="12">
                           <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
                             <Input
                               className="custom-control-input"
-                              id="enableDM"
+                              id="enableRequestDM"
                               type="checkbox"
-                              onChange={this.onDmEnabledChanged}
-                              checked={this.state.enableDirectMessageSupport}
+                              onChange={e => { this.setState({ enableRequestsThroughDirectMessages: !this.state.enableRequestsThroughDirectMessages }); }}
+                              checked={this.state.enableRequestsThroughDirectMessages}
                             />
                             <label
                               className="custom-control-label"
-                              htmlFor="enableDM"
+                              htmlFor="enableRequestDM"
                             >
-                              <span className="text-muted">Enable anyone to request via direct messaging. <strong>(DMs will ignore configured roles)</strong></span>
+                              <span className="text-muted">Enable anyone to request via a private message. <strong>(Those will ignore configured roles)</strong></span>
                             </label>
                           </FormGroup>
                         </Col>
-                        <Col lg="6">
+                      </Row>
+                      <Row>
+                        <Col md="12">
+                          <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                            <Input
+                              className="custom-control-input"
+                              id="deleteRequestMessages"
+                              type="checkbox"
+                              onChange={e => { this.setState({ automaticallyPurgeCommandMessages: !this.state.automaticallyPurgeCommandMessages }); }}
+                              checked={this.state.automaticallyPurgeCommandMessages}
+                            />
+                            <label
+                              className="custom-control-label"
+                              htmlFor="deleteRequestMessages"
+                            >
+                              <span className="text-muted">Automatically delete user/bot messages (ex: !movie the matrix)</span>
+                            </label>
+                          </FormGroup>
                         </Col>
                       </Row>
+                      <Row>
+                        <Col md="12">
+                          <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                            <Input
+                              className="custom-control-input"
+                              id="helpInDMs"
+                              type="checkbox"
+                              onChange={e => { this.setState({ displayHelpCommandInDMs: !this.state.displayHelpCommandInDMs }); }}
+                              checked={this.state.displayHelpCommandInDMs}
+                            />
+                            <label
+                              className="custom-control-label"
+                              htmlFor="helpInDMs"
+                            >
+                              <span className="text-muted">Send the help command response in a private message instead of the current channel</span>
+                            </label>
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                    </div>
+                    <div className="pl-lg-4">
                       <div className="mt-4">
                         {
                           this.state.testSettingsRequested && !this.state.isTestingSettings ?

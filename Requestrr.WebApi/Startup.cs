@@ -73,8 +73,8 @@ namespace Requestrr.WebApi
                     };
                 });
 
-            services.AddSingleton<Ombi, Ombi>();
-            services.AddSingleton<Radarr, Radarr>();
+            services.AddSingleton<OmbiClient, OmbiClient>();
+            services.AddSingleton<RadarrClient, RadarrClient>();
             services.AddSingleton<DiscordSettingsProvider>();
             services.AddSingleton<OmbiSettingsProvider>();
             services.AddSingleton<RadarrSettingsProvider>();

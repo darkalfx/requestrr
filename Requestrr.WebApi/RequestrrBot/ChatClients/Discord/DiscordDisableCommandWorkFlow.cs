@@ -14,14 +14,14 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             SocketCommandContext context,
             DiscordSocketClient discord,
             DiscordSettingsProvider discordSettingsProvider)
-                : base(discord, context)
+                : base(discord, context, discordSettingsProvider)
         {
             _discordSettings = discordSettingsProvider.Provide();
         }
 
         public Task HandleDisabledCommandAsync()
         {
-            if (!_discordSettings.EnableDirectMessageSupport && this.Context.Guild == null)
+            if (!_discordSettings.EnableRequestsThroughDirectMessages && this.Context.Guild == null)
             {
                 return ReplyToUserAsync($"This command is only available within a server.");
             }

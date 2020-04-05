@@ -12,22 +12,22 @@ using Requestrr.WebApi.RequestrrBot.Movies;
 
 namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 {
-    public class Radarr : IMovieRequester, IMovieSearcher
+    public class RadarrClient : IMovieRequester, IMovieSearcher
     {
         private IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<Radarr> _logger;
+        private readonly ILogger<RadarrClient> _logger;
         private RadarrSettingsProvider _RadarrSettingsProvider;
         private RadarrSettings RadarrSettings => _RadarrSettingsProvider.Provide();
         private string BaseURL => GetBaseURL(RadarrSettings);
 
-        public Radarr(IHttpClientFactory httpClientFactory, ILogger<Radarr> logger, RadarrSettingsProvider RadarrSettingsProvider)
+        public RadarrClient(IHttpClientFactory httpClientFactory, ILogger<RadarrClient> logger, RadarrSettingsProvider RadarrSettingsProvider)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
             _RadarrSettingsProvider = RadarrSettingsProvider;
         }
 
-        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<Radarr> logger, RadarrSettings settings)
+        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
         {
             if (!string.IsNullOrWhiteSpace(settings.BaseUrl) && !settings.BaseUrl.StartsWith("/"))
             {
@@ -91,7 +91,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             }
         }
 
-        public static async Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<Radarr> logger, RadarrSettings settings)
+        public static async Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
         {
             var retryCount = 0;
 
@@ -115,7 +115,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while getting Radarr root paths");
         }
 
-        public static async Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<Radarr> logger, RadarrSettings settings)
+        public static async Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
         {
             var retryCount = 0;
 
@@ -140,7 +140,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while getting Radarr profiles");
         }
 
-        public static async Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<Radarr> logger, RadarrSettings settings)
+        public static async Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
         {
             var retryCount = 0;
 

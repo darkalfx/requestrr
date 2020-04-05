@@ -9,6 +9,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Requestrr.WebApi.RequestrrBot.Movies;
 using Requestrr.WebApi.RequestrrBot.Notifications;
+using Requestrr.WebApi.RequestrrBot.Notifications.Movies;
 
 namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 {
@@ -27,7 +28,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             IMovieRequester movieRequester,
             DiscordSettingsProvider discordSettingsProvider,
             MovieNotificationsRepository notificationRequestRepository)
-                : base(discord, context)
+                : base(discord, context, discordSettingsProvider)
         {
             _movieSearcher = movieSearcher;
             _movieRequester = movieRequester;
@@ -39,7 +40,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
         {
             var stringArgs = args?.Where(x => !string.IsNullOrWhiteSpace(x?.ToString())).Select(x => x.ToString().Trim()).ToArray() ?? Array.Empty<string>();
 
-            if (!_discordSettings.EnableDirectMessageSupport && this.Context.Guild == null)
+            if (!_discordSettings.EnableRequestsThroughDirectMessages && this.Context.Guild == null)
             {
                 await ReplyToUserAsync($"This command is only available within a server.");
                 return;
@@ -63,8 +64,21 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             await DeleteSafeAsync(this.Context.Message);
 
-            var workFlow = new MovieRequestingWorkflow(new MovieUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"), _movieSearcher, _movieRequester, this, _notificationRequestRepository);
-            await workFlow.HandleMovieRequestAsync(movieName);
+            IMovieNotificationWorkflow movieNotificationWorkflow = new DisabledMovieNotificationWorkflow(this);
+
+            if (_discordSettings.NotificationMode != NotificationMode.Disabled)
+            {
+                movieNotificationWorkflow = new MovieNotificationWorkflow(_notificationRequestRepository, this, _discordSettings.AutomaticallyNotifyRequesters);
+            }
+
+            var workFlow = new MovieRequestingWorkflow(
+                new MovieUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"),
+                _movieSearcher,
+                _movieRequester,
+                this,
+                movieNotificationWorkflow);
+
+            await workFlow.RequestMovieAsync(movieName);
         }
 
         public Task WarnNoMovieFoundAsync(string movieName)
@@ -93,7 +107,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 movieRow.Append($"[[TheMovieDb](https://www.themoviedb.org/movie/{arrayMovies[i].TheMovieDbId})]");
                 movieRow.AppendLine();
 
-                if (movieRow.Length + embedContent.Length < 1000)
+                if (movieRow.Length + embedContent.Length < DiscordConstants.MaxEmbedLength)
                     embedContent.Append(movieRow.ToString());
             }
 
@@ -144,20 +158,24 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             return ReplyToUserAsync("I didn't understand your dramatic babbling, I'm afraid you'll have to make a new request.");
         }
 
-        public async Task DisplayMovieDetails(Movie movie)
+        public async Task DisplayMovieDetailsAsync(Movie movie)
         {
             var message = Context.Message;
             _lastCommandMessage = await ReplyAsync(string.Empty, false, await GenerateMovieDetailsAsync(movie, message.Author, _movieSearcher));
         }
 
-        public static async Task<Embed> GenerateMovieDetailsAsync(Movie movie, SocketUser user, IMovieSearcher movieSearcher = null)
+        public static async Task<Embed> GenerateMovieDetailsAsync(Movie movie, SocketUser user = null, IMovieSearcher movieSearcher = null)
         {
             var embedBuilder = new EmbedBuilder()
                 .WithTitle($"{movie.Title} {(!string.IsNullOrWhiteSpace(movie.ReleaseDate) && movie.ReleaseDate.Length >= 4 ? $"({movie.ReleaseDate.Split("T")[0].Substring(0, 4)})" : string.Empty)}")
-                .WithFooter(user.Username, $"https://cdn.discordapp.com/avatars/{user.Id.ToString()}/{user.AvatarId}.png")
                 .WithTimestamp(DateTime.Now)
                 .WithUrl($"https://www.themoviedb.org/movie/{movie.TheMovieDbId}")
                 .WithThumbnailUrl("https://i.imgur.com/44ueTES.png");
+
+            if (user != null)
+            {
+                embedBuilder.WithFooter(user.Username, $"https://cdn.discordapp.com/avatars/{user.Id.ToString()}/{user.AvatarId}.png");
+            }
 
             if (!string.IsNullOrWhiteSpace(movie.Overview))
             {
@@ -224,12 +242,12 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             return reaction != null;
         }
 
-        public Task WarnMovieAlreadyAvailable()
+        public Task WarnMovieAlreadyAvailableAsync()
         {
             return ReplyToUserAsync("This movie is already available, enjoy!");
         }
 
-        public Task DisplayRequestSuccess(Movie movie)
+        public Task DisplayRequestSuccessAsync(Movie movie)
         {
             return ReplyToUserAsync($"Your request for **{movie.Title}** was sent successfully, your movie should be available soon!");
         }
@@ -249,14 +267,19 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             return ReplyToUserAsync($"You will now receive a notification as soon as **{movie.Title}** becomes available to watch.");
         }
 
-        public Task DisplayRequestDenied(Movie movie)
+        public Task DisplayRequestDeniedAsync(Movie movie)
         {
             return ReplyToUserAsync($"Your request was denied by the provider due to an insufficient quota limit.");
         }
 
-        public Task WarnMovieUnavailableAndAlreadyHasNotification()
+        public Task WarnMovieUnavailableAndAlreadyHasNotificationAsync()
         {
             return ReplyToUserAsync("This movie has already been requested and you will be notified when it becomes available.");
+        }
+
+        public Task WarnMovieAlreadyRequestedAsync()
+        {
+            return ReplyToUserAsync("This movie has already been requested.");
         }
     }
 }

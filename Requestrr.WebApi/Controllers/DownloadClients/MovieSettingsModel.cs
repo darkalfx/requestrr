@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
+using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
 {
@@ -8,45 +10,12 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         public string Client { get; set; }
 
         [Required]
-        public RadarrSettings Radarr { get; set; }
+        public RadarrSettingsModel Radarr { get; set; }
 
         [Required]
-        public OmbiSettings Ombi { get; set; }
+        public OmbiSettingsModel Ombi { get; set; }
 
         [Required]
         public string Command { get; set; }
-    }
-
-    public class RadarrSettings
-    {
-        [Required]
-        public string Hostname { get; set; }
-        [Required]
-        public int Port { get; set; }
-        [Required]
-        public string ApiKey { get; set; }
-        [Required]
-        public string BaseUrl { get; set; }
-        [Required]
-        public string MovieMinAvailability { get; set; }
-        [Required]
-        public string MoviePath { get; set; }
-        [Required]
-        public int MovieProfile { get; set; }
-        [Required]
-        public int[] MovieTags { get; set; }
-        [Required]
-        public string AnimeMinAvailability { get; set; }
-        [Required]
-        public string AnimePath { get; set; }
-        [Required]
-        public int AnimeProfile { get; set; }
-        [Required]
-        public int[] AnimeTags { get; set; }
-        public bool SearchNewRequests { get; set; }
-        public bool MonitorNewRequests { get; set; }
-        public bool UseSSL { get; set; }
-        [Required]
-        public string Version { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 using System.Linq;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
-namespace Requestrr.WebApi.RequestrrBot.Notifications
+namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
 {
     public class TvShowNotificationsRepository
     {

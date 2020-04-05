@@ -14,7 +14,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             SocketCommandContext context,
             DiscordSocketClient discord,
             DiscordSettingsProvider discordSettingsProvider)
-                : base(discord, context)
+                : base(discord, context, discordSettingsProvider)
         {
             _discordSettings = discordSettingsProvider.Provide();
         }

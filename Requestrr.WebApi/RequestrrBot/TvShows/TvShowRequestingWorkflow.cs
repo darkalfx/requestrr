@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Requestrr.WebApi.RequestrrBot.Notifications;
 using Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows;
 
 namespace Requestrr.WebApi.RequestrrBot.TvShows
@@ -13,23 +12,23 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
         private readonly ITvShowSearcher _searcher;
         private readonly ITvShowRequester _requester;
         private readonly ITvShowUserInterface _userInterface;
-        private readonly TvShowNotificationsRepository _notificationRequestRepository;
+        private readonly ITvShowNotificationWorkflow _tvShowNotificationWorkflow;
 
         public TvShowRequestingWorkflow(
             TvShowUserRequester user,
             ITvShowSearcher searcher,
             ITvShowRequester requester,
             ITvShowUserInterface userInterface,
-            TvShowNotificationsRepository tvShowNotificationsRepository)
+            ITvShowNotificationWorkflow tvShowNotificationWorkflow)
         {
             _user = user;
             _searcher = searcher;
             _requester = requester;
             _userInterface = userInterface;
-            _notificationRequestRepository = tvShowNotificationsRepository;
+            _tvShowNotificationWorkflow = tvShowNotificationWorkflow;
         }
 
-        public async Task HandleTvShowRequestAsync(string tvShowName)
+        public async Task RequestTvShowAsync(string tvShowName)
         {
             var searchedTvShows = await SearchTvShowAsync(tvShowName);
 
@@ -108,25 +107,25 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             if (!tvShow.Seasons.Any() && tvShow.HasEnded)
             {
                 await _userInterface.DisplayTvShowDetailsAsync(tvShow);
-                await _userInterface.WarnShowCannotBeRequested(tvShow);
+                await _userInterface.WarnShowCannotBeRequestedAsync(tvShow);
             }
             else if (tvShow.AllSeasonsFullyRequested())
             {
                 if (tvShow.Seasons.OfType<FutureTvSeasons>().Any())
                 {
-                    await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _notificationRequestRepository)
-                        .HandleRequestAsync(tvShow, tvShow.Seasons.OfType<FutureTvSeasons>().FirstOrDefault());
+                    await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .RequestAsync(tvShow, tvShow.Seasons.OfType<FutureTvSeasons>().FirstOrDefault());
                 }
                 else
                 {
                     await _userInterface.DisplayTvShowDetailsAsync(tvShow);
-                    await _userInterface.WarnShowHasEnded(tvShow);
+                    await _userInterface.WarnShowHasEndedAsync(tvShow);
                 }
             }
             else if (!tvShow.IsMultiSeasons() && tvShow.Seasons.OfType<NormalTvSeason>().Any())
             {
-                await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _notificationRequestRepository)
-                    .HandleRequestAsync(tvShow, tvShow.Seasons.OfType<NormalTvSeason>().Single());
+                await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                    .RequestAsync(tvShow, tvShow.Seasons.OfType<NormalTvSeason>().Single());
             }
             else
             {
@@ -145,16 +144,16 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
                 switch (selectedSeason)
                 {
                     case FutureTvSeasons futureTvSeasons:
-                        await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _notificationRequestRepository)
-                            .HandleRequestAsync(tvShow, futureTvSeasons);
+                        await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                            .RequestAsync(tvShow, futureTvSeasons);
                         break;
                     case AllTvSeasons allTvSeasons:
-                        await new AllSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _notificationRequestRepository)
-                            .HandleRequestAsync(tvShow, allTvSeasons);
+                        await new AllSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                            .RequestAsync(tvShow, allTvSeasons);
                         break;
                     case NormalTvSeason normalTvSeason:
-                        await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _notificationRequestRepository)
-                            .HandleRequestAsync(tvShow, normalTvSeason);
+                        await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                            .RequestAsync(tvShow, normalTvSeason);
                         break;
                     default:
                         throw new Exception($"Could not handle season of type \"{selectedSeason.GetType().Name}\"");

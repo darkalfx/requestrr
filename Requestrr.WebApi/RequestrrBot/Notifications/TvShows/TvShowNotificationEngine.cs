@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
-namespace Requestrr.WebApi.RequestrrBot.Notifications
+namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
 {
     public class TvShowNotificationEngine
     {
         private object _lock = new object();
         private readonly ITvShowSearcher _tvShowSearcher;
-        private readonly UserTvShowNotifier _userTvShowNotifier;
+        private readonly ITvShowNotifier _notifier;
         private readonly ILogger<ChatBot> _logger;
         private readonly TvShowNotificationsRepository _notificationRequestRepository;
         private Task _notificationTask = null;
@@ -20,12 +20,12 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications
 
         public TvShowNotificationEngine(
             ITvShowSearcher tvShowSearcher,
-            UserTvShowNotifier userTvShowNotifier,
+            ITvShowNotifier notifier,
             ILogger<ChatBot> logger,
             TvShowNotificationsRepository notificationRequestRepository)
         {
             _tvShowSearcher = tvShowSearcher;
-            _userTvShowNotifier = userTvShowNotifier;
+            _notifier = notifier;
             _logger = logger;
             _notificationRequestRepository = notificationRequestRepository;
         }
@@ -43,25 +43,32 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications
 
                          foreach (var request in currentRequests.Where(x => tvShows.ContainsKey(x.Key)))
                          {
-                             foreach (var notification in request.Value)
+                             var notificationsBySeasons = request.Value.GroupBy(x => x.SeasonNumber);
+
+                             foreach (var seasonNotifications in notificationsBySeasons)
                              {
+                                 var userIds = seasonNotifications.Select(x => x.UserId).ToArray();
+
                                  try
                                  {
                                      if (_tokenSource.IsCancellationRequested)
                                          return;
 
-                                     if (tvShows[notification.TvShowId].Seasons.Any(x => x.SeasonNumber == notification.SeasonNumber && x.IsAvailable))
+                                     if (tvShows[request.Key].Seasons.Any(x => x.SeasonNumber == seasonNotifications.Key && x.IsAvailable))
                                      {
-                                         await _userTvShowNotifier.NotifyAsync(notification.UserId, tvShows[notification.TvShowId], notification.SeasonNumber);
+                                         var notifiedUsers = await _notifier.NotifyAsync(userIds, tvShows[request.Key], seasonNotifications.Key, _tokenSource.Token);
 
-                                         if (notification is FutureSeasonsNotification)
+                                         foreach (var sentNotification in seasonNotifications.Where(x => notifiedUsers.Contains(x.UserId)))
                                          {
-                                             _notificationRequestRepository.RemoveSeasonNotification(notification);
-                                             _notificationRequestRepository.AddSeasonNotification(notification.UserId, notification.TvShowId, new FutureTvSeasons { SeasonNumber = notification.SeasonNumber + 1 });
-                                         }
-                                         else
-                                         {
-                                             _notificationRequestRepository.RemoveSeasonNotification(notification);
+                                             if (sentNotification is FutureSeasonsNotification)
+                                             {
+                                                 _notificationRequestRepository.RemoveSeasonNotification(sentNotification);
+                                                 _notificationRequestRepository.AddSeasonNotification(sentNotification.UserId, sentNotification.TvShowId, new FutureTvSeasons { SeasonNumber = sentNotification.SeasonNumber + 1 });
+                                             }
+                                             else
+                                             {
+                                                 _notificationRequestRepository.RemoveSeasonNotification(sentNotification);
+                                             }
                                          }
                                      }
                                  }

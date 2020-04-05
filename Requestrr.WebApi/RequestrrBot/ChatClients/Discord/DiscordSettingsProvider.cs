@@ -24,7 +24,12 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 TvShowRoles = settings.ChatClients.Discord.TvShowRoles.ToObject<string[]>(),
                 MovieRoles = settings.ChatClients.Discord.MovieRoles.ToObject<string[]>(),
                 ClientID = settings.ChatClients.Discord.ClientId,
-                EnableDirectMessageSupport = settings.ChatClients.Discord.EnableDirectMessageSupport
+                EnableRequestsThroughDirectMessages = settings.ChatClients.Discord.EnableRequestsThroughDirectMessages,
+                AutomaticallyNotifyRequesters = settings.ChatClients.Discord.AutomaticallyNotifyRequesters,
+                NotificationMode = settings.ChatClients.Discord.NotificationMode,
+                NotificationChannels = settings.ChatClients.Discord.NotificationChannels.ToObject<string[]>(),
+                AutomaticallyPurgeCommandMessages = settings.ChatClients.Discord.AutomaticallyPurgeCommandMessages,
+                DisplayHelpCommandInDMs = settings.ChatClients.Discord.DisplayHelpCommandInDMs,
             };
         }
 
