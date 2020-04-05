@@ -161,7 +161,7 @@ class Ombi extends React.Component {
               <Dropdown
                 name="API"
                 value={this.state.apiVersion}
-                items={[{ name: "Version 3", value: "3" }]}
+                items={[{ name: "Version 3-4", value: "3" }]}
                 onChange={newApiVersion => this.setState({ apiVersion: newApiVersion }, this.onValueChange)} />
             </Col>
             <Col lg="6">

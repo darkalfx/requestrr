@@ -8,30 +8,29 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.0.2" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.6.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.0.0" />
+    <PackageReference Include="Discord.Net" Version="2.1.1"/>
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.0.2"/>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.6.0"/>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.0.0"/>
   </ItemGroup>
   <ItemGroup>
-    <Content Remove="$(SpaRoot)**" />
-    <None Remove="$(SpaRoot)**" />
-    <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+    <Content Remove="$(SpaRoot)**"/>
+    <None Remove="$(SpaRoot)**"/>
+    <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**"/>
   </ItemGroup>
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <Exec Command="node --version" ContinueOnError="true">
-      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
     </Exec>
-    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
-    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
-    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install"/>
+    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE."/>
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..."/>
   </Target>
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
-    <!-- <Exec WorkingDirectory="$(SpaRoot)" Command="npm install"/> -->
-    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build"/>
     <ItemGroup>
-      <DistFiles Include="$(SpaRoot)build\**; $(SpaRoot)build-ssr\**" />
+      <DistFiles Include="$(SpaRoot)build\**; $(SpaRoot)build-ssr\**"/>
       <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
         <RelativePath>%(DistFiles.Identity)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

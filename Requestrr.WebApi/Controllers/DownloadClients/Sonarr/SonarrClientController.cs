@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,99 +9,19 @@ using Requestrr.WebApi.config;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 
-namespace Requestrr.WebApi.Controllers.DownloadClients
+namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
 {
-    public class TestSonarrSettingsModel
-    {
-        [Required]
-        public string Hostname { get; set; }
-        [Required]
-        public int Port { get; set; }
-        [Required]
-        public string ApiKey { get; set; }
-        public string BaseUrl { get; set; }
-        [Required]
-        public bool UseSSL { get; set; }
-        [Required]
-        public string Version { get; set; }
-    }
-
-    public class SaveSonarrSettingsModel
-    {
-        [Required]
-        public string Hostname { get; set; }
-        [Required]
-        public int Port { get; set; }
-        [Required]
-        public string ApiKey { get; set; }
-        public string BaseUrl { get; set; }
-        [Required]
-        public string TvPath { get; set; }
-        [Required]
-        public int TvProfile { get; set; }
-        public int[] TvTags { get; set; }
-        [Required]
-        public int TvLanguage { get; set; }
-        public bool TvUseSeasonFolders { get; set; }
-        public string AnimePath { get; set; }
-        [Required]
-        public int AnimeProfile { get; set; }
-        public int[] AnimeTags { get; set; }
-        [Required]
-        public int AnimeLanguage { get; set; }
-        public bool AnimeUseSeasonFolders { get; set; }
-        public bool UseSSL { get; set; }
-        public bool SearchNewRequests { get; set; }
-        public bool MonitorNewRequests { get; set; }
-        [Required]
-        public string Version { get; set; }
-        [Required]
-        public string Command { get; set; }
-    }
-
-    public class SonarrProfile
-    {
-        [Required]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; }
-    }
-
-    public class SonarrLanguage
-    {
-        [Required]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; }
-    }
-
-    public class SonarrTag
-    {
-        [Required]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; }
-    }
-
-    public class SonarrPath
-    {
-        [Required]
-        public int Id { get; set; }
-        [Required]
-        public string Path { get; set; }
-    }
-
     [ApiController]
     [Authorize]
     [Route("/api/tvshows/sonarr")]
     public class SonarrClientController : ControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<Sonarr> _logger;
+        private readonly ILogger<SonarrClient> _logger;
 
         public SonarrClientController(
             IHttpClientFactory httpClientFactory,
-            ILogger<Sonarr> logger)
+            ILogger<SonarrClient> logger)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
@@ -113,7 +32,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                await Sonarr.TestConnectionAsync(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
+                await SonarrClient.TestConnectionAsync(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
 
                 return Ok(new { ok = true });
             }
@@ -128,7 +47,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                var paths = await Sonarr.GetRootPaths(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
+                var paths = await SonarrClient.GetRootPaths(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
 
                 return Ok(paths.Select(x => new SonarrPath
                 {
@@ -147,7 +66,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                var profiles = await Sonarr.GetProfiles(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
+                var profiles = await SonarrClient.GetProfiles(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
 
                 return Ok(profiles.Select(x => new SonarrProfile
                 {
@@ -166,7 +85,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                var profiles = await Sonarr.GetLanguages(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
+                var profiles = await SonarrClient.GetLanguages(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
 
                 return Ok(profiles.Select(x => new SonarrLanguage
                 {
@@ -185,7 +104,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                var tags = await Sonarr.GetTags(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
+                var tags = await SonarrClient.GetTags(_httpClientFactory.CreateClient(), _logger, ConvertToSonarrSettings(model));
 
                 return Ok(tags.Select(x => new SonarrTag
                 {
@@ -200,7 +119,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         }
 
         [HttpPost()]
-        public async Task<IActionResult> SaveAsync([FromBody]SaveSonarrSettingsModel model)
+        public async Task<IActionResult> SaveAsync([FromBody]SonarrSettingsModel model)
         {
             var tvShowsSettings = new TvShowsSettings
             {
@@ -208,7 +127,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 Command = model.Command.Trim()
             };
 
-            var sonarrSetting = new SonarrSettings
+            var sonarrSetting = new SonarrSettingsModel
             {
                 Hostname = model.Hostname.Trim(),
                 Port = model.Port,

@@ -18,11 +18,27 @@ namespace Requestrr.WebApi.Controllers.ChatClients
         public string CommandPrefix { get; set; }
 
         public string[] MonitoredChannels { get; set; }
-        
+
         public string[] TvShowRoles { get; set; }
 
         public string[] MovieRoles { get; set; }
 
-        public bool EnableDirectMessageSupport { get; set; }
+        public bool EnableRequestsThroughDirectMessages { get; set; }
+
+        public bool AutomaticallyNotifyRequesters { get; set; }
+
+        public string NotificationMode { get; set; }
+
+        public string[] NotificationChannels { get; set; }
+
+        public bool AutomaticallyPurgeCommandMessages { get; set; }
+
+        public bool DisplayHelpCommandInDMs { get; set; }
+    }
+
+    public class ChatClientTestSettingsModel
+    {
+        [Required]
+        public string BotToken { get; set; }
     }
 }

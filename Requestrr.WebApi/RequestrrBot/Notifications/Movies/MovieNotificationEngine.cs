@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.Movies;
 
-namespace Requestrr.WebApi.RequestrrBot.Notifications
+namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
 {
     public class MovieNotificationEngine
     {
         private object _lock = new object();
         private readonly IMovieSearcher _movieSearcher;
-        private readonly UserMovieNotifier _userMovieNotifier;
+        private readonly IMovieNotifier _notifier;
         private readonly ILogger<ChatBot> _logger;
         private readonly MovieNotificationsRepository _notificationRequestRepository;
         private Task _notificationTask = null;
@@ -20,12 +20,12 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications
 
         public MovieNotificationEngine(
             IMovieSearcher movieSearcher,
-            UserMovieNotifier userMovieNotifier,
+            IMovieNotifier notifier,
             ILogger<ChatBot> logger,
             MovieNotificationsRepository notificationRequestRepository)
         {
             _movieSearcher = movieSearcher;
-            _userMovieNotifier = userMovieNotifier;
+            _notifier = notifier;
             _logger = logger;
             _notificationRequestRepository = notificationRequestRepository;
         }
@@ -43,20 +43,21 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications
 
                          foreach (var request in currentRequests.Where(x => availableMovies.ContainsKey(x.Key)))
                          {
-                             foreach (var userId in request.Value)
-                             {
-                                 if (_tokenSource.IsCancellationRequested)
-                                     return;
+                             if (_tokenSource.IsCancellationRequested)
+                                 return;
 
-                                 try
+                             try
+                             {
+                                 var userNotified = await _notifier.NotifyAsync(request.Value.ToArray(), availableMovies[request.Key], _tokenSource.Token);
+
+                                 foreach (var userId in userNotified)
                                  {
-                                     await _userMovieNotifier.NotifyAsync(userId, availableMovies[request.Key]);
                                      _notificationRequestRepository.RemoveNotification(userId, request.Key);
                                  }
-                                 catch (Exception ex)
-                                 {
-                                     _logger.LogError(ex, "An error occurred while handling a movie notification: " + ex.Message);
-                                 }
+                             }
+                             catch (Exception ex)
+                             {
+                                 _logger.LogError(ex, "An error occurred while processing movie notifications: " + ex.Message);
                              }
                          }
                      }

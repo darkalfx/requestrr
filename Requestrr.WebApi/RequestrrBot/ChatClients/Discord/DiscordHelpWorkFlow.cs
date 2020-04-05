@@ -16,7 +16,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             SocketCommandContext context,
             DiscordSocketClient discord,
             DiscordSettingsProvider discordSettingsProvider)
-                : base(discord, context)
+                : base(discord, context, discordSettingsProvider)
         {
             _discordSettings = discordSettingsProvider.Provide();
             _discord = discord;
@@ -58,19 +58,27 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             messageBuilder.AppendLine("If you encounter broken media or are getting errors with me, please notify the server owner.");
             messageBuilder.AppendLine("Feedback is always appreciated, please let the server owner know if I am doing well or not.");
 
-            try
+            if (this.Context.Guild == null)
             {
                 var channel = await Context.User.GetOrCreateDMChannelAsync();
                 await channel.SendMessageAsync(messageBuilder.ToString());
-
-                if(this.Context.Guild != null)
+            }
+            else if (_discordSettings.DisplayHelpCommandInDMs)
+            {
+                try
                 {
+                    var channel = await Context.User.GetOrCreateDMChannelAsync();
+                    await channel.SendMessageAsync(messageBuilder.ToString());
                     await ReplyToUserAsync("I sent you a DM with the help information!");
                 }
+                catch
+                {
+                    await ReplyToUserAsync("I was unable to send you a DM with the help information, make sure that you haven't blocked me and that you allow direct messages from server members");
+                }
             }
-            catch
+            else
             {
-                await ReplyToUserAsync("I was unable to send you a DM with the help information, make sure that you haven't blocked me and that you allow direct messages from server members");
+                await ReplyAsync(messageBuilder.ToString());
             }
         }
     }

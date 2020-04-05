@@ -7,6 +7,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Requestrr.WebApi.RequestrrBot.Notifications;
+using Requestrr.WebApi.RequestrrBot.Notifications.TvShows;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
@@ -26,7 +27,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             ITvShowRequester tvShowRequester,
             DiscordSettingsProvider discordSettingsProvider,
             TvShowNotificationsRepository notificationsRepository)
-                : base(discord, context)
+                : base(discord, context, discordSettingsProvider)
         {
             _tvShowSearcher = tvShowSearcher;
             _tvShowRequester = tvShowRequester;
@@ -38,7 +39,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
         {
             var stringArgs = args?.Where(x => !string.IsNullOrWhiteSpace(x?.ToString())).Select(x => x.ToString().Trim()).ToArray() ?? Array.Empty<string>();
 
-            if (!_discordSettings.EnableDirectMessageSupport && this.Context.Guild == null)
+            if (!_discordSettings.EnableRequestsThroughDirectMessages && this.Context.Guild == null)
             {
                 await ReplyToUserAsync($"This command is only available within a server.");
                 return;
@@ -62,8 +63,21 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             await DeleteSafeAsync(this.Context.Message);
 
-            var workFlow = new TvShowRequestingWorkflow(new TvShowUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"), _tvShowSearcher, _tvShowRequester, this, _notificationsRepository);
-            await workFlow.HandleTvShowRequestAsync(tvShowName);
+            ITvShowNotificationWorkflow tvShowNotificationWorkflow = new DisabledTvShowNotificationWorkflow(this);
+
+            if (_discordSettings.NotificationMode != NotificationMode.Disabled)
+            {
+                tvShowNotificationWorkflow = new TvShowNotificationWorkflow(_notificationsRepository, this, _discordSettings.AutomaticallyNotifyRequesters);
+            }
+
+            var workFlow = new TvShowRequestingWorkflow(
+                new TvShowUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"),
+                 _tvShowSearcher,
+                 _tvShowRequester,
+                 this,
+                 tvShowNotificationWorkflow);
+
+            await workFlow.RequestTvShowAsync(tvShowName);
         }
 
         public Task WarnNoTvShowFoundAsync(string tvShowName)
@@ -91,7 +105,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 tvRow.Append($"[[TheTVDb](https://www.thetvdb.com/?id={searchedTvShows[i].TheTvDbId}&tab=series)]");
                 tvRow.AppendLine();
 
-                if (tvRow.Length + embedContent.Length < 1000)
+                if (tvRow.Length + embedContent.Length < DiscordConstants.MaxEmbedLength)
                     embedContent.Append(tvRow.ToString());
             }
 
@@ -148,13 +162,13 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             _lastCommandMessage = await ReplyAsync(string.Empty, false, GenerateTvShowDetailsAsync(tvShow, message.Author));
         }
 
-        public static Embed GenerateTvShowDetailsAsync(TvShow tvShow, SocketUser user)
+        public static Embed GenerateTvShowDetailsAsync(TvShow tvShow, SocketUser user = null)
         {
             var title = tvShow.Title;
 
             if (!string.IsNullOrWhiteSpace(tvShow.FirstAired))
             {
-                if(tvShow.FirstAired.Length >= 4 && !title.Contains(tvShow.FirstAired.Split("T")[0].Substring(0, 4)))
+                if (tvShow.FirstAired.Length >= 4 && !title.Contains(tvShow.FirstAired.Split("T")[0].Substring(0, 4)))
                 {
                     title = $"{title} ({tvShow.FirstAired.Split("T")[0].Substring(0, 4)})";
                 }
@@ -162,12 +176,16 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             var embedBuilder = new EmbedBuilder()
                 .WithTitle(title)
-                .WithFooter(user.Username, $"https://cdn.discordapp.com/avatars/{user.Id}/{user.AvatarId}.png")
                 .WithTimestamp(DateTime.Now)
                 .WithUrl($"https://www.thetvdb.com/?id={tvShow.TheTvDbId}&tab=series")
                 .WithThumbnailUrl("https://thetvdb.com/images/logo.png");
 
-            if(!string.IsNullOrWhiteSpace(tvShow.Overview))
+            if (user != null)
+            {
+                embedBuilder.WithFooter(user.Username, $"https://cdn.discordapp.com/avatars/{user.Id}/{user.AvatarId}.png");
+            }
+
+            if (!string.IsNullOrWhiteSpace(tvShow.Overview))
             {
                 embedBuilder.WithDescription(tvShow.Overview.Substring(0, Math.Min(tvShow.Overview.Length, 255)) + "(...)");
             }
@@ -265,7 +283,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             return ReplyToUserAsync(message);
         }
 
-        public async Task<bool> GetTvShowRequestConfirmation(TvSeason season)
+        public async Task<bool> GetTvShowRequestConfirmationAsync(TvSeason season)
         {
             var seasonName = season is AllTvSeasons
                 ? "all seasons"
@@ -345,17 +363,38 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             return ReplyToUserAsync($"**Season {requestedSeason.SeasonNumber}** has already been requested and you will be notified when it becomes available.");
         }
 
-        public Task WarnShowHasEnded(TvShow tvShow)
+        public Task WarnAlreadySeasonAlreadyRequestedAsync(TvShow tvShow, TvSeason requestedSeason)
+        {
+            if (requestedSeason is FutureTvSeasons)
+            {
+                if (tvShow.AllSeasonsAvailable())
+                {
+                    return ReplyToUserAsync($"**All seasons** are available to watch.");
+                }
+                else if (tvShow.AllSeasonsFullyRequested())
+                {
+                    return ReplyToUserAsync($"**All seasons** have already been requested.");
+                }
+                else
+                {
+                    return ReplyToUserAsync($"**Future seasons** have already been requested.");
+                }
+            }
+
+            return ReplyToUserAsync($"**Season {requestedSeason.SeasonNumber}** has already been requested.");
+        }
+
+        public Task WarnShowHasEndedAsync(TvShow tvShow)
         {
             return ReplyToUserAsync($"This show has ended, and **all seasons** {(tvShow.AllSeasonsAvailable() ? "are available" : "have been requested")}.");
         }
 
-        public Task WarnSeasonAlreadyAvailable(TvSeason requestedSeason)
+        public Task WarnSeasonAlreadyAvailableAsync(TvSeason requestedSeason)
         {
             return ReplyToUserAsync($"**Season {requestedSeason.SeasonNumber}** is already available, enjoy!");
         }
 
-        public Task WarnShowCannotBeRequested(TvShow tvShow)
+        public Task WarnShowCannotBeRequestedAsync(TvShow tvShow)
         {
             return ReplyToUserAsync($"This show cannot be automatically requested, please ask the server owner to manually add it.");
         }

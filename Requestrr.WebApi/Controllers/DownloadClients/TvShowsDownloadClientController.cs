@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Requestrr.WebApi.config;
+using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
+using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
@@ -34,7 +36,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             return Ok(new TvShowsSettingsModel
             {
                 Client = _tvShowsSettings.Client,
-                Sonarr = new SonarrSettings
+                Sonarr = new SonarrSettingsModel
                 {
                     Hostname = _downloadClientsSettings.Sonarr.Hostname,
                     BaseUrl = _downloadClientsSettings.Sonarr.BaseUrl,
@@ -55,7 +57,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                     MonitorNewRequests = _downloadClientsSettings.Sonarr.MonitorNewRequests,
                     Version = _downloadClientsSettings.Sonarr.Version
                 },
-                Ombi = new OmbiSettings
+                Ombi = new OmbiSettingsModel
                 {
                     Hostname = _downloadClientsSettings.Ombi.Hostname,
                     BaseUrl = _downloadClientsSettings.Ombi.BaseUrl,

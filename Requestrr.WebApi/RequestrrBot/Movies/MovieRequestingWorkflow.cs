@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Requestrr.WebApi.RequestrrBot.Notifications;
 
 namespace Requestrr.WebApi.RequestrrBot.Movies
 {
@@ -12,23 +11,23 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         private readonly IMovieSearcher _searcher;
         private readonly IMovieRequester _requester;
         private readonly IMovieUserInterface _userInterface;
-        private readonly MovieNotificationsRepository _notificationRequestRepository;
+        private readonly IMovieNotificationWorkflow _notificationWorkflow;
 
         public MovieRequestingWorkflow(
             MovieUserRequester user,
             IMovieSearcher searcher,
             IMovieRequester requester,
             IMovieUserInterface userInterface,
-            MovieNotificationsRepository notificationRequestRepository)
+            IMovieNotificationWorkflow movieNotificationWorkflow)
         {
             _user = user;
             _searcher = searcher;
             _requester = requester;
             _userInterface = userInterface;
-            _notificationRequestRepository = notificationRequestRepository;
+            _notificationWorkflow = movieNotificationWorkflow;
         }
 
-        public async Task HandleMovieRequestAsync(string movieName)
+        public async Task RequestMovieAsync(string movieName)
         {
             var movies = await SearchMoviesAsync(movieName);
 
@@ -102,54 +101,38 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         private async Task HandleMovieSelectionAsync(Movie movie)
         {
-            await _userInterface.DisplayMovieDetails(movie);
+            await _userInterface.DisplayMovieDetailsAsync(movie);
 
             if (CanBeRequested(movie))
             {
-                var isRequested = await _userInterface.GetMovieRequestAsync(movie);
+                var wasRequested = await _userInterface.GetMovieRequestAsync(movie);
 
-                if (isRequested)
+                if (wasRequested)
                 {
                     var result = await _requester.RequestMovieAsync(_user, movie);
 
                     if (result.WasDenied)
                     {
-                        await _userInterface.DisplayRequestDenied(movie);
+                        await _userInterface.DisplayRequestDeniedAsync(movie);
                     }
                     else
                     {
-                        await _userInterface.DisplayRequestSuccess(movie);
+                        await _userInterface.DisplayRequestSuccessAsync(movie);
+                        await _notificationWorkflow.NotifyForNewRequestAsync(_user.UserId, movie);
                     }
-
-                    _notificationRequestRepository.AddNotification(_user.UserId, int.Parse(movie.TheMovieDbId));
                 }
             }
             else
             {
                 if (movie.Available)
                 {
-                    await _userInterface.WarnMovieAlreadyAvailable();
-                }
-                else if (IsAlreadyNotified(movie))
-                {
-                    await _userInterface.WarnMovieUnavailableAndAlreadyHasNotification();
+                    await _userInterface.WarnMovieAlreadyAvailableAsync();
                 }
                 else
                 {
-                    var isRequested = await _userInterface.AskForNotificationRequestAsync();
-
-                    if (isRequested)
-                    {
-                        _notificationRequestRepository.AddNotification(_user.UserId, int.Parse(movie.TheMovieDbId));
-                        await _userInterface.DisplayNotificationSuccessAsync(movie);
-                    }
+                    await _notificationWorkflow.NotifyForExistingRequestAsync(_user.UserId, movie);
                 }
             }
-        }
-
-        private bool IsAlreadyNotified(Movie movie)
-        {
-            return _notificationRequestRepository.HasNotification(_user.UserId, int.Parse(movie.TheMovieDbId));
         }
 
         private static bool CanBeRequested(Movie movie)

@@ -18,7 +18,12 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
         public string TvShowDownloadClient { get; set; }
         public string TvShowCommand { get; set; }
         public int TvShowDownloadClientConfigurationHash { get; set; }
-        public bool EnableDirectMessageSupport { get; set; }
+        public bool EnableRequestsThroughDirectMessages { get; set; }
+        public bool AutomaticallyNotifyRequesters { get; set; }
+        public string NotificationMode { get; set; }
+        public string[] NotificationChannels { get; set; }
+        public bool AutomaticallyPurgeCommandMessages { get; set; }
+        public bool DisplayHelpCommandInDMs { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -36,7 +41,12 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                    TvShowDownloadClient == settings.TvShowDownloadClient &&
                    TvShowCommand == settings.TvShowCommand &&
                    TvShowDownloadClientConfigurationHash == settings.TvShowDownloadClientConfigurationHash &&
-                   EnableDirectMessageSupport == settings.EnableDirectMessageSupport;
+                   EnableRequestsThroughDirectMessages == settings.EnableRequestsThroughDirectMessages &&
+                   AutomaticallyNotifyRequesters == settings.AutomaticallyNotifyRequesters &&
+                   NotificationMode == settings.NotificationMode &&
+                   NotificationChannels.SequenceEqual(settings.NotificationChannels) &&
+                   AutomaticallyPurgeCommandMessages == settings.AutomaticallyPurgeCommandMessages &&
+                   DisplayHelpCommandInDMs == settings.DisplayHelpCommandInDMs;
         }
 
         public override int GetHashCode()
@@ -55,7 +65,12 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             hash.Add(TvShowDownloadClient);
             hash.Add(TvShowCommand);
             hash.Add(TvShowDownloadClientConfigurationHash);
-            hash.Add(EnableDirectMessageSupport);
+            hash.Add(EnableRequestsThroughDirectMessages);
+            hash.Add(AutomaticallyNotifyRequesters);
+            hash.Add(NotificationMode);
+            hash.Add(NotificationChannels);
+            hash.Add(AutomaticallyPurgeCommandMessages);
+            hash.Add(DisplayHelpCommandInDMs);
             return hash.ToHashCode();
         }
     }

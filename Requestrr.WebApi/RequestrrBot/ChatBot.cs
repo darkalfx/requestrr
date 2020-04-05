@@ -14,6 +14,8 @@ using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.Movies;
 using Requestrr.WebApi.RequestrrBot.Notifications;
+using Requestrr.WebApi.RequestrrBot.Notifications.Movies;
+using Requestrr.WebApi.RequestrrBot.Notifications.TvShows;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot
@@ -32,9 +34,9 @@ namespace Requestrr.WebApi.RequestrrBot
         private MovieNotificationsRepository _movieNotificationRequestRepository = new MovieNotificationsRepository();
         private TvShowNotificationsRepository _tvShowNotificationRequestRepository = new TvShowNotificationsRepository();
 
-        private Ombi _ombiDownloadClient;
-        private Radarr _radarrDownloadClient;
-        private Sonarr _sonarrDownloadClient;
+        private OmbiClient _ombiDownloadClient;
+        private RadarrClient _radarrDownloadClient;
+        private SonarrClient _sonarrDownloadClient;
         private ModuleInfo _moduleInfo = null;
 
         public ChatBot(IServiceProvider serviceProvider, ILogger<ChatBot> logger, DiscordSettingsProvider discordSettingsProvider)
@@ -42,9 +44,9 @@ namespace Requestrr.WebApi.RequestrrBot
             _logger = logger;
             _serviceProvider = serviceProvider;
             _discordSettingsProvider = discordSettingsProvider;
-            _ombiDownloadClient = new Ombi(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<Ombi>>(), serviceProvider.Get<OmbiSettingsProvider>());
-            _radarrDownloadClient = new Radarr(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<Radarr>>(), serviceProvider.Get<RadarrSettingsProvider>());
-            _sonarrDownloadClient = new Sonarr(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<Sonarr>>(), serviceProvider.Get<SonarrSettingsProvider>());
+            _ombiDownloadClient = new OmbiClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<OmbiClient>>(), serviceProvider.Get<OmbiSettingsProvider>());
+            _radarrDownloadClient = new RadarrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<RadarrClient>>(), serviceProvider.Get<RadarrSettingsProvider>());
+            _sonarrDownloadClient = new SonarrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<SonarrClient>>(), serviceProvider.Get<SonarrSettingsProvider>());
         }
 
         public async void Start()
@@ -81,7 +83,7 @@ namespace Requestrr.WebApi.RequestrrBot
                             mustRestart = true;
                         }
 
-                        if(mustRestart)
+                        if (mustRestart)
                         {
                             _logger.LogWarning("Restarting bot due to incorrect automatic reconnection.");
                         }
@@ -291,9 +293,24 @@ namespace Requestrr.WebApi.RequestrrBot
                     await _movieNotificationEngine.StopAsync();
                 }
 
-                if (_currentSettings.MovieDownloadClient != DownloadClient.Disabled)
+                if (_currentSettings.MovieDownloadClient != DownloadClient.Disabled && _currentSettings.NotificationMode != NotificationMode.Disabled)
                 {
-                    _movieNotificationEngine = new MovieNotificationEngine(GetMovieClient<IMovieSearcher>(_currentSettings), new UserMovieNotifier(_client), _logger, _movieNotificationRequestRepository);
+                    IMovieNotifier movieNotifier = null;
+
+                    if (_currentSettings.NotificationMode == NotificationMode.PrivateMessage)
+                    {
+                        movieNotifier = new PrivateMessageMovieNotifier(_client, _logger);
+                    }
+                    else if (_currentSettings.NotificationMode == NotificationMode.Channels)
+                    {
+                        movieNotifier = new ChannelMovieNotifier(_client, _currentSettings.NotificationChannels, _logger);
+                    }
+                    else
+                    {
+                        throw new Exception($"Could not create movie notifier of type \"{_currentSettings.NotificationMode}\"");
+                    }
+
+                    _movieNotificationEngine = new MovieNotificationEngine(GetMovieClient<IMovieSearcher>(_currentSettings), movieNotifier, _logger, _movieNotificationRequestRepository);
                     _movieNotificationEngine.Start();
                 }
             }
@@ -309,9 +326,24 @@ namespace Requestrr.WebApi.RequestrrBot
                     await _tvShowNotificationEngine.StopAsync();
                 }
 
-                if (_currentSettings.TvShowDownloadClient != DownloadClient.Disabled)
+                if (_currentSettings.TvShowDownloadClient != DownloadClient.Disabled && _currentSettings.NotificationMode != NotificationMode.Disabled)
                 {
-                    _tvShowNotificationEngine = new TvShowNotificationEngine(GetTvShowClient<ITvShowSearcher>(_currentSettings), new UserTvShowNotifier(_client), _logger, _tvShowNotificationRequestRepository);
+                    ITvShowNotifier tvShowNotifier = null;
+
+                    if (_currentSettings.NotificationMode == NotificationMode.PrivateMessage)
+                    {
+                        tvShowNotifier = new PrivateMessageTvShowNotifier(_client, _logger);
+                    }
+                    else if (_currentSettings.NotificationMode == NotificationMode.Channels)
+                    {
+                        tvShowNotifier = new ChannelTvShowNotifier(_client, _currentSettings.NotificationChannels, _logger);
+                    }
+                    else
+                    {
+                        throw new Exception($"Could not create tv show notifier of type \"{_currentSettings.NotificationMode}\"");
+                    }
+
+                    _tvShowNotificationEngine = new TvShowNotificationEngine(GetTvShowClient<ITvShowSearcher>(_currentSettings), tvShowNotifier, _logger, _tvShowNotificationRequestRepository);
                     _tvShowNotificationEngine.Start();
                 }
             }

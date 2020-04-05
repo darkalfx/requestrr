@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Requestrr.WebApi.RequestrrBot.Notifications;
+using Requestrr.WebApi.RequestrrBot.Notifications.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot
 {

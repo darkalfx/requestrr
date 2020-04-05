@@ -72,7 +72,12 @@ export function save(saveModel) {
                 'MonitoredChannels': saveModel.monitoredChannels,
                 'TvShowRoles': saveModel.tvShowRoles,
                 'MovieRoles': saveModel.movieRoles,
-                'EnableDirectMessageSupport': saveModel.enableDirectMessageSupport,
+                'EnableRequestsThroughDirectMessages': saveModel.enableRequestsThroughDirectMessages,
+                'AutomaticallyNotifyRequesters': saveModel.automaticallyNotifyRequesters,
+                'NotificationMode': saveModel.notificationMode,
+                'NotificationChannels': saveModel.notificationChannels,
+                'AutomaticallyPurgeCommandMessages': saveModel.automaticallyPurgeCommandMessages,
+                'DisplayHelpCommandInDMs': saveModel.displayHelpCommandInDMs,
             })
         })
             .then(data => data.json())
@@ -87,7 +92,12 @@ export function save(saveModel) {
                         monitoredChannels: saveModel.monitoredChannels,
                         tvShowRoles: saveModel.tvShowRoles,
                         movieRoles: saveModel.movieRoles,
-                        enableDirectMessageSupport: saveModel.enableDirectMessageSupport
+                        enableRequestsThroughDirectMessages: saveModel.enableRequestsThroughDirectMessages,
+                        automaticallyNotifyRequesters: saveModel.automaticallyNotifyRequesters,
+                        notificationMode: saveModel.notificationMode,
+                        notificationChannels: saveModel.notificationChannels,
+                        automaticallyPurgeCommandMessages: saveModel.automaticallyPurgeCommandMessages,
+                        displayHelpCommandInDMs: saveModel.displayHelpCommandInDMs,
                     }));
                     return { ok: true };
                 }

@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Requestrr.WebApi.Controllers.DownloadClients
+namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
 {
-    public class OmbiSettings
+    public class TestSonarrSettingsModel
     {
         [Required]
         public string Hostname { get; set; }
@@ -10,9 +10,8 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         public int Port { get; set; }
         [Required]
         public string ApiKey { get; set; }
-        public string ApiUsername { get; set; }
-        [Required]
         public string BaseUrl { get; set; }
+        [Required]
         public bool UseSSL { get; set; }
         [Required]
         public string Version { get; set; }

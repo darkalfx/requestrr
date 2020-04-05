@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Requestrr.WebApi.RequestrrBot.Notifications;
 
 namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
 {
@@ -9,23 +8,23 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
         private readonly ITvShowSearcher _searcher;
         private readonly ITvShowRequester _requester;
         private readonly ITvShowUserInterface _userInterface;
-        private readonly TvShowNotificationsRepository _notificationRequestRepository;
+        private readonly ITvShowNotificationWorkflow _tvShowNotificationWorkflow;
 
         public NormalTvSeasonRequestingWorkflow(
             TvShowUserRequester user,
             ITvShowSearcher searcher,
             ITvShowRequester requester,
             ITvShowUserInterface userInterface,
-            TvShowNotificationsRepository tvShowNotificationsRepository)
+            ITvShowNotificationWorkflow tvShowNotificationWorkflow)
         {
             _user = user;
             _searcher = searcher;
             _requester = requester;
             _userInterface = userInterface;
-            _notificationRequestRepository = tvShowNotificationsRepository;
+            _tvShowNotificationWorkflow = tvShowNotificationWorkflow;
         }
 
-        public async Task HandleRequestAsync(TvShow tvShow, NormalTvSeason selectedSeason)
+        public async Task RequestAsync(TvShow tvShow, NormalTvSeason selectedSeason)
         {
             await _userInterface.DisplayTvShowDetailsAsync(tvShow);
 
@@ -35,12 +34,11 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
             }
             else
             {
-                var wasRequested = await _userInterface.GetTvShowRequestConfirmation(selectedSeason);
+                var wasRequested = await _userInterface.GetTvShowRequestConfirmationAsync(selectedSeason);
 
                 if (wasRequested)
                 {
                     var result = await _requester.RequestTvShowAsync(_user, tvShow, selectedSeason);
-                    _notificationRequestRepository.AddSeasonNotification(_user.UserId, tvShow.TheTvDbId, selectedSeason);
 
                     if (result.WasDenied)
                     {
@@ -49,6 +47,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
                     else
                     {
                         await _userInterface.DisplayRequestSuccessForSeasonAsync(selectedSeason);
+                        await _tvShowNotificationWorkflow.NotifyForNewRequestAsync(_user.UserId, tvShow, selectedSeason);
                     }
                 }
             }
@@ -58,24 +57,11 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
         {
             if (selectedSeason.IsAvailable)
             {
-                await _userInterface.WarnSeasonAlreadyAvailable(selectedSeason);
+                await _userInterface.WarnSeasonAlreadyAvailableAsync(selectedSeason);
             }
             else
             {
-                if (_notificationRequestRepository.HasSeasonNotification(_user.UserId, tvShow.TheTvDbId, selectedSeason))
-                {
-                    await _userInterface.WarnAlreadyNotifiedForSeasonsAsync(tvShow, selectedSeason);
-                }
-                else
-                {
-                    var isRequested = await _userInterface.AskForSeasonNotificationRequestAsync(tvShow, selectedSeason);
-
-                    if (isRequested)
-                    {
-                        _notificationRequestRepository.AddSeasonNotification(_user.UserId, tvShow.TheTvDbId, selectedSeason);
-                        await _userInterface.DisplayNotificationSuccessForSeasonAsync(selectedSeason);
-                    }
-                }
+                await _tvShowNotificationWorkflow.NotifyForExistingRequestAsync(_user.UserId, tvShow, selectedSeason);
             }
         }
     }

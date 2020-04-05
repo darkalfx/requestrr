@@ -1,6 +1,6 @@
 using System;
 
-namespace Requestrr.WebApi.RequestrrBot.Notifications
+namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
 {
     public class SeasonNotification : TvShowNotification
     {

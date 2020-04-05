@@ -9,14 +9,15 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         Task<MovieSelection> GetMovieSelectionAsync(IReadOnlyList<Movie> movies);
         Task WarnInvalidMovieSelectionAsync();
         Task<bool> GetMovieRequestAsync(Movie movie);
-        Task DisplayMovieDetails(Movie movie);
-        Task WarnMovieAlreadyAvailable();
-        Task DisplayRequestSuccess(Movie movie);
+        Task DisplayMovieDetailsAsync(Movie movie);
+        Task WarnMovieAlreadyAvailableAsync();
+        Task DisplayRequestSuccessAsync(Movie movie);
         Task<bool> AskForNotificationRequestAsync();
         Task DisplayNotificationSuccessAsync(Movie movie);
-        Task WarnMovieUnavailableAndAlreadyHasNotification();
-        Task DisplayRequestDenied(Movie movie);
+        Task WarnMovieUnavailableAndAlreadyHasNotificationAsync();
+        Task DisplayRequestDeniedAsync(Movie movie);
         Task WarnNoMovieFoundByTheMovieDbIdAsync(string theMovieDbIdTextValue);
+        Task WarnMovieAlreadyRequestedAsync();
     }
     
     public class MovieSelection

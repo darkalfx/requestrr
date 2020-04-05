@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,51 +7,19 @@ using Requestrr.WebApi.config;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
 
-namespace Requestrr.WebApi.Controllers.DownloadClients
+namespace Requestrr.WebApi.Controllers.DownloadClients.Ombi
 {
-    public class TestOmbiSettingsModel
-    {
-        [Required]
-        public string Hostname { get; set; }
-        [Required]
-        public int Port { get; set; }
-        [Required]
-        public string ApiKey { get; set; }
-        public string BaseUrl { get; set; }
-        [Required]
-        public bool UseSSL { get; set; }
-        [Required]
-        public string Version { get; set; }
-    }
-
-    public class SaveOmbiSettingsModel
-    {
-        [Required]
-        public string Hostname { get; set; }
-        [Required]
-        public int Port { get; set; }
-        [Required]
-        public string ApiKey { get; set; }
-        public string ApiUsername { get; set; }
-        public string BaseUrl { get; set; }
-        [Required]
-        public bool UseSSL { get; set; }
-        [Required]
-        public string Version { get; set; }
-        [Required]
-        public string Command { get; set; }
-    }
 
     [ApiController]
     [Authorize]
     public class OmbiClientController : ControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<Ombi> _logger;
+        private readonly ILogger<OmbiClient> _logger;
 
         public OmbiClientController(
             IHttpClientFactory httpClientFactory,
-            ILogger<Ombi> logger)
+            ILogger<OmbiClient> logger)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
@@ -64,7 +31,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                await Ombi.TestConnectionAsync(_httpClientFactory.CreateClient(), _logger, new RequestrrBot.DownloadClients.Ombi.OmbiSettings
+                await OmbiClient.TestConnectionAsync(_httpClientFactory.CreateClient(), _logger, new RequestrrBot.DownloadClients.Ombi.OmbiSettings
                 {
                     ApiKey = model.ApiKey.Trim(),
                     Hostname = model.Hostname.Trim(),
@@ -83,7 +50,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         }
 
         [HttpPost("/api/movies/ombi")]
-        public async Task<IActionResult> SaveMoviesAsync([FromBody]SaveOmbiSettingsModel model)
+        public async Task<IActionResult> SaveMoviesAsync([FromBody]OmbiSettingsModel model)
         {
             var movieSettings = new MoviesSettings
             {
@@ -91,7 +58,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 Command = model.Command.Trim(),
             };
 
-            var ombiSettings = ConvertToOmbiSettings(model);
+            var ombiSettings = Sanitize(model);
 
             DownloadClientsSettingsRepository.SetOmbi(movieSettings, ombiSettings);
 
@@ -99,7 +66,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         }
 
         [HttpPost("/api/tvshows/ombi")]
-        public async Task<IActionResult> SaveTvShowsAsync([FromBody]SaveOmbiSettingsModel model)
+        public async Task<IActionResult> SaveTvShowsAsync([FromBody]OmbiSettingsModel model)
         {
             var tvShowsSettings = new TvShowsSettings
             {
@@ -107,16 +74,16 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 Command = model.Command.Trim(),
             };
 
-            var ombiSettings = ConvertToOmbiSettings(model);
+            var ombiSettings = Sanitize(model);
 
             DownloadClientsSettingsRepository.SetOmbi(tvShowsSettings, ombiSettings);
 
             return Ok(new { ok = true });
         }
 
-        private static OmbiSettings ConvertToOmbiSettings(SaveOmbiSettingsModel model)
+        private static OmbiSettingsModel Sanitize(OmbiSettingsModel model)
         {
-            return new OmbiSettings
+            return new OmbiSettingsModel
             {
                 Hostname = model.Hostname.Trim(),
                 ApiKey = model.ApiKey.Trim(),

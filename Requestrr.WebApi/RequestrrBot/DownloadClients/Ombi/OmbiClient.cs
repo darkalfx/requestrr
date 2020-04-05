@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -14,22 +14,22 @@ using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
 {
-    public class Ombi : IMovieRequester, IMovieSearcher, ITvShowSearcher, ITvShowRequester
+    public class OmbiClient : IMovieRequester, IMovieSearcher, ITvShowSearcher, ITvShowRequester
     {
         private IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<Ombi> _logger;
+        private readonly ILogger<OmbiClient> _logger;
         private OmbiSettingsProvider _ombiSettingsProvider;
         private OmbiSettings OmbiSettings => _ombiSettingsProvider.Provide();
         private string BaseURL => GetBaseURL(OmbiSettings);
 
-        public Ombi(IHttpClientFactory httpClientFactory, ILogger<Ombi> logger, OmbiSettingsProvider OmbiSettingsProvider)
+        public OmbiClient(IHttpClientFactory httpClientFactory, ILogger<OmbiClient> logger, OmbiSettingsProvider OmbiSettingsProvider)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
             _ombiSettingsProvider = OmbiSettingsProvider;
         }
 
-        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<Ombi> logger, OmbiSettings settings)
+        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<OmbiClient> logger, OmbiSettings settings)
         {
             if (!string.IsNullOrWhiteSpace(settings.BaseUrl) && !settings.BaseUrl.StartsWith("/"))
             {

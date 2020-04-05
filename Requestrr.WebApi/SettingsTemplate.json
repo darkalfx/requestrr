@@ -12,7 +12,12 @@
       "TvShowRoles": [],
       "MovieRoles": [],
       "MonitoredChannels": [],
-      "EnableDirectMessageSupport": false
+      "EnableRequestsThroughDirectMessages": false,
+      "AutomaticallyNotifyRequesters": true,
+      "NotificationMode": "PrivateMessages",
+      "NotificationChannels": [],
+      "AutomaticallyPurgeCommandMessages": false,
+      "DisplayHelpCommandInDMs": true
     }
   },
   "DownloadClients": {
@@ -77,5 +82,5 @@
     "Command": "tv"
   },
   "Port": 4545,
-  "Version": "1.0.6"
+  "Version": "1.0.9"
 }

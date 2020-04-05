@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,92 +9,19 @@ using Requestrr.WebApi.config;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 
-namespace Requestrr.WebApi.Controllers.DownloadClients
+namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
 {
-    public class TestRadarrSettingsModel
-    {
-        [Required]
-        public string Hostname { get; set; }
-        [Required]
-        public int Port { get; set; }
-        [Required]
-        public string ApiKey { get; set; }
-        public string BaseUrl { get; set; }
-        [Required]
-        public bool UseSSL { get; set; }
-        [Required]
-        public string Version { get; set; }
-    }
-
-    public class SaveRadarrSettingsModel
-    {
-        [Required]
-        public string Hostname { get; set; }
-        [Required]
-        public int Port { get; set; }
-        [Required]
-        public string ApiKey { get; set; }
-        public string BaseUrl { get; set; }
-        [Required]
-        public string MovieMinAvailability { get; set; }
-        [Required]
-        public string MoviePath { get; set; }
-        [Required]
-        public int MovieProfile { get; set; }
-        [Required]
-        public int[] MovieTags { get; set; }
-        [Required]
-        public string AnimeMinAvailability { get; set; }
-        [Required]
-        public string AnimePath { get; set; }
-        [Required]
-        public int AnimeProfile { get; set; }
-        [Required]
-        public int[] AnimeTags { get; set; }
-        public bool UseSSL { get; set; }
-        public bool SearchNewRequests { get; set; }
-        public bool MonitorNewRequests { get; set; }
-        [Required]
-        public string Version { get; set; }
-        [Required]
-        public string Command { get; set; }
-    }
-
-    public class RadarrProfile
-    {
-        [Required]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; }
-    }
-
-    public class RadarrPath
-    {
-        [Required]
-        public int Id { get; set; }
-        [Required]
-        public string Path { get; set; }
-    }
-
-    public class RadarrTag
-    {
-        [Required]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; }
-    }
-
     [ApiController]
     [Authorize]
     [Route("/api/movies/radarr")]
     public class RadarrClientController : ControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<Radarr> _logger;
+        private readonly ILogger<RadarrClient> _logger;
 
         public RadarrClientController(
             IHttpClientFactory httpClientFactory,
-            ILogger<Radarr> logger)
+            ILogger<RadarrClient> logger)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
@@ -106,7 +32,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                await Radarr.TestConnectionAsync(_httpClientFactory.CreateClient(), _logger, ConvertToRadarrSettings(model));
+                await RadarrClient.TestConnectionAsync(_httpClientFactory.CreateClient(), _logger, ConvertToRadarrSettings(model));
 
                 return Ok(new { ok = true });
             }
@@ -121,7 +47,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                var paths = await Radarr.GetRootPaths(_httpClientFactory.CreateClient(), _logger, ConvertToRadarrSettings(model));
+                var paths = await RadarrClient.GetRootPaths(_httpClientFactory.CreateClient(), _logger, ConvertToRadarrSettings(model));
 
                 return Ok(paths.Select(x => new RadarrPath
                 {
@@ -140,7 +66,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                var profiles = await Radarr.GetProfiles(_httpClientFactory.CreateClient(), _logger, ConvertToRadarrSettings(model));
+                var profiles = await RadarrClient.GetProfiles(_httpClientFactory.CreateClient(), _logger, ConvertToRadarrSettings(model));
 
                 return Ok(profiles.Select(x => new RadarrProfile
                 {
@@ -159,7 +85,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             try
             {
-                var tags = await Radarr.GetTags(_httpClientFactory.CreateClient(), _logger, ConvertToRadarrSettings(model));
+                var tags = await RadarrClient.GetTags(_httpClientFactory.CreateClient(), _logger, ConvertToRadarrSettings(model));
 
                 return Ok(tags.Select(x => new RadarrTag
                 {
@@ -174,7 +100,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         }
 
         [HttpPost()]
-        public async Task<IActionResult> SaveAsync([FromBody]SaveRadarrSettingsModel model)
+        public async Task<IActionResult> SaveAsync([FromBody]RadarrSettingsModel model)
         {
             var movieSettings = new MoviesSettings
             {
@@ -182,7 +108,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 Command = model.Command.Trim()
             };
 
-            var radarrSetting = new RadarrSettings
+            var radarrSetting = new RadarrSettingsModel
             {
                 Hostname = model.Hostname.Trim(),
                 ApiKey = model.ApiKey.Trim(),
