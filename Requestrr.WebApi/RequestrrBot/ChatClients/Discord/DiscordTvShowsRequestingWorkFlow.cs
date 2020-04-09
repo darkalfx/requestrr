@@ -14,8 +14,10 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 {
     public class DiscordTvShowsRequestingWorkFlow : RequestrrModuleBase<SocketCommandContext>, ITvShowUserInterface
     {
+        private readonly DiscordSocketClient _discord;
         private ITvShowSearcher _tvShowSearcher;
         private readonly ITvShowRequester _tvShowRequester;
+        private readonly DiscordSettingsProvider _discordSettingsProvider;
         private readonly TvShowNotificationsRepository _notificationsRepository;
         private IUserMessage _lastCommandMessage;
         private readonly DiscordSettings _discordSettings;
@@ -29,8 +31,10 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             TvShowNotificationsRepository notificationsRepository)
                 : base(discord, context, discordSettingsProvider)
         {
+            _discord = discord;
             _tvShowSearcher = tvShowSearcher;
             _tvShowRequester = tvShowRequester;
+            _discordSettingsProvider = discordSettingsProvider;
             _notificationsRepository = notificationsRepository;
             _discordSettings = discordSettingsProvider.Provide();
         }
@@ -74,8 +78,8 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 new TvShowUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"),
                  _tvShowSearcher,
                  _tvShowRequester,
-                 this,
-                 tvShowNotificationWorkflow);
+                this.Context.Message.Source == MessageSource.Webhook ? (ITvShowUserInterface)new WebHookTvShowUserInterface(_discord, this.Context, _discordSettingsProvider, this) : (ITvShowUserInterface)this,
+                tvShowNotificationWorkflow);
 
             await workFlow.RequestTvShowAsync(tvShowName);
         }

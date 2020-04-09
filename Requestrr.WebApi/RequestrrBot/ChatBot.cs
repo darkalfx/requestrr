@@ -356,7 +356,7 @@ namespace Requestrr.WebApi.RequestrrBot
         public async Task MessageReceivedAsync(SocketMessage rawMessage)
         {
             if (!(rawMessage is SocketUserMessage message)) return;
-            if (message.Source != MessageSource.User) return;
+            if (message.Source != MessageSource.User && message.Source != MessageSource.Webhook) return;
 
             var argPos = 0;
 

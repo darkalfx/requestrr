@@ -75,7 +75,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 new MovieUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"),
                 _movieSearcher,
                 _movieRequester,
-                this,
+                this.Context.Message.Source == MessageSource.Webhook ? (IMovieUserInterface)new WebHookMovieUserInterface(this) : (IMovieUserInterface)this,
                 movieNotificationWorkflow);
 
             await workFlow.RequestMovieAsync(movieName);

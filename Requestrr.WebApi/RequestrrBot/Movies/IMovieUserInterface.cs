@@ -19,7 +19,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         Task WarnNoMovieFoundByTheMovieDbIdAsync(string theMovieDbIdTextValue);
         Task WarnMovieAlreadyRequestedAsync();
     }
-    
+
     public class MovieSelection
     {
         public Movie Movie { get; set; }
