@@ -48,6 +48,21 @@ namespace Requestrr.WebApi
             }
         }
 
+        protected async Task ForceDeleteSafeAsync(IMessage message, RequestOptions options = null)
+        {
+            try
+            {
+                if (message != null && !(message.Channel is IPrivateChannel))
+                {
+                    await message.DeleteAsync();
+                }
+            }
+            catch
+            {
+                //We did our best
+            }
+        }
+
         protected Task<IUserMessage> ReplyToUserAsync(string message)
         {
             return ReplyAsync($"{Context.Message.Author.Mention} " + message);

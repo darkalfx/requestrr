@@ -63,22 +63,39 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 return;
             }
 
+            var IsWebHook = this.Context.Message.Source == MessageSource.Webhook;
             var tvShowName = stringArgs[0].ToString();
 
-            await DeleteSafeAsync(this.Context.Message);
-
-            ITvShowNotificationWorkflow tvShowNotificationWorkflow = new DisabledTvShowNotificationWorkflow(this);
-
-            if (_discordSettings.NotificationMode != NotificationMode.Disabled)
+            if (IsWebHook)
             {
-                tvShowNotificationWorkflow = new TvShowNotificationWorkflow(_notificationsRepository, this, _discordSettings.AutomaticallyNotifyRequesters);
+                await ForceDeleteSafeAsync(this.Context.Message);
+            }
+            else
+            {
+                await DeleteSafeAsync(this.Context.Message);
+            }
+
+            ITvShowUserInterface userInterface = this;
+
+            if (IsWebHook)
+            {
+                var webhookMessage = tvShowName.Split("//");
+                userInterface = new WebHookTvShowUserInterface(this, webhookMessage[1]);
+                tvShowName = webhookMessage[0];
+            }
+
+            ITvShowNotificationWorkflow tvShowNotificationWorkflow = new DisabledTvShowNotificationWorkflow(userInterface);
+
+            if (_discordSettings.NotificationMode != NotificationMode.Disabled && !IsWebHook)
+            {
+                tvShowNotificationWorkflow = new TvShowNotificationWorkflow(_notificationsRepository, userInterface, _discordSettings.AutomaticallyNotifyRequesters);
             }
 
             var workFlow = new TvShowRequestingWorkflow(
                 new TvShowUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"),
                  _tvShowSearcher,
                  _tvShowRequester,
-                this.Context.Message.Source == MessageSource.Webhook ? (ITvShowUserInterface)new WebHookTvShowUserInterface(_discord, this.Context, _discordSettingsProvider, this) : (ITvShowUserInterface)this,
+                userInterface,
                 tvShowNotificationWorkflow);
 
             await workFlow.RequestTvShowAsync(tvShowName);

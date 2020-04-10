@@ -15,27 +15,28 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         public Task<bool> AskForNotificationRequestAsync()
         {
-            return _movieUserInterface.AskForNotificationRequestAsync();
+            return Task.FromResult(false);
         }
 
         public Task DisplayMovieDetailsAsync(Movie movie)
         {
-            return _movieUserInterface.DisplayMovieDetailsAsync(movie);
+            return Task.CompletedTask;
         }
 
         public Task DisplayNotificationSuccessAsync(Movie movie)
         {
-            return _movieUserInterface.DisplayNotificationSuccessAsync(movie);
+            return Task.CompletedTask;
         }
 
         public Task DisplayRequestDeniedAsync(Movie movie)
         {
-            return _movieUserInterface.DisplayRequestDeniedAsync(movie);
+            return Task.CompletedTask;
         }
 
-        public Task DisplayRequestSuccessAsync(Movie movie)
+        public async Task DisplayRequestSuccessAsync(Movie movie)
         {
-            return _movieUserInterface.DisplayRequestSuccessAsync(movie);
+            await _movieUserInterface.DisplayMovieDetailsAsync(movie);
+            await _movieUserInterface.DisplayRequestSuccessAsync(movie);
         }
 
         public Task<bool> GetMovieRequestAsync(Movie movie)
@@ -54,32 +55,32 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         public Task WarnInvalidMovieSelectionAsync()
         {
-            return _movieUserInterface.WarnInvalidMovieSelectionAsync();
+            return Task.CompletedTask;
         }
 
         public Task WarnMovieAlreadyAvailableAsync()
         {
-            return _movieUserInterface.WarnMovieAlreadyAvailableAsync();
+            return Task.CompletedTask;
         }
 
         public Task WarnMovieAlreadyRequestedAsync()
         {
-            return _movieUserInterface.WarnMovieAlreadyRequestedAsync();
+            return Task.CompletedTask;
         }
 
         public Task WarnMovieUnavailableAndAlreadyHasNotificationAsync()
         {
-            return _movieUserInterface.WarnMovieUnavailableAndAlreadyHasNotificationAsync();
+            return Task.CompletedTask;
         }
 
         public Task WarnNoMovieFoundAsync(string movieName)
         {
-            return _movieUserInterface.WarnNoMovieFoundAsync(movieName);
+            return Task.CompletedTask;
         }
 
         public Task WarnNoMovieFoundByTheMovieDbIdAsync(string theMovieDbIdTextValue)
         {
-            return _movieUserInterface.WarnNoMovieFoundByTheMovieDbIdAsync(theMovieDbIdTextValue);
+            return Task.CompletedTask;
         }
     }
 }

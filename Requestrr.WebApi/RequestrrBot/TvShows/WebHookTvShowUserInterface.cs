@@ -1,49 +1,48 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.Commands;
-using Discord.WebSocket;
-using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 
 namespace Requestrr.WebApi.RequestrrBot.TvShows
 {
-    public class WebHookTvShowUserInterface : RequestrrModuleBase<SocketCommandContext>, ITvShowUserInterface
+    public class WebHookTvShowUserInterface : ITvShowUserInterface
     {
+        private readonly string _seasonSpecified;
         private readonly ITvShowUserInterface _tvShowUserInterface;
+        private TvShow _selectedTvShow;
 
         public WebHookTvShowUserInterface(
-            DiscordSocketClient discord,
-            SocketCommandContext commandContext,
-            DiscordSettingsProvider discordSettingsProvider,
-            ITvShowUserInterface tvShowUserInterface)
-         : base(discord, commandContext, discordSettingsProvider)
+            ITvShowUserInterface tvShowUserInterface,
+            string seasonSpecified)
         {
+            _seasonSpecified = seasonSpecified;
             _tvShowUserInterface = tvShowUserInterface;
         }
 
         public Task<bool> AskForSeasonNotificationRequestAsync(TvShow tvShow, TvSeason requestedSeason)
         {
-            return _tvShowUserInterface.AskForSeasonNotificationRequestAsync(tvShow, requestedSeason);
+            return Task.FromResult(false);
         }
 
         public Task DisplayNotificationSuccessForSeasonAsync(TvSeason requestedSeason)
         {
-            return _tvShowUserInterface.DisplayNotificationSuccessForSeasonAsync(requestedSeason);
+            return Task.CompletedTask;
         }
 
         public Task DisplayRequestDeniedForSeasonAsync(TvSeason selectedSeason)
         {
-            return _tvShowUserInterface.DisplayRequestDeniedForSeasonAsync(selectedSeason);
+            return Task.CompletedTask;
         }
 
-        public Task DisplayRequestSuccessForSeasonAsync(TvSeason selectedSeason)
+        public async Task DisplayRequestSuccessForSeasonAsync(TvSeason selectedSeason)
         {
-            return _tvShowUserInterface.DisplayRequestSuccessForSeasonAsync(selectedSeason);
+            await _tvShowUserInterface.DisplayTvShowDetailsAsync(_selectedTvShow);
+            await _tvShowUserInterface.DisplayRequestSuccessForSeasonAsync(selectedSeason);
         }
 
         public Task DisplayTvShowDetailsAsync(TvShow tvShow)
         {
-            return _tvShowUserInterface.DisplayTvShowDetailsAsync(tvShow);
+            _selectedTvShow = tvShow;
+            return Task.CompletedTask;
         }
 
         public Task<bool> GetTvShowRequestConfirmationAsync(TvSeason season)
@@ -51,44 +50,39 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             return Task.FromResult(true);
         }
 
-        public async Task<TvSeasonsSelection> GetTvShowSeasonSelectionAsync(TvShow tvShow)
+        public Task<TvSeasonsSelection> GetTvShowSeasonSelectionAsync(TvShow tvShow)
         {
             var tvShowSeasons = tvShow.Seasons;
 
-            var selectionMessage = await NextMessageAsync(Context);
-            var selectionMessageContent = selectionMessage?.Content?.Trim();
-
-            await DeleteSafeAsync(selectionMessage);
-
-            if (selectionMessageContent.ToLower().StartsWith("all") && tvShowSeasons.OfType<AllTvSeasons>().Any())
+            if (_seasonSpecified.ToLower().StartsWith("all") && tvShowSeasons.OfType<AllTvSeasons>().Any())
             {
-                return new TvSeasonsSelection
+                return Task.FromResult(new TvSeasonsSelection
                 {
                     SelectedSeason = tvShowSeasons.OfType<AllTvSeasons>().First(),
-                };
+                });
             }
-            else if (selectionMessageContent.ToLower().StartsWith("future") && tvShowSeasons.OfType<FutureTvSeasons>().Any())
+            else if (_seasonSpecified.ToLower().StartsWith("future") && tvShowSeasons.OfType<FutureTvSeasons>().Any())
             {
-                return new TvSeasonsSelection
+                return Task.FromResult(new TvSeasonsSelection
                 {
                     SelectedSeason = tvShowSeasons.OfType<FutureTvSeasons>().First(),
-                };
+                });
             }
-            else if (int.TryParse(selectionMessageContent, out var selectedSeasonNumber) && tvShowSeasons.Any(x => x.SeasonNumber == selectedSeasonNumber))
+            else if (int.TryParse(_seasonSpecified, out var selectedSeasonNumber) && tvShowSeasons.Any(x => x.SeasonNumber == selectedSeasonNumber))
             {
                 var selectedSeason = tvShowSeasons.Single(x => x.SeasonNumber == selectedSeasonNumber);
 
-                return new TvSeasonsSelection
+                return Task.FromResult(new TvSeasonsSelection
                 {
                     SelectedSeason = selectedSeason
-                };
+                });
             }
             else
             {
-                return new TvSeasonsSelection
+                return Task.FromResult(new TvSeasonsSelection
                 {
                     IsCancelled = true
-                };
+                });
             }
         }
 
@@ -103,47 +97,47 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
 
         public Task WarnAlreadyNotifiedForSeasonsAsync(TvShow tvShow, TvSeason requestedSeason)
         {
-            return _tvShowUserInterface.WarnAlreadyNotifiedForSeasonsAsync(tvShow, requestedSeason);
+            return Task.CompletedTask;
         }
 
         public Task WarnAlreadySeasonAlreadyRequestedAsync(TvShow tvShow, TvSeason selectedSeason)
         {
-            return _tvShowUserInterface.WarnAlreadySeasonAlreadyRequestedAsync(tvShow, selectedSeason);
+            return Task.CompletedTask;
         }
 
         public Task WarnInvalidSeasonSelectionAsync()
         {
-            return _tvShowUserInterface.WarnInvalidSeasonSelectionAsync();
+            return Task.CompletedTask;
         }
 
         public Task WarnInvalidTvShowSelectionAsync()
         {
-            return _tvShowUserInterface.WarnInvalidTvShowSelectionAsync();
+            return Task.CompletedTask;
         }
 
         public Task WarnNoTvShowFoundAsync(string tvShowName)
         {
-            return _tvShowUserInterface.WarnNoTvShowFoundAsync(tvShowName);
+            return Task.CompletedTask;
         }
 
         public Task WarnNoTvShowFoundByTvDbIdAsync(string tvDbIdTextValue)
         {
-            return _tvShowUserInterface.WarnNoTvShowFoundByTvDbIdAsync(tvDbIdTextValue);
+            return Task.CompletedTask;
         }
 
         public Task WarnSeasonAlreadyAvailableAsync(TvSeason requestedSeason)
         {
-            return _tvShowUserInterface.WarnSeasonAlreadyAvailableAsync(requestedSeason);
+            return Task.CompletedTask;
         }
 
         public Task WarnShowCannotBeRequestedAsync(TvShow tvShow)
         {
-            return _tvShowUserInterface.WarnShowCannotBeRequestedAsync(tvShow);
+            return Task.CompletedTask;
         }
 
         public Task WarnShowHasEndedAsync(TvShow tvShow)
         {
-            return _tvShowUserInterface.WarnShowHasEndedAsync(tvShow);
+            return Task.CompletedTask;
         }
     }
 }

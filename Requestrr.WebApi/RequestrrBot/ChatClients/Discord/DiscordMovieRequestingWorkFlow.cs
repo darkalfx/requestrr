@@ -60,22 +60,37 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 return;
             }
 
+            var IsWebHook = this.Context.Message.Source == MessageSource.Webhook;
             var movieName = stringArgs[0].ToString();
 
-            await DeleteSafeAsync(this.Context.Message);
-
-            IMovieNotificationWorkflow movieNotificationWorkflow = new DisabledMovieNotificationWorkflow(this);
-
-            if (_discordSettings.NotificationMode != NotificationMode.Disabled)
+            if (IsWebHook)
             {
-                movieNotificationWorkflow = new MovieNotificationWorkflow(_notificationRequestRepository, this, _discordSettings.AutomaticallyNotifyRequesters);
+                await ForceDeleteSafeAsync(this.Context.Message);
+            }
+            else
+            {
+                await DeleteSafeAsync(this.Context.Message);
+            }
+
+            IMovieUserInterface userInterface = this;
+
+            if (IsWebHook)
+            {
+                userInterface = new WebHookMovieUserInterface(this);
+            }
+
+            IMovieNotificationWorkflow movieNotificationWorkflow = new DisabledMovieNotificationWorkflow(userInterface);
+
+            if (_discordSettings.NotificationMode != NotificationMode.Disabled && !IsWebHook)
+            {
+                movieNotificationWorkflow = new MovieNotificationWorkflow(_notificationRequestRepository, userInterface, _discordSettings.AutomaticallyNotifyRequesters);
             }
 
             var workFlow = new MovieRequestingWorkflow(
                 new MovieUserRequester(this.Context.Message.Author.Id.ToString(), $"{this.Context.Message.Author.Username}#{this.Context.Message.Author.Discriminator}"),
                 _movieSearcher,
                 _movieRequester,
-                this.Context.Message.Source == MessageSource.Webhook ? (IMovieUserInterface)new WebHookMovieUserInterface(this) : (IMovieUserInterface)this,
+                userInterface,
                 movieNotificationWorkflow);
 
             await workFlow.RequestMovieAsync(movieName);
