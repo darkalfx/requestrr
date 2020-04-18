@@ -1,6 +1,10 @@
 FROM microsoft/dotnet:3.0-sdk
 
 COPY publish/ /root/
+
+# allow all users access to this so we can run container as non root.
+RUN chmod -R 755 /root
+
 WORKDIR /root/
 
 ENV ASPNETCORE_URLS="http://*:4545"
