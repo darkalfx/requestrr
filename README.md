@@ -32,9 +32,7 @@ https://github.com/darkalfx/requestrr/wiki
 Docker Setup & Start
 ==================
 
-First pull the image from docker hub using docker push darkalfx/requestrr
-
-Then use the following command create and start the container:
+Open a command prompt/terminal and then use the following command create and start the container:
 
     docker run --name requestrr \
       -p 4545:4545 \
