@@ -80,28 +80,24 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
         private static async Task NotifyUsersInChannel(TvShow tvShow, int seasonNumber, HashSet<ulong> discordUserIds, HashSet<string> userNotified, SocketTextChannel channel)
         {
             var usersToMention = channel.Users.Where(x => discordUserIds.Contains(x.Id));
-            await channel.SendMessageAsync($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!", false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow));
-            await SendUserMentionMessageAsync(channel, usersToMention);
 
-            foreach (var user in usersToMention)
-            {
-                userNotified.Add(user.Id.ToString());
-            }
-        }
-
-        private static async Task SendUserMentionMessageAsync(SocketTextChannel channel, IEnumerable<SocketGuildUser> usersToMention)
-        {
-            var message = new StringBuilder();
+            var messageBuilder = new StringBuilder();
+            messageBuilder.AppendLine($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!");
 
             foreach (var user in usersToMention)
             {
                 var userMentionText = $"{user.Mention} ";
 
-                if (message.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
-                    message.Append(userMentionText);
+                if (messageBuilder.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
+                    messageBuilder.Append(userMentionText);
             }
 
-            await channel.SendMessageAsync(message.ToString());
+            await channel.SendMessageAsync(messageBuilder.ToString(), false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow));
+
+            foreach (var user in usersToMention)
+            {
+                userNotified.Add(user.Id.ToString());
+            }
         }
     }
 }

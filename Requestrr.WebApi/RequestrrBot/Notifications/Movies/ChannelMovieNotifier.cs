@@ -81,28 +81,24 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
         private static async Task NotifyUsersInChannel(Movie movie, HashSet<ulong> discordUserIds, HashSet<string> userNotified, SocketTextChannel channel)
         {
             var usersToMention = channel.Users.Where(x => discordUserIds.Contains(x.Id));
-            await channel.SendMessageAsync($"The movie **{movie.Title}** has finished downloading!", false, await DiscordMovieRequestingWorkFlow.GenerateMovieDetailsAsync(movie));
-            await SendUserMentionMessageAsync(channel, usersToMention);
 
-            foreach (var user in usersToMention)
-            {
-                userNotified.Add(user.Id.ToString());
-            }
-        }
-
-        private static async Task SendUserMentionMessageAsync(SocketTextChannel channel, IEnumerable<SocketGuildUser> usersToMention)
-        {
-            var message = new StringBuilder();
+            var messageBuilder = new StringBuilder();
+            messageBuilder.AppendLine($"The movie **{movie.Title}** has finished downloading!");
 
             foreach (var user in usersToMention)
             {
                 var userMentionText = $"{user.Mention} ";
 
-                if (message.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
-                    message.Append(userMentionText);
+                if (messageBuilder.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
+                    messageBuilder.Append(userMentionText);
             }
 
-            await channel.SendMessageAsync(message.ToString());
+            await channel.SendMessageAsync(messageBuilder.ToString(), false, await DiscordMovieRequestingWorkFlow.GenerateMovieDetailsAsync(movie));
+
+            foreach (var user in usersToMention)
+            {
+                userNotified.Add(user.Id.ToString());
+            }
         }
     }
 }
