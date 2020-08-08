@@ -56,6 +56,9 @@ namespace Requestrr.WebApi
 
             var tvShowsSettings = Configuration.GetSection("TvShows");
             services.Configure<TvShowsSettings>(tvShowsSettings);
+            
+            var applicationSettings = Configuration;
+            services.Configure<ApplicationSettings>(applicationSettings);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>

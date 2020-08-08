@@ -32,6 +32,7 @@ import AdminLayout from "./layouts/Admin.jsx";
 import AuthLayout from "./layouts/Auth.jsx";
 import UserReducer from './store/reducers/UserReducer';
 import ChatClients from './store/reducers/ChatClientsReducer';
+import SettingsReducer from './store/reducers/SettingsReducer';
 import MovieClients from './store/reducers/MovieClientsReducer';
 import TvShowsClients from './store/reducers/TvShowsClientsReducer';
 
@@ -39,7 +40,8 @@ const store = createStore(combineReducers({
   user: UserReducer,
   chatClients: ChatClients,
   movies: MovieClients,
-  tvShows: TvShowsClients
+  tvShows: TvShowsClients,
+  settings: SettingsReducer
 }), applyMiddleware(thunk));
 
 ReactDOM.render(

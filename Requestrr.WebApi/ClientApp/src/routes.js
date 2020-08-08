@@ -16,6 +16,7 @@
 
 */
 import Account from "./views/Account.jsx";
+import Settings from "./views/Settings.jsx";
 import ChatClients from "./views/ChatClients.jsx";
 import Movies from "./views/Movies.jsx";
 import TvShows from "./views/TvShows.jsx";
@@ -50,6 +51,13 @@ var routes = [
     name: "Account",
     icon: "fas big fa-user-shield text-green",
     component: Account,
+    layout: "/admin"
+  },
+  {
+    path: "/settings",
+    name: "Settings",
+    icon: "fas big fa-tools text-gray",
+    component: Settings,
     layout: "/admin"
   },
   {
