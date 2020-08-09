@@ -742,7 +742,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("X-Api-Key", settings.ApiKey);
 
-            return await client.SendAsync(request);
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            {
+                return await client.SendAsync(request, cts.Token);
+            }
         }
 
         private async Task<HttpResponseMessage> HttpPostAsync(string url, string content)

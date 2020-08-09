@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -494,7 +495,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("X-Api-Key", settings.ApiKey);
 
-            return await client.SendAsync(request);
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            {
+                return await client.SendAsync(request, cts.Token);
+            }
         }
 
         private async Task<HttpResponseMessage> HttpPostAsync(string url, string content)
