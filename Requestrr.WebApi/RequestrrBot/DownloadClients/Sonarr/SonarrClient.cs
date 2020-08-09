@@ -20,9 +20,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         private SonarrSettingsProvider _sonarrSettingsProvider;
         private SonarrSettings SonarrSettings => _sonarrSettingsProvider.Provide();
         private string BaseURL => GetBaseURL(SonarrSettings);
-        private Dictionary<int, int> _tvDbToSonarrId = new Dictionary<int, int>();
         private object _lock = new object();
         private bool _loadedCache = false;
+        private string _cachedEndpoint = string.Empty;
+        private Dictionary<int, int> _tvDbToSonarrId = new Dictionary<int, int>();
 
         public SonarrClient(IHttpClientFactory httpClientFactory, ILogger<SonarrClient> logger, SonarrSettingsProvider sonarrSettingsProvider)
         {
@@ -191,7 +192,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             var retryCount = 0;
 
-            while (retryCount <= 5 && _loadedCache)
+            RefreshSonarrCache();
+
+            while (retryCount <= 5)
             {
                 try
                 {
@@ -222,7 +225,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             var retryCount = 0;
 
-            while (retryCount <= 5 && _loadedCache)
+            RefreshSonarrCache();
+
+            while (retryCount <= 5)
             {
                 try
                 {
@@ -255,7 +260,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             var retryCount = 0;
 
-            while (retryCount <= 5 && _loadedCache)
+            RefreshSonarrCache();
+
+            while (retryCount <= 5)
             {
                 try
                 {
@@ -293,21 +300,15 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 try
                 {
+                    RefreshSonarrCache();
+
                     var jsonTvShows = await GetSonarrSeriesAsync();
                     var sonarrSeriesToSonarrId = new Dictionary<int, JSONTvShow>();
 
-                    lock (_lock)
+                    foreach (var show in jsonTvShows)
                     {
-                        _tvDbToSonarrId.Clear();
-
-                        foreach (var show in jsonTvShows)
-                        {
-                            _tvDbToSonarrId.Add(show.tvdbId.Value, show.id.Value);
-                            sonarrSeriesToSonarrId.Add(show.id.Value, show);
-                        }
+                        sonarrSeriesToSonarrId.Add(show.id.Value, show);
                     }
-
-                    _loadedCache = true;
 
                     var convertedTvShows = new List<TvShow>();
 
@@ -344,7 +345,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             var retryCount = 0;
 
-            while (retryCount <= 5 && _loadedCache)
+            RefreshSonarrCache();
+
+            while (retryCount <= 5)
             {
                 try
                 {
@@ -622,6 +625,35 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             return episodes.GroupBy(x => x.seasonNumber).ToDictionary(x => x.Key, x => x.ToArray());
         }
 
+        private async void RefreshSonarrCache()
+        {
+            try
+            {
+                if (_loadedCache && string.Equals(_cachedEndpoint, $"{SonarrSettings.Hostname}:{SonarrSettings.Port}"))
+                    return;
+
+                var jsonTvShows = await GetSonarrSeriesAsync();
+
+                lock (_lock)
+                {
+                    _tvDbToSonarrId.Clear();
+
+                    foreach (var show in jsonTvShows)
+                    {
+                        _tvDbToSonarrId.Add(show.tvdbId.Value, show.id.Value);
+                    }
+
+                    _loadedCache = true;
+
+                    _cachedEndpoint = $"{SonarrSettings.Hostname}:{SonarrSettings.Port}";
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while generating sonarr cache: " + ex.Message);
+            }
+        }
+
         private TvShow Convert(JSONTvShow jsonTvShow, IReadOnlyList<JSONSeason> seasons, IDictionary<int, JSONEpisode[]> episodesToSeason)
         {
             var downloadClientId = jsonTvShow.id?.ToString();
@@ -710,7 +742,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("X-Api-Key", settings.ApiKey);
 
-            return await client.SendAsync(request);
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            {
+                return await client.SendAsync(request, cts.Token);
+            }
         }
 
         private async Task<HttpResponseMessage> HttpPostAsync(string url, string content)

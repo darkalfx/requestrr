@@ -187,7 +187,8 @@ namespace Requestrr.WebApi.RequestrrBot
                            _client,
                             GetTvShowClient<ITvShowSearcher>(discordSettings),
                             GetTvShowClient<ITvShowRequester>(discordSettings),
-                           serviceProvider.Get<DiscordSettingsProvider>(),
+                            serviceProvider.Get<DiscordSettingsProvider>(),
+                            serviceProvider.Get<TvShowsSettingsProvider>(),
                            _tvShowNotificationRequestRepository))
                         {
                             await command.HandleTvShowRequestAsync(message);

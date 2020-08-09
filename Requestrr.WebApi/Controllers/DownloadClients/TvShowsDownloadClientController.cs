@@ -8,6 +8,7 @@ using Requestrr.WebApi.config;
 using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
 {
@@ -67,7 +68,8 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                     UseSSL = _downloadClientsSettings.Ombi.UseSSL,
                     Version = _downloadClientsSettings.Ombi.Version
                 },
-                Command = _tvShowsSettings.Command
+                Command = _tvShowsSettings.Command,
+                Restrictions = _tvShowsSettings.Restrictions
             });
         }
 

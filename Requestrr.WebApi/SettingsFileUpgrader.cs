@@ -43,7 +43,7 @@ namespace Requestrr.WebApi
                 File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
             }
 
-            if (settingsJson.Version.ToString().Equals("1.0.1", StringComparison.InvariantCultureIgnoreCase) 
+            if (settingsJson.Version.ToString().Equals("1.0.1", StringComparison.InvariantCultureIgnoreCase)
             || settingsJson.Version.ToString().Equals("1.0.2", StringComparison.InvariantCultureIgnoreCase)
             || settingsJson.Version.ToString().Equals("1.0.3", StringComparison.InvariantCultureIgnoreCase)
             || settingsJson.Version.ToString().Equals("1.0.4", StringComparison.InvariantCultureIgnoreCase))
@@ -62,7 +62,7 @@ namespace Requestrr.WebApi
             if (settingsJson.Version.ToString().Equals("1.0.6", StringComparison.InvariantCultureIgnoreCase))
             {
                 settingsJson.Version = "1.0.9";
-                
+
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Add("AutomaticallyNotifyRequesters", true);
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Add("NotificationMode", "PrivateMessages");
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Add("NotificationChannels", JToken.FromObject(Array.Empty<int>()));
@@ -70,7 +70,15 @@ namespace Requestrr.WebApi
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Add("DisplayHelpCommandInDMs", true);
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Add("EnableRequestsThroughDirectMessages", (bool)((JObject)settingsJson["ChatClients"]["Discord"]).GetValue("EnableDirectMessageSupport"));
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Remove("EnableDirectMessageSupport");
-                
+
+                File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
+            }
+
+            if (settingsJson.Version.ToString().Equals("1.0.9", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.10.0";
+                ((JObject)settingsJson["TvShows"]).Add("Restrictions", "None");
+
                 File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
             }
         }

@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:3.0-sdk
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
 
 COPY publish/ /root/
 

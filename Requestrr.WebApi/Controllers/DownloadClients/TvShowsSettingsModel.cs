@@ -14,5 +14,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         public OmbiSettingsModel Ombi { get; set; }
         [Required]
         public string Command { get; set; }
+        [Required]
+        public string Restrictions { get; set; }
     }
 }

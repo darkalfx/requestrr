@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.config;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
+using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients.Ombi
 {
@@ -50,7 +51,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Ombi
         }
 
         [HttpPost("/api/movies/ombi")]
-        public async Task<IActionResult> SaveMoviesAsync([FromBody]OmbiSettingsModel model)
+        public async Task<IActionResult> SaveMoviesAsync([FromBody]SaveOmbiMoviesSettingsModel model)
         {
             var movieSettings = new MoviesSettings
             {
@@ -66,12 +67,13 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Ombi
         }
 
         [HttpPost("/api/tvshows/ombi")]
-        public async Task<IActionResult> SaveTvShowsAsync([FromBody]OmbiSettingsModel model)
+        public async Task<IActionResult> SaveTvShowsAsync([FromBody]SaveOmbiTvShowsSettingsModel model)
         {
             var tvShowsSettings = new TvShowsSettings
             {
                 Client = DownloadClient.Ombi,
                 Command = model.Command.Trim(),
+                Restrictions = model.Restrictions
             };
 
             var ombiSettings = Sanitize(model);

@@ -13,19 +13,22 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
         private readonly ITvShowRequester _requester;
         private readonly ITvShowUserInterface _userInterface;
         private readonly ITvShowNotificationWorkflow _tvShowNotificationWorkflow;
+        private readonly TvShowsSettings _settings;
 
         public TvShowRequestingWorkflow(
             TvShowUserRequester user,
             ITvShowSearcher searcher,
             ITvShowRequester requester,
             ITvShowUserInterface userInterface,
-            ITvShowNotificationWorkflow tvShowNotificationWorkflow)
+            ITvShowNotificationWorkflow tvShowNotificationWorkflow,
+            TvShowsSettings settings)
         {
             _user = user;
             _searcher = searcher;
             _requester = requester;
             _userInterface = userInterface;
             _tvShowNotificationWorkflow = tvShowNotificationWorkflow;
+            _settings = settings;
         }
 
         public async Task RequestTvShowAsync(string tvShowName)
@@ -135,7 +138,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
 
         private async Task RequestTvShowSeason(TvShow tvShow)
         {
-            var seasonSelection = await _userInterface.GetTvShowSeasonSelectionAsync(tvShow);
+            var seasonSelection = await GetTvShowSelectionBasedOnRestrictions(tvShow);
 
             if (!seasonSelection.IsCancelled && seasonSelection.SelectedSeason.IsSpecified)
             {
@@ -163,6 +166,34 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             {
                 await _userInterface.WarnInvalidSeasonSelectionAsync();
             }
+        }
+
+        private async Task<TvSeasonsSelection> GetTvShowSelectionBasedOnRestrictions(TvShow tvShow)
+        {
+            TvSeasonsSelection seasonSelection = null;
+
+            if (_settings.Restrictions == TvShowsRestrictions.AllSeasons)
+            {
+                seasonSelection = new TvSeasonsSelection
+                {
+                    SelectedSeason = tvShow.Seasons.OfType<AllTvSeasons>().Single()
+                };
+            }
+            else if (_settings.Restrictions == TvShowsRestrictions.SingleSeason)
+            {
+                tvShow.Seasons = tvShow.Seasons.Where(x => !(x is AllTvSeasons)).ToArray();
+                seasonSelection = await _userInterface.GetTvShowSeasonSelectionAsync(tvShow);
+            }
+            else if (_settings.Restrictions == TvShowsRestrictions.None)
+            {
+                seasonSelection = await _userInterface.GetTvShowSeasonSelectionAsync(tvShow);
+            }
+            else
+            {
+                throw new NotImplementedException($"Tv shows restriction of type {_settings.Restrictions} has not been implemented.");
+            }
+
+            return seasonSelection;
         }
 
         private async Task<TvShow> GetTvShow(SearchedTvShow searchedTvShow)

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.config;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
+using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
 {
@@ -119,12 +120,13 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
         }
 
         [HttpPost()]
-        public async Task<IActionResult> SaveAsync([FromBody]SonarrSettingsModel model)
+        public async Task<IActionResult> SaveAsync([FromBody]SaveSonarrSettingsModel model)
         {
             var tvShowsSettings = new TvShowsSettings
             {
                 Client = DownloadClient.Sonarr,
-                Command = model.Command.Trim()
+                Command = model.Command.Trim(),
+                Restrictions = model.Restrictions
             };
 
             var sonarrSetting = new SonarrSettingsModel

@@ -79,29 +79,30 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
 
         private static async Task NotifyUsersInChannel(TvShow tvShow, int seasonNumber, HashSet<ulong> discordUserIds, HashSet<string> userNotified, SocketTextChannel channel)
         {
-            var usersToMention = channel.Users.Where(x => discordUserIds.Contains(x.Id));
-            await channel.SendMessageAsync($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!", false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow));
-            await SendUserMentionMessageAsync(channel, usersToMention);
+            var usersToMention = channel.Users
+                .Where(x => discordUserIds.Contains(x.Id))
+                .Where(x => !userNotified.Contains(x.Id.ToString()));
 
-            foreach (var user in usersToMention)
+            if (usersToMention.Any())
             {
-                userNotified.Add(user.Id.ToString());
+                var messageBuilder = new StringBuilder();
+                messageBuilder.AppendLine($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!");
+
+                foreach (var user in usersToMention)
+                {
+                    var userMentionText = $"{user.Mention} ";
+
+                    if (messageBuilder.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
+                        messageBuilder.Append(userMentionText);
+                }
+
+                await channel.SendMessageAsync(messageBuilder.ToString(), false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow));
+
+                foreach (var user in usersToMention)
+                {
+                    userNotified.Add(user.Id.ToString());
+                }
             }
-        }
-
-        private static async Task SendUserMentionMessageAsync(SocketTextChannel channel, IEnumerable<SocketGuildUser> usersToMention)
-        {
-            var message = new StringBuilder();
-
-            foreach (var user in usersToMention)
-            {
-                var userMentionText = $"{user.Mention} ";
-
-                if (message.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
-                    message.Append(userMentionText);
-            }
-
-            await channel.SendMessageAsync(message.ToString());
         }
     }
 }
