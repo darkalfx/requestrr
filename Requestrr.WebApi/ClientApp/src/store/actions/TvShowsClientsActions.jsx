@@ -318,6 +318,7 @@ export function saveSonarrClient(saveModel) {
                 'MonitorNewRequests': saveModel.sonarr.monitorNewRequests,
                 "Version": saveModel.sonarr.version,
                 'Command': saveModel.command,
+                'Restrictions': saveModel.restrictions,
             })
         })
             .then(data => data.json())
@@ -348,6 +349,8 @@ export function saveSonarrClient(saveModel) {
                             useSSL: saveModel.sonarr.useSSL,
                             version: saveModel.sonarr.version
                         },
+                        command: saveModel.command,
+                        restrictions: saveModel.restrictions
                     }));
                     return { ok: true };
                 }
@@ -377,6 +380,7 @@ export function saveOmbiClient(saveModel) {
                 'UseSSL': saveModel.ombi.useSSL,
                 'Version': saveModel.ombi.version,
                 'Command': saveModel.command,
+                'Restrictions': saveModel.restrictions,
             })
         })
             .then(data => data.json())
@@ -392,7 +396,8 @@ export function saveOmbiClient(saveModel) {
                             useSSL: saveModel.ombi.useSSL,
                             version: saveModel.ombi.version,
                         },
-                        command: saveModel.command
+                        command: saveModel.command,
+                        restrictions: saveModel.restrictions
                     }));
                     return { ok: true };
                 }

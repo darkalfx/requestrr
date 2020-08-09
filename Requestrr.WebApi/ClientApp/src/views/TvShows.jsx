@@ -55,6 +55,7 @@ class TvShows extends React.Component {
       saveSuccess: false,
       saveError: "",
       client: "",
+      restrictions: "None",
       command: "",
       sonarr: {},
       isSonarrValid: false,
@@ -77,6 +78,7 @@ class TvShows extends React.Component {
           sonarr: this.props.settings.sonarr,
           ombi: this.props.settings.ombi,
           command: this.props.settings.command,
+          restrictions: this.props.settings.restrictions,
         });
       });
   }
@@ -118,12 +120,14 @@ class TvShows extends React.Component {
           saveAction = this.props.saveOmbiClient({
             ombi: this.state.ombi,
             command: this.state.command,
+            restrictions: this.state.restrictions
           });
         }
         else if (this.state.client === "Sonarr") {
           saveAction = this.props.saveSonarrClient({
             sonarr: this.state.sonarr,
             command: this.state.command,
+            restrictions: this.state.restrictions
           });
         }
 
@@ -245,6 +249,11 @@ class TvShows extends React.Component {
                                   onValidate={isValid => this.setState({ isCommandValid: isValid })} />
                               </Col>
                               <Col lg="4">
+                                <Dropdown
+                                  name="Restrictions"
+                                  value={this.state.restrictions}
+                                  items={[{ name: "No restrictions", value: "None" }, { name: "Force all seasons", value: "AllSeasons" }, { name: "Force single season", value: "SingleSeason" }]}
+                                  onChange={newRestrictions => { this.setState({ restrictions: newRestrictions }) }} />
                               </Col>
                             </Row>
                           </>

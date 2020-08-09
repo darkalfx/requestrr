@@ -79,8 +79,9 @@
   },
   "TvShows": {
     "Client": "Disabled",
-    "Command": "tv"
+    "Command": "tv",
+    "Restrictions": "None"
   },
   "Port": 4545,
-  "Version": "1.0.9"
+  "Version": "1.10.0"
 }

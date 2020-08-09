@@ -38,6 +38,7 @@ export default function TvShowsClientsReducer(state = {}, action) {
         version: action.payload.sonarr.version
       },
       command: action.payload.command,
+      restrictions: action.payload.restrictions
     }
   }
   else if (action.type === SET_DISABLED_CLIENT) {
@@ -51,6 +52,7 @@ export default function TvShowsClientsReducer(state = {}, action) {
       ...state,
       sonarr: action.payload.sonarr,
       command: action.payload.command,
+      restrictions: action.payload.restrictions,
       client: "Sonarr"
     }
   }
@@ -59,6 +61,7 @@ export default function TvShowsClientsReducer(state = {}, action) {
       ...state,
       ombi: action.payload.ombi,
       command: action.payload.command,
+      restrictions: action.payload.restrictions,
       client: "Ombi"
     }
   }

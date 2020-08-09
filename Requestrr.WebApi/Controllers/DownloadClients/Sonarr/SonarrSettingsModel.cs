@@ -21,7 +21,5 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
         public bool AnimeUseSeasonFolders { get; set; }
         public bool SearchNewRequests { get; set; }
         public bool MonitorNewRequests { get; set; }
-        [Required]
-        public string Command { get; set; }
     }
 }

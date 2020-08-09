@@ -18,6 +18,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
         private ITvShowSearcher _tvShowSearcher;
         private readonly ITvShowRequester _tvShowRequester;
         private readonly DiscordSettingsProvider _discordSettingsProvider;
+        private readonly TvShowsSettingsProvider _tvShowsSettingsProvider;
         private readonly TvShowNotificationsRepository _notificationsRepository;
         private IUserMessage _lastCommandMessage;
         private readonly DiscordSettings _discordSettings;
@@ -28,6 +29,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             ITvShowSearcher tvShowSearcher,
             ITvShowRequester tvShowRequester,
             DiscordSettingsProvider discordSettingsProvider,
+            TvShowsSettingsProvider tvShowsSettingsProvider,
             TvShowNotificationsRepository notificationsRepository)
                 : base(discord, context, discordSettingsProvider)
         {
@@ -35,6 +37,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             _tvShowSearcher = tvShowSearcher;
             _tvShowRequester = tvShowRequester;
             _discordSettingsProvider = discordSettingsProvider;
+            _tvShowsSettingsProvider = tvShowsSettingsProvider;
             _notificationsRepository = notificationsRepository;
             _discordSettings = discordSettingsProvider.Provide();
         }
@@ -96,7 +99,8 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                  _tvShowSearcher,
                  _tvShowRequester,
                 userInterface,
-                tvShowNotificationWorkflow);
+                tvShowNotificationWorkflow,
+                _tvShowsSettingsProvider.Provide());
 
             await workFlow.RequestTvShowAsync(tvShowName);
         }

@@ -14,6 +14,7 @@ using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot;
+using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi
 {
@@ -79,6 +80,7 @@ namespace Requestrr.WebApi
             services.AddSingleton<OmbiClient, OmbiClient>();
             services.AddSingleton<RadarrClient, RadarrClient>();
             services.AddSingleton<DiscordSettingsProvider>();
+            services.AddSingleton<TvShowsSettingsProvider>();
             services.AddSingleton<OmbiSettingsProvider>();
             services.AddSingleton<RadarrSettingsProvider>();
             services.AddSingleton<SonarrSettingsProvider>();

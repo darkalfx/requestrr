@@ -4,6 +4,7 @@ using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
 using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot;
+using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
 {
@@ -74,10 +75,11 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
 
                 settings.TvShows.Client = tvShowsSettings.Client;
                 settings.TvShows.Command = tvShowsSettings.Command;
+                settings.TvShows.Restrictions = tvShowsSettings.Restrictions;
             });
         }
 
-        public static void SetSonarr(TvShowsSettings movieSettings, SonarrSettingsModel sonarrSettings)
+        public static void SetSonarr(TvShowsSettings tvSettings, SonarrSettingsModel sonarrSettings)
         {
             SettingsFile.Write(settings =>
             {
@@ -104,8 +106,9 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 settings.DownloadClients.Sonarr.UseSSL = sonarrSettings.UseSSL;
                 settings.DownloadClients.Sonarr.Version = sonarrSettings.Version;
 
-                settings.TvShows.Client = movieSettings.Client;
-                settings.TvShows.Command = movieSettings.Command;
+                settings.TvShows.Client = tvSettings.Client;
+                settings.TvShows.Command = tvSettings.Command;
+                settings.TvShows.Restrictions = tvSettings.Restrictions;
             });
         }
 
