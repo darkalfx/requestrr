@@ -121,9 +121,16 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 tvRow.Append($"{i + 1}) {searchedTvShows[i].Title} ");
 
                 if (!string.IsNullOrWhiteSpace(searchedTvShows[i].FirstAired) && searchedTvShows[i].FirstAired.Length >= 4)
-                    tvRow.Append($"({searchedTvShows[i].FirstAired.Substring(0, 4)}) ");
+                {
+                    var releaseYear = $"({searchedTvShows[i].FirstAired.Substring(0, 4)})";
 
-                tvRow.Append($"[[TheTVDb](https://www.thetvdb.com/?id={searchedTvShows[i].TheTvDbId}&tab=series)]");
+                    if(!searchedTvShows[i].Title.Contains(releaseYear, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        tvRow.Append(releaseYear);
+                    }
+                }
+
+                tvRow.Append($" [[TheTVDb](https://www.thetvdb.com/?id={searchedTvShows[i].TheTvDbId}&tab=series)]");
                 tvRow.AppendLine();
 
                 if (tvRow.Length + embedContent.Length < DiscordConstants.MaxEmbedLength)
@@ -189,7 +196,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             if (!string.IsNullOrWhiteSpace(tvShow.FirstAired))
             {
-                if (tvShow.FirstAired.Length >= 4 && !title.Contains(tvShow.FirstAired.Split("T")[0].Substring(0, 4)))
+                if (tvShow.FirstAired.Length >= 4 && !title.Contains(tvShow.FirstAired.Split("T")[0].Substring(0, 4), StringComparison.InvariantCultureIgnoreCase))
                 {
                     title = $"{title} ({tvShow.FirstAired.Split("T")[0].Substring(0, 4)})";
                 }
