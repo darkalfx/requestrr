@@ -79,24 +79,29 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
 
         private static async Task NotifyUsersInChannel(TvShow tvShow, int seasonNumber, HashSet<ulong> discordUserIds, HashSet<string> userNotified, SocketTextChannel channel)
         {
-            var usersToMention = channel.Users.Where(x => discordUserIds.Contains(x.Id));
+            var usersToMention = channel.Users
+                .Where(x => discordUserIds.Contains(x.Id))
+                .Where(x => !userNotified.Contains(x.Id.ToString()));
 
-            var messageBuilder = new StringBuilder();
-            messageBuilder.AppendLine($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!");
-
-            foreach (var user in usersToMention)
+            if (usersToMention.Any())
             {
-                var userMentionText = $"{user.Mention} ";
+                var messageBuilder = new StringBuilder();
+                messageBuilder.AppendLine($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!");
 
-                if (messageBuilder.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
-                    messageBuilder.Append(userMentionText);
-            }
+                foreach (var user in usersToMention)
+                {
+                    var userMentionText = $"{user.Mention} ";
 
-            await channel.SendMessageAsync(messageBuilder.ToString(), false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow));
+                    if (messageBuilder.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
+                        messageBuilder.Append(userMentionText);
+                }
 
-            foreach (var user in usersToMention)
-            {
-                userNotified.Add(user.Id.ToString());
+                await channel.SendMessageAsync(messageBuilder.ToString(), false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow));
+
+                foreach (var user in usersToMention)
+                {
+                    userNotified.Add(user.Id.ToString());
+                }
             }
         }
     }

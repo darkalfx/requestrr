@@ -80,24 +80,29 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
 
         private static async Task NotifyUsersInChannel(Movie movie, HashSet<ulong> discordUserIds, HashSet<string> userNotified, SocketTextChannel channel)
         {
-            var usersToMention = channel.Users.Where(x => discordUserIds.Contains(x.Id));
+            var usersToMention = channel.Users
+                .Where(x => discordUserIds.Contains(x.Id))
+                .Where(x => !userNotified.Contains(x.Id.ToString()));
 
-            var messageBuilder = new StringBuilder();
-            messageBuilder.AppendLine($"The movie **{movie.Title}** has finished downloading!");
-
-            foreach (var user in usersToMention)
+            if (usersToMention.Any())
             {
-                var userMentionText = $"{user.Mention} ";
+                var messageBuilder = new StringBuilder();
+                messageBuilder.AppendLine($"The movie **{movie.Title}** has finished downloading!");
 
-                if (messageBuilder.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
-                    messageBuilder.Append(userMentionText);
-            }
+                foreach (var user in usersToMention)
+                {
+                    var userMentionText = $"{user.Mention} ";
 
-            await channel.SendMessageAsync(messageBuilder.ToString(), false, await DiscordMovieRequestingWorkFlow.GenerateMovieDetailsAsync(movie));
+                    if (messageBuilder.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
+                        messageBuilder.Append(userMentionText);
+                }
 
-            foreach (var user in usersToMention)
-            {
-                userNotified.Add(user.Id.ToString());
+                await channel.SendMessageAsync(messageBuilder.ToString(), false, await DiscordMovieRequestingWorkFlow.GenerateMovieDetailsAsync(movie));
+
+                foreach (var user in usersToMention)
+                {
+                    userNotified.Add(user.Id.ToString());
+                }
             }
         }
     }
