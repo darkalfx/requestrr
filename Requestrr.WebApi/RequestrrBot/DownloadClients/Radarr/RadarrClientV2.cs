@@ -126,22 +126,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while getting Radarr profiles");
         }
 
-        public static async Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
-        {
-            try
-            {
-                var response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}/tag");
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<IList<JSONTag>>(jsonResponse);
-            }
-            catch (System.Exception ex)
-            {
-                logger.LogWarning(ex, "An error while getting Radarr tags: " + ex.Message);
-            }
-
-            throw new System.Exception("An error occurred while getting Radarr tags");
-        }
-
         public async Task<Movie> SearchMovieAsync(int theMovieDbId)
         {
             try

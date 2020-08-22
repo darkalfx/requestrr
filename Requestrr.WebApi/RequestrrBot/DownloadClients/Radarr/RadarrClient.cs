@@ -59,7 +59,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
         {
             if(settings.Version == "2")
             {
-                return RadarrClientV2.GetTags(httpClient, logger, settings);
+                return Task.FromResult((IList<JSONTag>)new List<JSONTag>());
             }
             else 
             {
