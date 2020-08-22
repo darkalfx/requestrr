@@ -264,7 +264,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public Task DisplayRequestSuccessAsync(Movie movie)
         {
-            return ReplyToUserAsync($"Your request for **{movie.Title}** was sent successfully, your movie should be available soon!");
+            return ReplyToUserAsync($"Your request for **{movie.Title}** was sent successfully!");
         }
 
         public async Task<bool> AskForNotificationRequestAsync()
