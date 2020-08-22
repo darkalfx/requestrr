@@ -21,10 +21,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         private SonarrSettingsProvider _sonarrSettingsProvider;
         private SonarrSettings SonarrSettings => _sonarrSettingsProvider.Provide();
         private string BaseURL => GetBaseURL(SonarrSettings);
-        private object _lock = new object();
-        private bool _loadedCache = false;
-        private string _cachedEndpoint = string.Empty;
-        private Dictionary<int, int> _tvDbToSonarrId = new Dictionary<int, int>();
 
         public SonarrClientV3(IHttpClientFactory httpClientFactory, ILogger<SonarrClient> logger, SonarrSettingsProvider sonarrSettingsProvider)
         {
@@ -163,7 +159,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         public async Task<SearchedTvShow> SearchTvShowAsync(int tvDbId)
         {
-            RefreshSonarrCache();
             try
             {
                 var jsonTvShow = await SearchSerieByTvDbIdAsync(tvDbId);
@@ -188,8 +183,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(string tvShowName)
         {
-            RefreshSonarrCache();
-
             try
             {
                 var response = await HttpGetAsync($"{BaseURL}/series/lookup?term={tvShowName}");
@@ -216,19 +209,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         public async Task<TvShow> GetTvShowDetailsAsync(SearchedTvShow searchedTvShow)
         {
-            RefreshSonarrCache();
-
             try
             {
                 var tvDbId = searchedTvShow.TheTvDbId;
-                int? sonarrSeriesId = null;
-
-                lock (_lock)
-                {
-                    sonarrSeriesId = _tvDbToSonarrId.ContainsKey(tvDbId) ? _tvDbToSonarrId[tvDbId] : (int?)null;
-                }
-
-                var jsonTvShow = await FindSeriesInSonarrAsync(tvDbId, sonarrSeriesId?.ToString());
+                var jsonTvShow = await FindSeriesInSonarrAsync(tvDbId);
 
                 var convertedTvShow = Convert(jsonTvShow, jsonTvShow.seasons, jsonTvShow.id.HasValue ? await GetSonarrEpisodesAsync(jsonTvShow.id.Value) : new Dictionary<int, JSONEpisode[]>());
                 convertedTvShow.Banner = searchedTvShow.Banner;
@@ -247,33 +231,17 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             try
             {
-                RefreshSonarrCache();
-
-                var jsonTvShows = await GetSonarrSeriesAsync();
-                var sonarrSeriesToSonarrId = new Dictionary<int, JSONTvShow>();
-
-                foreach (var show in jsonTvShows)
-                {
-                    sonarrSeriesToSonarrId.Add(show.id.Value, show);
-                }
-
                 var convertedTvShows = new List<TvShow>();
 
-                await Task.WhenAll(jsonTvShows.Where(x => theTvDbIds.Contains(x.tvdbId.Value)).Select(async x =>
+                foreach (var tvDbId in theTvDbIds)
                 {
-                    var convertedTvShow = Convert(x, sonarrSeriesToSonarrId[x.id.Value].seasons, await GetSonarrEpisodesAsync(x.id.Value));
+                    var series = await FindSeriesInSonarrAsync(tvDbId);
 
-                    try
+                    if(series.id != null && series.id > 0)
                     {
-                        convertedTvShow.Banner = (await SearchSerieByTvDbIdAsync(x.tvdbId.Value)).remotePoster;
+                        convertedTvShows.Add(Convert(series, series.seasons, await GetSonarrEpisodesAsync(series.id.Value)));
                     }
-                    catch
-                    {
-                        // Ignore
-                    }
-
-                    convertedTvShows.Add(convertedTvShow);
-                }));
+                }
 
                 return convertedTvShows;
             }
@@ -281,13 +249,12 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 _logger.LogError(ex, "An error occurred while searching available tv shows with Sonarr: " + ex.Message);
             }
+
             throw new System.Exception("An error occurred while searching available tv shows with Sonarr");
         }
 
         public async Task<TvShowRequestResult> RequestTvShowAsync(TvShowUserRequester requester, TvShow tvShow, TvSeason season)
         {
-            RefreshSonarrCache();
-
             try
             {
                 var requestedSeasons = season is AllTvSeasons
@@ -370,16 +337,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             }));
 
             await response.ThrowIfNotSuccessfulAsync("SonarrSeriesCreation failed", x => x.error);
-
-            jsonResponse = await response.Content.ReadAsStringAsync();
-            dynamic sonarrTvShow = JObject.Parse(jsonResponse);
-
-            var sonarrSeriesId = (int)sonarrTvShow.id;
-
-            lock (_lock)
-            {
-                _tvDbToSonarrId[tvShow.TheTvDbId] = sonarrSeriesId;
-            }
         }
 
         private async Task UpdateSonarrTvSeriesAsync(TvShow tvShow, IReadOnlyList<TvSeason> seasons)
@@ -390,7 +347,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    var sonarrTvShow = await FindSeriesInSonarrAsync(tvShow.TheTvDbId, tvShow.DownloadClientId);
+                    var sonarrTvShow = await FindSeriesInSonarrAsync(tvShow.TheTvDbId);
 
                     if (sonarrTvShow.id.HasValue)
                     {
@@ -470,43 +427,22 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             }
         }
 
-        private async Task<JSONTvShow> FindSeriesInSonarrAsync(int tvDbId, string downloadClientId = null)
+        private async Task<JSONTvShow> FindSeriesInSonarrAsync(int tvDbId)
         {
-            if (!string.IsNullOrEmpty(downloadClientId))
+            var series = await SearchSerieByTvDbIdAsync(tvDbId);
+
+            if(series.id != null && series.id > 0)
             {
-                var response = await HttpGetAsync($"{BaseURL}/series/{downloadClientId}");
+                var response = await HttpGetAsync($"{BaseURL}/series/{series.id}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var jsonResponse = await response.Content.ReadAsStringAsync();
                     return JsonConvert.DeserializeObject<JSONTvShow>(jsonResponse);
                 }
-                else
-                {
-                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    {
-                        var existingTvShow = (await GetSonarrSeriesAsync()).FirstOrDefault(x => x.tvdbId.HasValue && x.tvdbId.Value == tvDbId);
-
-                        return existingTvShow != null
-                        ? existingTvShow
-                        : await FindSeriesInSonarrAsync(tvDbId);
-                    }
-
-                    await response.ThrowIfNotSuccessfulAsync("SonarrSerieGet failed", x => x.error);
-                }
             }
             
-            return await SearchSerieByTvDbIdAsync(tvDbId);
-        }
-
-        private async Task<JSONTvShow[]> GetSonarrSeriesAsync()
-        {
-            var response = await HttpGetAsync($"{BaseURL}/series");
-
-            await response.ThrowIfNotSuccessfulAsync("SonarrSeriesGetAll failed", x => x.error);
-
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<List<JSONTvShow>>(jsonResponse).Where(x => x.tvdbId.HasValue).ToArray();
+            return series;
         }
 
         private async Task<JSONTvShow> SearchSerieByTvDbIdAsync(int tvDbId)
@@ -516,12 +452,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var tvShow = JsonConvert.DeserializeObject<IEnumerable<JSONTvShow>>(jsonResponse).First();
-
-            if (!tvShow.id.HasValue)
-            {
-                tvShow.monitored = false;
-            }
-
+            
             return tvShow;
         }
 
@@ -536,35 +467,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             var episodes = JsonConvert.DeserializeObject<IReadOnlyList<JSONEpisode>>(jsonResponse);
 
             return episodes.GroupBy(x => x.seasonNumber).ToDictionary(x => x.Key, x => x.ToArray());
-        }
-
-        private async void RefreshSonarrCache()
-        {
-            try
-            {
-                if (_loadedCache && string.Equals(_cachedEndpoint, $"{SonarrSettings.Hostname}:{SonarrSettings.Port}"))
-                    return;
-
-                var jsonTvShows = await GetSonarrSeriesAsync();
-
-                lock (_lock)
-                {
-                    _tvDbToSonarrId.Clear();
-
-                    foreach (var show in jsonTvShows)
-                    {
-                        _tvDbToSonarrId.Add(show.tvdbId.Value, show.id.Value);
-                    }
-
-                    _loadedCache = true;
-
-                    _cachedEndpoint = $"{SonarrSettings.Hostname}:{SonarrSettings.Port}";
-                }
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while generating sonarr cache: " + ex.Message);
-            }
         }
 
         private TvShow Convert(JSONTvShow jsonTvShow, IReadOnlyList<JSONSeason> seasons, IDictionary<int, JSONEpisode[]> episodesToSeason)
@@ -620,10 +522,28 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 IsRequested = isTvShowMonitored,
                 PlexUrl = "",
                 EmbyUrl = "",
+                Banner = GetPosterImageUrl(jsonTvShow.images),
                 Seasons = tvSeasons.OrderBy(x => x.SeasonNumber).ToArray(),
                 FirstAired = ((int)jsonTvShow.year).ToString(),
                 HasEnded = ((string)jsonTvShow.status).Equals("ended", StringComparison.InvariantCultureIgnoreCase)
             };
+        }
+
+        private string GetPosterImageUrl(List<JSONImage> jsonImages)
+        {
+            var posterImage = jsonImages.Where(x => x.coverType.Equals("poster", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+
+            if(posterImage != null)
+            {
+                if(!string.IsNullOrWhiteSpace(posterImage.remoteUrl))
+                {
+                    return posterImage.remoteUrl;
+                }
+
+                return posterImage.url;
+            }
+
+            return string.Empty;
         }
 
         private TvEpisode[] ConvertToTvEpisodes(JSONSeason season, JSONEpisode[] episodes)
@@ -694,6 +614,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             public string coverType { get; set; }
             public string url { get; set; }
+            public string remoteUrl { get; set; }
         }
 
         private class JSONSeason
@@ -710,6 +631,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             public string overview { get; set; }
             public string remotePoster { get; set; }
             public bool monitored { get; set; }
+            public List<JSONImage> images { get; set; }
             public List<JSONSeason> seasons { get; set; }
             public int year { get; set; }
             public int? tvdbId { get; set; }
