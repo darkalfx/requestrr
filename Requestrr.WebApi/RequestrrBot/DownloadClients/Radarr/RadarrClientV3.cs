@@ -147,30 +147,15 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
         {
             try
             {
-                var response = await HttpGetAsync($"{BaseURL}/movie");
-                await response.ThrowIfNotSuccessfulAsync("RadarrGetAllMovies failed", x => x.error);
+                var foundMovieJson = await FindExistingMovieByMovieDbIdAsync(theMovieDbId);
 
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var allRadarrMoviesJson = JsonConvert.DeserializeObject<List<JSONMovie>>(jsonResponse).ToArray();
-
-                var foundMovieJson = allRadarrMoviesJson.FirstOrDefault(x => x.tmdbId == theMovieDbId);
-
-                response = await HttpGetAsync($"{BaseURL}/movie/lookup/tmdb?tmdbId={theMovieDbId}");
-                await response.ThrowIfNotSuccessfulAsync("RadarrMovieLookupByTmdbId failed", x => x.error);
-
-                jsonResponse = await response.Content.ReadAsStringAsync();
-                var movieFoundByIdJson = JsonConvert.DeserializeObject<JSONMovie>(jsonResponse);
-
-                if (foundMovieJson != null)
+                if (foundMovieJson == null)
                 {
-                    if (movieFoundByIdJson.tmdbId == theMovieDbId)
-                    {
-                        foundMovieJson.images = movieFoundByIdJson.images;
-                    }
-                }
-                else
-                {
-                    foundMovieJson = movieFoundByIdJson;
+                    var response = await HttpGetAsync($"{BaseURL}/movie/lookup/tmdb?tmdbId={theMovieDbId}");
+                    await response.ThrowIfNotSuccessfulAsync("RadarrMovieLookupByTmdbId failed", x => x.error);
+
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    foundMovieJson = JsonConvert.DeserializeObject<JSONMovie>(jsonResponse);
                 }
 
                 return foundMovieJson != null ? Convert(foundMovieJson) : null;
@@ -213,26 +198,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
         {
             try
             {
-                var response = await HttpGetAsync($"{BaseURL}/movie");
-                await response.ThrowIfNotSuccessfulAsync("RadarrGetAllMovies failed", x => x.error);
-
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var jsonMovies = JsonConvert.DeserializeObject<List<JSONMovie>>(jsonResponse).ToArray();
-
                 var convertedMovies = new List<Movie>();
 
-                foreach (var movie in jsonMovies.Where(x => theMovieDbIds.Contains(x.tmdbId)))
+                foreach (var movieDbId in theMovieDbIds)
                 {
-                    try
-                    {
-                        movie.images = await GetImagesAsync(movie.tmdbId);
-                    }
-                    catch
-                    {
-                        // Ignore
-                    }
+                    var existingMovie = await FindExistingMovieByMovieDbIdAsync(movieDbId);
 
-                    convertedMovies.Add(Convert(movie));
+                    if (existingMovie != null)
+                    {
+                        convertedMovies.Add(Convert(existingMovie));
+                    }
                 }
 
                 return convertedMovies.Where(x => x.Available).ToDictionary(x => int.Parse(x.TheMovieDbId), x => x);
@@ -240,7 +215,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             catch (System.Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while searching available movies with Radarr: " + ex.Message);
-                await Task.Delay(1000, token);
             }
 
             throw new System.Exception("An error occurred while searching available movies with Radarr");
@@ -394,24 +368,49 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 Requested = !isDownloaded && (string.IsNullOrWhiteSpace(downloadClientId) || RadarrSettings.MonitorNewRequests) ? isMonitored : true,
                 PlexUrl = "",
                 EmbyUrl = "",
-                PosterPath = jsonMovie.images.Where(x => x.coverType.Equals("poster", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault()?.url ?? string.Empty,
+                PosterPath = GetPosterImageUrl(jsonMovie.images),
                 ReleaseDate = jsonMovie.inCinemas,
             };
         }
 
-        private async Task<List<JSONImage>> GetImagesAsync(int movieDbId)
+        private string GetPosterImageUrl(List<JSONImage> jsonImages)
+        {
+            var posterImage = jsonImages.Where(x => x.coverType.Equals("poster", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+
+            if(posterImage != null)
+            {
+                if(!string.IsNullOrWhiteSpace(posterImage.remoteUrl))
+                {
+                    return posterImage.remoteUrl;
+                }
+
+                return posterImage.url;
+            }
+
+            return string.Empty;
+        }
+
+        private async Task<JSONMovie> FindExistingMovieByMovieDbIdAsync(int theMovieDbId)
         {
             try
             {
-                await Task.Delay(100);
-                var jsonMovie = await SearchMovieByMovieDbId(movieDbId);
+                var response = await HttpGetAsync($"{BaseURL}/movie?tmdbid={theMovieDbId}");
+                await response.ThrowIfNotSuccessfulAsync($"Could not search movie by tmdbid {theMovieDbId}", x => x.error);
 
-                return jsonMovie.images.ToList();
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var jsonMovies = JsonConvert.DeserializeObject<List<JSONMovie>>(jsonResponse).ToArray();
+
+                if (jsonMovies.Any())
+                {
+                    return jsonMovies.First();
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                return new List<JSONImage>();
+                _logger.LogError(ex, $"An error occurred finding an existing movie by tmdbId \"{theMovieDbId}\" with Radarr: " + ex.Message);
             }
+
+            return null;
         }
 
         private async Task<JSONMovie> SearchMovieByMovieDbId(int movieId)
@@ -478,6 +477,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
         {
             public string coverType { get; set; }
             public string url { get; set; }
+            public string remoteUrl { get; set; }
         }
 
         private class JSONMovie
