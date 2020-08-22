@@ -495,7 +495,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("X-Api-Key", settings.ApiKey);
 
-            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
             {
                 return await client.SendAsync(request, cts.Token);
             }
