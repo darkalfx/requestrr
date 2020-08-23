@@ -31,6 +31,13 @@ namespace Requestrr.WebApi.Controllers.Configuration
         [Authorize]
         public async Task<IActionResult> SaveAsync([FromBody]ApplicationSettingsModel model)
         {
+            model.BaseUrl = model.BaseUrl.Trim();
+
+            if(!string.IsNullOrWhiteSpace(model.BaseUrl) && !model.BaseUrl.StartsWith("/"))
+            {
+                return BadRequest(new { Error = "Base urls must start with /" });
+            }
+
             _applicationSettings.Port = model.Port;
             _applicationSettings.BaseUrl = model.BaseUrl;
 

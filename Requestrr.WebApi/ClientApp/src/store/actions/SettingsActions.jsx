@@ -38,6 +38,7 @@ export function saveSettings(saveModel) {
             },
             body: JSON.stringify({
                 'Port': Number(saveModel.port),
+                'BaseUrl' : saveModel.baseUrl
             })
         })
             .then(data => data.json())
@@ -45,6 +46,7 @@ export function saveSettings(saveModel) {
                 if (data.ok) {
                     dispatch(setSettings({
                         port: saveModel.port,
+                        baseUrl: saveModel.baseUrl
                     }));
                     return { ok: true };
                 }
