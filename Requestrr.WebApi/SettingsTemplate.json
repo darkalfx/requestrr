@@ -83,5 +83,6 @@
     "Restrictions": "None"
   },
   "Port": 4545,
-  "Version": "1.10.0"
+  "BaseUrl" : "",
+  "Version": "1.11.0"
 }

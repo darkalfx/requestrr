@@ -34,7 +34,7 @@ export function getSettings() {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows", {
+        return fetch("../api/tvshows", {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -53,7 +53,7 @@ export function testOmbiSettings(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows/ombi/test", {
+        return fetch("../api/tvshows/ombi/test", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -84,7 +84,7 @@ export function loadSonarrLanguages(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows/sonarr/language", {
+        return fetch("../api/tvshows/sonarr/language", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -122,7 +122,7 @@ export function loadSonarrRootPaths(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows/sonarr/rootpath", {
+        return fetch("../api/tvshows/sonarr/rootpath", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -160,7 +160,7 @@ export function loadSonarrProfiles(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows/sonarr/profile", {
+        return fetch("../api/tvshows/sonarr/profile", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -198,7 +198,7 @@ export function loadSonarrTags(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows/sonarr/tag", {
+        return fetch("../api/tvshows/sonarr/tag", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -236,7 +236,7 @@ export function testSonarrSettings(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows/sonarr/test", {
+        return fetch("../api/tvshows/sonarr/test", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -267,7 +267,7 @@ export function saveDisabledClient() {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows/disable", {
+        return fetch("../api/tvshows/disable", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -291,7 +291,7 @@ export function saveSonarrClient(saveModel) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows/sonarr", {
+        return fetch("../api/tvshows/sonarr", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -364,7 +364,7 @@ export function saveOmbiClient(saveModel) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/tvshows/ombi", {
+        return fetch("../api/tvshows/ombi", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

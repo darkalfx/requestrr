@@ -10,8 +10,19 @@ namespace Requestrr.WebApi
     public class Program
     {
         public static int Port = 4545;
+        public static string BaseUrl = string.Empty;
         
         public static void Main(string[] args)
+        {
+            UpdateSettingsFile();
+
+            Port = (int)SettingsFile.Read().Port;
+            BaseUrl = SettingsFile.Read().BaseUrl;
+
+            CreateWebHostBuilder(args).Build().Run();
+        }
+
+        private static void UpdateSettingsFile()
         {
             if (!File.Exists(SettingsFile.FilePath))
             {
@@ -19,17 +30,13 @@ namespace Requestrr.WebApi
             }
             else
             {
-                SettingsFileUpgrader.Upgrade();
+                SettingsFileUpgrader.Upgrade(SettingsFile.FilePath);
             }
 
             if (!File.Exists(NotificationsFile.FilePath))
             {
                 File.WriteAllText(NotificationsFile.FilePath, File.ReadAllText("NotificationsTemplate.json"));
             }
-
-            Port = (int)SettingsFile.Read().Port;
-
-            CreateWebHostBuilder(args).Build().Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

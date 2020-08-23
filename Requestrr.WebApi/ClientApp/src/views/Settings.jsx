@@ -43,23 +43,29 @@ class Settings extends React.Component {
     super(props);
 
     this.state = {
+      isLoading: true,
       isSaving: false,
       isSubmitted: false,
       saveSuccess: false,
       saveError: "",
       port: "",
       isPortValid: false,
+      baseUrl: "",
+      isBaseUrlValid: false,
     };
 
     this.onSaving = this.onSaving.bind(this);
     this.validatePort = this.validatePort.bind(this);
+    this.validatedBaseUrl = this.validatedBaseUrl.bind(this);
   }
 
   componentDidMount() {
     this.props.getSettings()
       .then(data => {
         this.setState({
+          isLoading: false,
           port: this.props.settings.port,
+          baseUrl: this.props.settings.baseUrl
         });
       });
   }
@@ -68,17 +74,23 @@ class Settings extends React.Component {
     return /^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/.test(value);
   }
 
+  validatedBaseUrl = value => {
+    return (!value || /^\s*$/.test(value)) || /^\/[/a-z0-9]+$/.test(value);
+  }
+
   onSaving = e => {
     e.preventDefault();
 
     if (!this.state.isSaving) {
       this.setState({
         isSaving: true,
-        isPortValid: this.validatePort(this.state.port)
+        isPortValid: this.validatePort(this.state.port),
+        isBaseUrlValid: this.validatedBaseUrl(this.state.baseUrl)
       }, () => {
-        if (this.state.isPortValid) {
+        if (this.state.isPortValid && this.state.isBaseUrlValid) {
           this.props.saveSettings({
             'port': this.state.port,
+            'baseUrl' : this.state.baseUrl
           })
             .then(data => {
               this.setState({ isSaving: false });
@@ -141,7 +153,7 @@ class Settings extends React.Component {
                     </Col>
                   </Row>
                 </CardHeader>
-                <CardBody>
+                <CardBody className={this.state.isLoading ? "fade" : "fade show"}>
                   <Form className="complex">
                     <h6 className="heading-small text-muted mb-4">
                       Web portal
@@ -160,6 +172,15 @@ class Settings extends React.Component {
                             onValidate={isValid => this.setState({ isPortValid: isValid })} />
                         </Col>
                         <Col lg="6">
+                          <ValidatedTextbox
+                              name="Base Url"
+                              placeholder="Enter base url"
+                              alertClassName="mt-3 mb-0"
+                              errorMessage="Base urls must start with /"
+                              value={this.state.baseUrl}
+                              validation={this.validatedBaseUrl}
+                              onChange={newBaseUrl => this.setState({ baseUrl: newBaseUrl })}
+                              onValidate={isValid => this.setState({ isBaseUrlValid: isValid })} />
                         </Col>
                       </Row>
                       <Row>

@@ -3,15 +3,14 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Requestrr.WebApi.RequestrrBot;
 
 namespace Requestrr.WebApi
 {
     public static class SettingsFileUpgrader
     {
-        public static void Upgrade()
+        public static void Upgrade(string settingsFilePath)
         {
-            dynamic settingsJson = JObject.Parse(File.ReadAllText(SettingsFile.FilePath));
+            dynamic settingsJson = JObject.Parse(File.ReadAllText(settingsFilePath));
 
             if (settingsJson.Version.ToString().Equals("1.0.0", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -40,7 +39,7 @@ namespace Requestrr.WebApi
                 ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Add("MonitorNewRequests", true);
 
                 settingsJson.Version = "1.0.1";
-                File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
 
             if (settingsJson.Version.ToString().Equals("1.0.1", StringComparison.InvariantCultureIgnoreCase)
@@ -49,14 +48,14 @@ namespace Requestrr.WebApi
             || settingsJson.Version.ToString().Equals("1.0.4", StringComparison.InvariantCultureIgnoreCase))
             {
                 settingsJson.Version = "1.0.5";
-                File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
 
             if (settingsJson.Version.ToString().Equals("1.0.5", StringComparison.InvariantCultureIgnoreCase))
             {
                 settingsJson.Version = "1.0.6";
                 ((JObject)settingsJson).Add("Port", 5060);
-                File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
 
             if (settingsJson.Version.ToString().Equals("1.0.6", StringComparison.InvariantCultureIgnoreCase))
@@ -71,7 +70,7 @@ namespace Requestrr.WebApi
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Add("EnableRequestsThroughDirectMessages", (bool)((JObject)settingsJson["ChatClients"]["Discord"]).GetValue("EnableDirectMessageSupport"));
                 ((JObject)settingsJson["ChatClients"]["Discord"]).Remove("EnableDirectMessageSupport");
 
-                File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
 
             if (settingsJson.Version.ToString().Equals("1.0.9", StringComparison.InvariantCultureIgnoreCase))
@@ -79,7 +78,15 @@ namespace Requestrr.WebApi
                 settingsJson.Version = "1.10.0";
                 ((JObject)settingsJson["TvShows"]).Add("Restrictions", "None");
 
-                File.WriteAllText(SettingsFile.FilePath, JsonConvert.SerializeObject(settingsJson));
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
+
+            if (settingsJson.Version.ToString().Equals("1.10.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.11.0";
+                ((JObject)settingsJson).Add("BaseUrl", string.Empty);
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
         }
     }

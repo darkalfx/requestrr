@@ -11,7 +11,7 @@ export function getSettings() {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/chatclients", {
+        return fetch("../api/chatclients", {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -30,7 +30,7 @@ export function testSettings(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/chatclients/discord/test", {
+        return fetch("../api/chatclients/discord/test", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -56,7 +56,7 @@ export function save(saveModel) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/chatclients", {
+        return fetch("../api/chatclients", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

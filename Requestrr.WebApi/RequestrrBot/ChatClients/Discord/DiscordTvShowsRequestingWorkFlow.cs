@@ -307,10 +307,10 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
         public Task DisplayRequestSuccessForSeasonAsync(TvSeason season)
         {
             var message = season is AllTvSeasons
-                ? $"Your request for **all seasons** was sent successfully, they should be available soon!"
+                ? $"Your request for **all seasons** was sent successfully!"
                 : season is FutureTvSeasons
                     ? $"Your request for **future seasons** was sent successfully, you will be notified when they become available."
-                    : $"Your request for **season {season.SeasonNumber}** was sent successfully, it should be available soon!";
+                    : $"Your request for **season {season.SeasonNumber}** was sent successfully!";
 
             return ReplyToUserAsync(message);
         }

@@ -15,6 +15,8 @@ using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot;
 using Requestrr.WebApi.RequestrrBot.TvShows;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace Requestrr.WebApi
 {
@@ -57,7 +59,7 @@ namespace Requestrr.WebApi
 
             var tvShowsSettings = Configuration.GetSection("TvShows");
             services.Configure<TvShowsSettings>(tvShowsSettings);
-            
+
             var applicationSettings = Configuration;
             services.Configure<ApplicationSettings>(applicationSettings);
 
@@ -102,10 +104,25 @@ namespace Requestrr.WebApi
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseSpaStaticFiles();
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "ClientApp/build")),
+                RequestPath = !string.IsNullOrWhiteSpace(Program.BaseUrl) ? Program.BaseUrl : string.Empty
+            });;
+
+            if(!string.IsNullOrWhiteSpace(Program.BaseUrl))
+            {
+                app.UsePathBase(Program.BaseUrl);
+            }
 
             app.UseRouting();
+
+            app.UseSpaStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "ClientApp/build/static")),
+                RequestPath = "/static"
+            });
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -114,7 +131,7 @@ namespace Requestrr.WebApi
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller}/{action=Index}/{id?}");
+                    pattern: "{controller}/{action}/{id?}");
             });
 
             app.UseSpa(spa =>

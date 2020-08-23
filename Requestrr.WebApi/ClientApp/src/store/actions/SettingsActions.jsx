@@ -11,12 +11,11 @@ export function getSettings() {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/settings", {
+        return fetch("../api/settings", {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${state.user.token}`
+                'Content-Type': 'application/json'
             }
         })
             .then(data => data.json())
@@ -30,7 +29,7 @@ export function saveSettings(saveModel) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/settings", {
+        return fetch("../api/settings", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -39,6 +38,7 @@ export function saveSettings(saveModel) {
             },
             body: JSON.stringify({
                 'Port': Number(saveModel.port),
+                'BaseUrl' : saveModel.baseUrl
             })
         })
             .then(data => data.json())
@@ -46,6 +46,7 @@ export function saveSettings(saveModel) {
                 if (data.ok) {
                     dispatch(setSettings({
                         port: saveModel.port,
+                        baseUrl: saveModel.baseUrl
                     }));
                     return { ok: true };
                 }
