@@ -163,15 +163,18 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 var jsonTvShow = await SearchSerieByTvDbIdAsync(tvDbId);
 
-                var searchedTvShow = new SearchedTvShow
+                if (jsonTvShow != null && jsonTvShow.tvdbId == tvDbId)
                 {
-                    TheTvDbId = jsonTvShow.tvdbId.Value,
-                    Title = jsonTvShow.title,
-                    FirstAired = jsonTvShow.year > 0 ? jsonTvShow.year.ToString() : string.Empty,
-                    Banner = jsonTvShow.remotePoster
-                };
+                    return new SearchedTvShow
+                    {
+                        TheTvDbId = jsonTvShow.tvdbId.Value,
+                        Title = jsonTvShow.title,
+                        FirstAired = jsonTvShow.year > 0 ? jsonTvShow.year.ToString() : string.Empty,
+                        Banner = jsonTvShow.remotePoster
+                    };
+                }
 
-                return searchedTvShow.TheTvDbId == tvDbId ? searchedTvShow : null;
+                return null;
             }
             catch (System.Exception ex)
             {
@@ -235,11 +238,18 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
                 foreach (var tvDbId in theTvDbIds)
                 {
-                    var series = await FindSeriesInSonarrAsync(tvDbId);
-
-                    if(series.id != null && series.id > 0)
+                    try
                     {
-                        convertedTvShows.Add(Convert(series, series.seasons, await GetSonarrEpisodesAsync(series.id.Value)));
+                        var series = await FindSeriesInSonarrAsync(tvDbId);
+
+                        if (series != null && series.id != null && series.id > 0)
+                        {
+                            convertedTvShows.Add(Convert(series, series.seasons, await GetSonarrEpisodesAsync(series.id.Value)));
+                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        _logger.LogError(ex, "An error occurred while searching available tv shows with Sonarr: " + ex.Message);
                     }
                 }
 
@@ -349,7 +359,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 {
                     var sonarrTvShow = await FindSeriesInSonarrAsync(tvShow.TheTvDbId);
 
-                    if (sonarrTvShow.id.HasValue)
+                    if (sonarrTvShow != null && sonarrTvShow.id.HasValue)
                     {
                         await UpdateSonarrTvSeriesAsync(tvShow, seasons);
                         return;
@@ -431,7 +441,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             var series = await SearchSerieByTvDbIdAsync(tvDbId);
 
-            if(series.id != null && series.id > 0)
+            if (series != null && series.id != null && series.id > 0)
             {
                 var response = await HttpGetAsync($"{BaseURL}/series/{series.id}");
 
@@ -441,7 +451,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                     return JsonConvert.DeserializeObject<JSONTvShow>(jsonResponse);
                 }
             }
-            
+
             return series;
         }
 
@@ -451,9 +461,8 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookupByTvDbId failed", x => x.error);
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            var tvShow = JsonConvert.DeserializeObject<IEnumerable<JSONTvShow>>(jsonResponse).First();
-            
-            return tvShow;
+
+            return JsonConvert.DeserializeObject<IEnumerable<JSONTvShow>>(jsonResponse).FirstOrDefault();
         }
 
         private async Task<IDictionary<int, JSONEpisode[]>> GetSonarrEpisodesAsync(int sonarrId)
@@ -533,9 +542,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             var posterImage = jsonImages.Where(x => x.coverType.Equals("poster", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
 
-            if(posterImage != null)
+            if (posterImage != null)
             {
-                if(!string.IsNullOrWhiteSpace(posterImage.remoteUrl))
+                if (!string.IsNullOrWhiteSpace(posterImage.remoteUrl))
                 {
                     return posterImage.remoteUrl;
                 }
