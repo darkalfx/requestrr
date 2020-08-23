@@ -44,15 +44,25 @@ const store = createStore(combineReducers({
   settings: SettingsReducer
 }), applyMiddleware(thunk));
 
-ReactDOM.render(
-  <Provider store={store}>
-    <BrowserRouter>
-      <Switch>
-        <Route path="/admin" render={props => <AdminLayout {...props} />} />
-        <Route path="/auth" render={props => <AuthLayout {...props} />} />
-        <Redirect from="*" to="/auth/login" />
-      </Switch>
-    </BrowserRouter>
-  </Provider>,
-  document.getElementById("root")
-);
+fetch("../api/settings", {
+  method: 'GET',
+  headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+  }
+})
+  .then(data => data.json())
+  .then(data => {
+    ReactDOM.render(
+      <Provider store={store}>
+        <BrowserRouter basename={data.baseUrl}>
+          <Switch>
+            <Route path="/admin" render={props => <AdminLayout {...props} />} />
+            <Route path="/auth" render={props => <AuthLayout {...props} />} />
+            <Redirect from="*" to="/auth/login" />
+          </Switch>
+        </BrowserRouter>
+      </Provider>,
+      document.getElementById("root")
+    );
+  });

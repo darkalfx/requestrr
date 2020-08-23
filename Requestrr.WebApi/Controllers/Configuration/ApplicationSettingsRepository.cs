@@ -10,6 +10,7 @@ namespace Requestrr.WebApi.Controllers.Configuration
             SettingsFile.Write(settings =>
             {
                 settings.Port = applicationSettings.Port;
+                settings.BaseUrl = applicationSettings.BaseUrl;
             });
         }
     }

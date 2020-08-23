@@ -6,5 +6,8 @@ namespace Requestrr.WebApi.Controllers.Configuration
     {
         [Required]
         public int Port { get; set; }
+
+        [Required]
+        public string BaseUrl { get; set; }
     }
 }

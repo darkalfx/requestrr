@@ -7,7 +7,6 @@ using Requestrr.WebApi.config;
 namespace Requestrr.WebApi.Controllers.Configuration
 {
     [ApiController]
-    [Authorize]
     [Route("/api/settings")]
     public class ApplicationSettingsController : ControllerBase
     {
@@ -24,13 +23,16 @@ namespace Requestrr.WebApi.Controllers.Configuration
             return Ok(new ApplicationSettingsModel
             {
                 Port = _applicationSettings.Port,
+                BaseUrl = _applicationSettings.BaseUrl
             });
         }
 
         [HttpPost()]
+        [Authorize]
         public async Task<IActionResult> SaveAsync([FromBody]ApplicationSettingsModel model)
         {
             _applicationSettings.Port = model.Port;
+            _applicationSettings.BaseUrl = model.BaseUrl;
 
             ApplicationSettingsRepository.Update(_applicationSettings);
 

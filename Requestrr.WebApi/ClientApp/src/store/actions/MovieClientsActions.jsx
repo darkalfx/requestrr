@@ -34,7 +34,7 @@ export function getSettings() {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/movies", {
+        return fetch("../api/movies", {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -53,7 +53,7 @@ export function testOmbiSettings(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/movies/ombi/test", {
+        return fetch("../api/movies/ombi/test", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -84,7 +84,7 @@ export function loadRadarrRootPaths(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/movies/radarr/rootpath", {
+        return fetch("../api/movies/radarr/rootpath", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -122,7 +122,7 @@ export function loadRadarrProfiles(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/movies/radarr/profile", {
+        return fetch("../api/movies/radarr/profile", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -160,7 +160,7 @@ export function loadRadarrTags(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/movies/radarr/tag", {
+        return fetch("../api/movies/radarr/tag", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -198,7 +198,7 @@ export function testRadarrSettings(settings) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/movies/radarr/test", {
+        return fetch("../api/movies/radarr/test", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -229,7 +229,7 @@ export function saveDisabledClient() {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/movies/disable", {
+        return fetch("../api/movies/disable", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -253,7 +253,7 @@ export function saveRadarrClient(saveModel) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/movies/radarr", {
+        return fetch("../api/movies/radarr", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -316,7 +316,7 @@ export function saveOmbiClient(saveModel) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/movies/ombi", {
+        return fetch("../api/movies/ombi", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

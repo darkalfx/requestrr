@@ -24,7 +24,7 @@ export function setLoggedOut() {
 
 export function hasRegistered() {
     return dispatch => {
-        return fetch("/api/auth/registration", {
+        return fetch("../api/auth/registration", {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -49,7 +49,7 @@ export function validateLogin() {
             token = state.user.token;
         }
 
-        return fetch("/api/auth/validate", {
+        return fetch("../api/auth/validate", {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -70,7 +70,7 @@ export function validateLogin() {
 
 export function register(registrationModel) {
     return dispatch => {
-        return fetch("/api/auth/register", {
+        return fetch("../api/auth/register", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -99,7 +99,7 @@ export function register(registrationModel) {
 
 export function login(loginModel) {
     return dispatch => {
-        return fetch("/api/auth/login", {
+        return fetch("../api/auth/login", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ export function changePassword(model) {
     return (dispatch, getState) => {
         const state = getState();
 
-        return fetch("/api/auth/password", {
+        return fetch("../api/auth/password", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
