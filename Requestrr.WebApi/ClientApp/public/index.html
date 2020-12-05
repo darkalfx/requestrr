@@ -21,6 +21,16 @@
 <html lang="en" class="perfect-scrollbar-off nav-open">
 
 <head>
+  <script>
+    if (!window.location.pathname.toLowerCase().includes("/auth") && !window.location.pathname.toLowerCase().includes("/admin")) {
+      var newHref = window.location.href + "/auth/login"; 
+      newHref = newHref.replace(/\/\//g, "/"),
+      newHref = newHref.replace("http:/", "http://");
+      newHref = newHref.replace("https:/", "https://");
+      window.location.replace(newHref);
+    }
+  </script>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <meta name="theme-color" content="#000000" />
