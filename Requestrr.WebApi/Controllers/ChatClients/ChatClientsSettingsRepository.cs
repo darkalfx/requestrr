@@ -16,6 +16,7 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                 settings.ChatClients.Discord.MonitoredChannels = JToken.FromObject(chatClientsSettings.Discord.MonitoredChannels);
                 settings.ChatClients.Discord.TvShowRoles = JToken.FromObject(chatClientsSettings.Discord.TvShowRoles);
                 settings.ChatClients.Discord.MovieRoles = JToken.FromObject(chatClientsSettings.Discord.MovieRoles);
+                settings.ChatClients.Discord.MusicRoles = JToken.FromObject(chatClientsSettings.Discord.MusicRoles);
                 settings.ChatClients.Discord.EnableRequestsThroughDirectMessages = chatClientsSettings.Discord.EnableRequestsThroughDirectMessages;
                 settings.ChatClients.Discord.AutomaticallyNotifyRequesters = chatClientsSettings.Discord.AutomaticallyNotifyRequesters;
                 settings.ChatClients.Discord.NotificationMode = chatClientsSettings.Discord.NotificationMode;

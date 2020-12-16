@@ -96,5 +96,19 @@ namespace Requestrr.WebApi.RequestrrBot
                 _hasChanged = true;
             }
         }
+
+        public static void WriteArtists(Dictionary<string, string[]> artistNotifications)
+        {
+            lock (_lock)
+            {
+                _cachedNotifications.Artists = JToken.FromObject(artistNotifications.Select(x => new
+                {
+                    UserId = x.Key,
+                    ArtistIds = x.Value
+                }).ToArray());
+
+                _hasChanged = true;
+            }
+        }
     }
 }

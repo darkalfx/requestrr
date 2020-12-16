@@ -39,6 +39,7 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                 CommandPrefix = _botClientsSettings.CommandPrefix,
                 TvShowRoles = _chatClientsSettings.Discord.TvShowRoles ?? Array.Empty<string>(),
                 MovieRoles = _chatClientsSettings.Discord.MovieRoles ?? Array.Empty<string>(),
+                MusicRoles = _chatClientsSettings.Discord.MusicRoles ?? Array.Empty<string>(),
                 MonitoredChannels = _chatClientsSettings.Discord.MonitoredChannels ?? Array.Empty<string>(),
                 AutomaticallyNotifyRequesters = _chatClientsSettings.Discord.AutomaticallyNotifyRequesters,
                 NotificationMode = _chatClientsSettings.Discord.NotificationMode,
@@ -80,6 +81,7 @@ namespace Requestrr.WebApi.Controllers.ChatClients
             _chatClientsSettings.Discord.StatusMessage = model.StatusMessage.Trim();
             _chatClientsSettings.Discord.TvShowRoles = (model.TvShowRoles ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
             _chatClientsSettings.Discord.MovieRoles = (model.MovieRoles ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
+            _chatClientsSettings.Discord.MusicRoles = (model.MusicRoles ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
             _chatClientsSettings.Discord.EnableRequestsThroughDirectMessages = model.EnableRequestsThroughDirectMessages;
             _chatClientsSettings.Discord.MonitoredChannels = (model.MonitoredChannels ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
 

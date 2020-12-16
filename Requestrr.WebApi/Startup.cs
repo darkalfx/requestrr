@@ -17,6 +17,8 @@ using Requestrr.WebApi.RequestrrBot;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Lidarr;
+using Requestrr.WebApi.RequestrrBot.Music;
 
 namespace Requestrr.WebApi
 {
@@ -60,6 +62,9 @@ namespace Requestrr.WebApi
             var tvShowsSettings = Configuration.GetSection("TvShows");
             services.Configure<TvShowsSettings>(tvShowsSettings);
 
+            var musicSettings = Configuration.GetSection("Music");
+            services.Configure<MusicSettings>(musicSettings);
+
             var applicationSettings = Configuration;
             services.Configure<ApplicationSettings>(applicationSettings);
 
@@ -81,11 +86,13 @@ namespace Requestrr.WebApi
 
             services.AddSingleton<OmbiClient, OmbiClient>();
             services.AddSingleton<RadarrClient, RadarrClient>();
+            services.AddSingleton<LidarrClient, LidarrClient>();
             services.AddSingleton<DiscordSettingsProvider>();
             services.AddSingleton<TvShowsSettingsProvider>();
             services.AddSingleton<OmbiSettingsProvider>();
             services.AddSingleton<RadarrSettingsProvider>();
             services.AddSingleton<SonarrSettingsProvider>();
+            services.AddSingleton<LidarrSettingsProvider>();
             services.AddSingleton<RequestrrBot.ChatBot>();
         }
 

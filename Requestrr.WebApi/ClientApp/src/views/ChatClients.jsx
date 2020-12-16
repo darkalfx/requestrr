@@ -71,6 +71,7 @@ class ChatClients extends React.Component {
       botTokenInvalid: false,
       tvShowRoles: [],
       movieRoles: [],
+      musicRoles: [],
       automaticallyNotifyRequesters: true,
       notificationMode: "PrivateMessages",
       notificationChannels: [],
@@ -103,6 +104,7 @@ class ChatClients extends React.Component {
           enableRequestsThroughDirectMessages: this.props.settings.enableRequestsThroughDirectMessages,
           tvShowRoles: this.props.settings.tvShowRoles,
           movieRoles: this.props.settings.movieRoles,
+          musicRoles: this.props.settings.musicRoles,
           automaticallyNotifyRequesters: this.props.settings.automaticallyNotifyRequesters,
           notificationMode: this.props.settings.notificationMode,
           notificationChannels: this.props.settings.notificationChannels,
@@ -193,6 +195,7 @@ class ChatClients extends React.Component {
           monitoredChannels: this.state.monitoredChannels,
           tvShowRoles: this.state.tvShowRoles,
           movieRoles: this.state.movieRoles,
+          musicRoles: this.state.musicRoles,
           enableRequestsThroughDirectMessages: this.state.enableRequestsThroughDirectMessages,
           automaticallyNotifyRequesters: this.state.automaticallyNotifyRequesters,
           notificationMode: this.state.notificationMode,
@@ -434,6 +437,21 @@ class ChatClients extends React.Component {
                               selectedItems={this.state.movieRoles.map(x => { return { name: x, id: x } })}
                               items={this.state.movieRoles.map(x => { return { name: x, id: x } })}
                               onChange={newMovieRoles => this.setState({ movieRoles: newMovieRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
+                          </FormGroup>
+                        </Col>
+                        <Col lg="6">
+                          <FormGroup>
+                            <MultiDropdown
+                              name="Roles allowed to request music"
+                              create={true}
+                              searchable={true}
+                              placeholder="Enter roles here. Leave blank for all roles."
+                              labelField="name"
+                              valueField="id"
+                              dropdownHandle={false}
+                              selectedItems={this.state.musicRoles.map(x => { return { name: x, id: x } })}
+                              items={this.state.musicRoles.map(x => { return { name: x, id: x } })}
+                              onChange={newMusicRoles => this.setState({ musicRoles: newMusicRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
                           </FormGroup>
                         </Col>
                       </Row>

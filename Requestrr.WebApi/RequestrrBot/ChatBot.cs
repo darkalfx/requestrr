@@ -9,14 +9,17 @@ using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.Extensions;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Lidarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.Movies;
 using Requestrr.WebApi.RequestrrBot.Notifications;
 using Requestrr.WebApi.RequestrrBot.Notifications.Movies;
+using Requestrr.WebApi.RequestrrBot.Notifications.Music;
 using Requestrr.WebApi.RequestrrBot.Notifications.TvShows;
 using Requestrr.WebApi.RequestrrBot.TvShows;
+using Requestrr.WebApi.RequestrrBot.Music;
 
 namespace Requestrr.WebApi.RequestrrBot
 {
@@ -25,6 +28,7 @@ namespace Requestrr.WebApi.RequestrrBot
         private DiscordSocketClient _client;
         private MovieNotificationEngine _movieNotificationEngine;
         private TvShowNotificationEngine _tvShowNotificationEngine;
+        private ArtistNotificationEngine _musicNotificationEngine;
         private CommandService _commandService;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ChatBot> _logger;
@@ -33,10 +37,12 @@ namespace Requestrr.WebApi.RequestrrBot
         private DiscordSettings _currentSettings = new DiscordSettings();
         private MovieNotificationsRepository _movieNotificationRequestRepository = new MovieNotificationsRepository();
         private TvShowNotificationsRepository _tvShowNotificationRequestRepository = new TvShowNotificationsRepository();
+        private ArtistNotificationsRepository _musicNotificationRequestRepository = new ArtistNotificationsRepository();
 
         private OmbiClient _ombiDownloadClient;
         private RadarrClient _radarrDownloadClient;
         private SonarrClient _sonarrDownloadClient;
+        private LidarrClient _lidarrDownloadClient;
         private ModuleInfo _moduleInfo = null;
 
         public ChatBot(IServiceProvider serviceProvider, ILogger<ChatBot> logger, DiscordSettingsProvider discordSettingsProvider)
@@ -47,6 +53,7 @@ namespace Requestrr.WebApi.RequestrrBot
             _ombiDownloadClient = new OmbiClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<OmbiClient>>(), serviceProvider.Get<OmbiSettingsProvider>());
             _radarrDownloadClient = new RadarrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<RadarrClient>>(), serviceProvider.Get<RadarrSettingsProvider>());
             _sonarrDownloadClient = new SonarrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<SonarrClient>>(), serviceProvider.Get<SonarrSettingsProvider>());
+            _lidarrDownloadClient = new LidarrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<LidarrClient>>(), serviceProvider.Get<LidarrSettingsProvider>());
         }
 
         public async void Start()
@@ -205,6 +212,33 @@ namespace Requestrr.WebApi.RequestrrBot
                         }
                     }, c => c.WithName("tv").WithRunMode(RunMode.Sync).AddParameter<string>("tvShowName", p => p.WithIsRemainder(true).WithIsOptional(true)));
                 }
+
+                if (discordSettings.MusicDownloadClient != DownloadClient.Disabled)
+                {
+                    x.AddCommand(discordSettings.MusicCommand, async (commandContext, message, serviceProvider, commandInfo) =>
+                    {
+                        using (var command = new DiscordMusicRequestingWorkFlow(
+                        (SocketCommandContext)commandContext,
+                        _client,
+                        GetMusicClient<IArtistSearcher>(discordSettings),
+                        GetMusicClient<IArtistRequester>(discordSettings),
+                        serviceProvider.Get<DiscordSettingsProvider>(),
+                        _musicNotificationRequestRepository))
+                        {
+                            await command.HandleArtistRequestAsync(message);
+                        }
+                    }, c => c.WithName("music").WithRunMode(RunMode.Async).AddParameter<string>("artistName", p => p.WithIsRemainder(true).WithIsOptional(true)));
+                }
+                else
+                {
+                    x.AddCommand(discordSettings.MusicCommand, async (commandContext, message, serviceProvider, commandInfo) =>
+                    {
+                        using (var command = new DiscordDisableCommandWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
+                        {
+                            await command.HandleDisabledCommandAsync();
+                        }
+                    }, c => c.WithName("music").WithRunMode(RunMode.Sync).AddParameter<string>("artistName", p => p.WithIsRemainder(true).WithIsOptional(true)));
+                }
             });
         }
 
@@ -237,6 +271,18 @@ namespace Requestrr.WebApi.RequestrrBot
             else
             {
                 throw new Exception($"Invalid configured tv show download client {settings.TvShowDownloadClient}");
+            }
+        }
+
+        private T GetMusicClient<T>(DiscordSettings settings) where T : class
+        {
+            if (settings.MusicDownloadClient == DownloadClient.Lidarr)
+            {
+                return _lidarrDownloadClient as T;
+            }
+            else
+            {
+                throw new Exception($"Invalid configured music download client {settings.MusicDownloadClient}");
             }
         }
 
@@ -351,6 +397,39 @@ namespace Requestrr.WebApi.RequestrrBot
             catch (System.Exception ex)
             {
                 _logger.LogError(ex, "Error while starting tv show notification engine: " + ex.Message);
+            }
+
+            try
+            {
+                if (_musicNotificationEngine != null)
+                {
+                    await _musicNotificationEngine.StopAsync();
+                }
+
+                if (_currentSettings.MusicDownloadClient != DownloadClient.Disabled && _currentSettings.NotificationMode != NotificationMode.Disabled)
+                {
+                    IArtistNotifier artistNotifier = null;
+
+                    if (_currentSettings.NotificationMode == NotificationMode.PrivateMessage)
+                    {
+                        artistNotifier = new PrivateMessageArtistNotifier(_client, _logger);
+                    }
+                    else if (_currentSettings.NotificationMode == NotificationMode.Channels)
+                    {
+                        artistNotifier = new ChannelArtistNotifier(_client, _currentSettings.NotificationChannels, _logger);
+                    }
+                    else
+                    {
+                        throw new Exception($"Could not create artist notifier of type \"{_currentSettings.NotificationMode}\"");
+                    }
+
+                    _musicNotificationEngine = new ArtistNotificationEngine(GetMusicClient<IArtistSearcher>(_currentSettings), artistNotifier, _logger, _musicNotificationRequestRepository);
+                    _musicNotificationEngine.Start();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "Error while starting music notification engine: " + ex.Message);
             }
         }
 

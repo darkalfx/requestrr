@@ -11,6 +11,7 @@
       "StatusMessage": "!help",
       "TvShowRoles": [],
       "MovieRoles": [],
+      "MusicRoles": [],
       "MonitoredChannels": [],
       "EnableRequestsThroughDirectMessages": false,
       "AutomaticallyNotifyRequesters": true,
@@ -67,6 +68,21 @@
       "MonitorNewRequests": true,
       "UseSSL": false,
       "Version": "3"
+    },
+    "Lidarr": {
+      "Hostname": "",
+      "Port": 8686,
+      "ApiKey": "",
+      "BaseUrl": "",
+      "MusicProfileId": "1",
+      "MusicMetadataProfileId": "1",
+      "MusicRootFolder": "",
+      "MusicTags": [],
+      "MusicUseAlbumFolders": true,
+      "SearchNewRequests": true,
+      "MonitorNewRequests": true,
+      "UseSSL": false,
+      "Version": "3"
     }
   },
   "BotClient": {
@@ -80,6 +96,11 @@
   "TvShows": {
     "Client": "Disabled",
     "Command": "tv",
+    "Restrictions": "None"
+  },
+  "Music": {
+    "Client": "Disabled",
+    "Command": "music",
     "Restrictions": "None"
   },
   "Port": 4545,

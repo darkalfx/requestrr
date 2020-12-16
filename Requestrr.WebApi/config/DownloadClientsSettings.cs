@@ -5,6 +5,7 @@
         public OmbiSettings Ombi { get; set; }
         public RadarrSettings Radarr { get; set; }
         public SonarrSettings Sonarr { get; set; }
+        public LidarrSettings Lidarr { get; set; }
     }
 
     public class OmbiSettings
@@ -54,6 +55,24 @@
         public int AnimeProfileId { get; set; }
         public int AnimeLanguageId { get; set; }
         public bool AnimeUseSeasonFolders { get; set; }
+        public bool UseSSL { get; set; }
+        public bool SearchNewRequests { get; set; }
+        public bool MonitorNewRequests { get; set; }
+        public string Version { get; set; }
+    }
+
+    public class LidarrSettings
+    {
+        public string Hostname { get; set; }
+        public int Port { get; set; }
+        public string ApiKey { get; set; }
+        public string BaseUrl { get; set; }
+        public string MusicRootFolder { get; set; }
+        public int[] MusicTags { get; set; }
+        public int MusicProfileId { get; set; }
+        public int MusicMetadataProfileId { get; set; }
+        public bool MusicUseAlbumFolders { get; set; }
+
         public bool UseSSL { get; set; }
         public bool SearchNewRequests { get; set; }
         public bool MonitorNewRequests { get; set; }

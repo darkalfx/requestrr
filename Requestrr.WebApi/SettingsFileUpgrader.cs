@@ -88,6 +88,14 @@ namespace Requestrr.WebApi
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
+
+            if (settingsJson.Version.ToString().Equals("1.11.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.15.0";
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("MusicRoles", JToken.FromObject(Array.Empty<string>()));
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
         }
     }
 }
