@@ -88,6 +88,38 @@ namespace Requestrr.WebApi
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
+
+            if (settingsJson.Version.ToString().Equals("1.11.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.12.0";
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("MusicRoles", JToken.FromObject(Array.Empty<string>()));
+
+                ((JObject)settingsJson["DownloadClients"]).Add("Lidarr", JToken.FromObject(new
+                {
+                    Hostname = "",
+                    Port = 8686,
+                    ApiKey = "",
+                    BaseUrl = "",
+                    MusicProfileId = "1",
+                    MusicMetadataProfileId = "1",
+                    MusicRootFolder = "",
+                    MusicTags = Array.Empty<int>(),
+                    MusicUseAlbumFolders = true,
+                    SearchNewRequests = true,
+                    MonitorNewRequests = true,
+                    UseSSL = false,
+                    Version = "3"
+                }));
+
+                ((JObject)settingsJson).Add("Music", JToken.FromObject(new
+                {
+                    Client = "Disabled",
+                    Command = "music",
+                    Restrictions = "None"
+                }));
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
         }
     }
 }

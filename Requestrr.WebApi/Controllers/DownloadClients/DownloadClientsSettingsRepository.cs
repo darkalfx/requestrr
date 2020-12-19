@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
 using Requestrr.WebApi.config;
+using Requestrr.WebApi.Controllers.DownloadClients.Lidarr;
 using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
 using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot;
+using Requestrr.WebApi.RequestrrBot.Music;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
@@ -109,6 +111,38 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 settings.TvShows.Client = tvSettings.Client;
                 settings.TvShows.Command = tvSettings.Command;
                 settings.TvShows.Restrictions = tvSettings.Restrictions;
+            });
+        }
+
+        public static void SetDisabledClient(MusicSettings musicSettings)
+        {
+            SettingsFile.Write(settings =>
+            {
+                settings.Music.Client = musicSettings.Client;
+            });
+        }
+
+        public static void SetLidarr(MusicSettings musicSettings, LidarrSettingsModel lidarrSettings)
+        {
+            SettingsFile.Write(settings =>
+            {
+                settings.DownloadClients.Lidarr.Hostname = lidarrSettings.Hostname;
+                settings.DownloadClients.Lidarr.Port = lidarrSettings.Port;
+                settings.DownloadClients.Lidarr.ApiKey = lidarrSettings.ApiKey;
+                settings.DownloadClients.Lidarr.BaseUrl = lidarrSettings.BaseUrl;
+
+                settings.DownloadClients.Lidarr.MusicRootFolder = lidarrSettings.MusicPath;
+                settings.DownloadClients.Lidarr.MusicProfileId = lidarrSettings.MusicProfile;
+                settings.DownloadClients.Lidarr.MusicMetadataProfileId = lidarrSettings.MusicMetadataProfile;
+                settings.DownloadClients.Lidarr.MusicTags = JToken.FromObject(lidarrSettings.MusicTags);
+                settings.DownloadClients.Lidarr.MusicUseAlbumFolders = lidarrSettings.MusicUseAlbumFolders;
+
+                settings.DownloadClients.Lidarr.SearchNewRequests = lidarrSettings.SearchNewRequests;
+                settings.DownloadClients.Lidarr.MonitorNewRequests = lidarrSettings.MonitorNewRequests;
+                settings.DownloadClients.Lidarr.UseSSL = lidarrSettings.UseSSL;
+
+                settings.Music.Client = musicSettings.Client;
+                settings.Music.Command = musicSettings.Command;
             });
         }
 

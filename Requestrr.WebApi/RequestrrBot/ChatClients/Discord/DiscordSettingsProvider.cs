@@ -19,10 +19,14 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 TvShowDownloadClient = settings.TvShows.Client,
                 TvShowCommand = settings.TvShows.Command,
                 TvShowDownloadClientConfigurationHash = ComputeTvClientConfigurationHashCode(settings),
+                MusicDownloadClient = settings.Music.Client,
+                MusicCommand = settings.Music.Command,
+                MusicDownloadClientConfigurationHash = ComputeMusicClientConfigurationHashCode(settings),
                 StatusMessage = settings.ChatClients.Discord.StatusMessage,
                 MonitoredChannels = settings.ChatClients.Discord.MonitoredChannels.ToObject<string[]>(),
                 TvShowRoles = settings.ChatClients.Discord.TvShowRoles.ToObject<string[]>(),
                 MovieRoles = settings.ChatClients.Discord.MovieRoles.ToObject<string[]>(),
+                MusicRoles = settings.ChatClients.Discord.MusicRoles.ToObject<string[]>(),
                 ClientID = settings.ChatClients.Discord.ClientId,
                 EnableRequestsThroughDirectMessages = settings.ChatClients.Discord.EnableRequestsThroughDirectMessages,
                 AutomaticallyNotifyRequesters = settings.ChatClients.Discord.AutomaticallyNotifyRequesters,
@@ -78,6 +82,26 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 hash.Add((string)settings.DownloadClients.Ombi.Hostname);
                 hash.Add((int)settings.DownloadClients.Ombi.Port);
                 hash.Add((bool)settings.DownloadClients.Ombi.UseSSL);
+            }
+            else
+            {
+                hash.Add(DownloadClient.Disabled);
+            }
+
+            return hash.ToHashCode();
+        }
+
+        public int ComputeMusicClientConfigurationHashCode(dynamic settings)
+        {
+            HashCode hash = new HashCode();
+
+            if (settings.Music.Client == DownloadClient.Lidarr)
+            {
+                hash.Add((string)settings.DownloadClients.Lidarr.Hostname);
+                hash.Add((int)settings.DownloadClients.Lidarr.Port);
+                hash.Add((string)settings.DownloadClients.Lidarr.ApiKey);
+                hash.Add((bool)settings.DownloadClients.Lidarr.UseSSL);
+                hash.Add((string)settings.DownloadClients.Lidarr.Version);
             }
             else
             {

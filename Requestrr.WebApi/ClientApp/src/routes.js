@@ -20,6 +20,7 @@ import Settings from "./views/Settings.jsx";
 import ChatClients from "./views/ChatClients.jsx";
 import Movies from "./views/Movies.jsx";
 import TvShows from "./views/TvShows.jsx";
+import Music from "./views/Music.jsx";
 import Register from "./views/Register.jsx";
 import Login from "./views/Login.jsx";
 import Logout from "./views/Logout.jsx";
@@ -44,6 +45,13 @@ var routes = [
     name: "TV Shows",
     icon: "fas fa-tv text-blue",
     component: TvShows,
+    layout: "/admin"
+  },
+  {
+    path: "/music",
+    name: "Music",
+    icon: "fas fa-music text-red",
+    component: Music,
     layout: "/admin"
   },
   {
