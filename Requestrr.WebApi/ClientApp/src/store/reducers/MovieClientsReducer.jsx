@@ -1,6 +1,7 @@
 import { GET_SETTINGS } from "../actions/MovieClientsActions"
 import { SET_DISABLED_CLIENT } from "../actions/MovieClientsActions"
 import { SET_OMBI_CLIENT } from "../actions/MovieClientsActions"
+import { SET_OVERSEERR_CLIENT } from "../actions/MovieClientsActions"
 import { SET_RADARR_CLIENT } from "../actions/MovieClientsActions"
 
 export default function MovieClientsReducer(state = {}, action) {
@@ -16,6 +17,14 @@ export default function MovieClientsReducer(state = {}, action) {
         apiUsername: action.payload.ombi.apiUsername,
         useSSL: action.payload.ombi.useSSL,
         version: action.payload.ombi.version,
+      },
+      overseerr: {
+        hostname: action.payload.overseerr.hostname,
+        port: action.payload.overseerr.port,
+        apiKey: action.payload.overseerr.apiKey,
+        defaultApiUserID: action.payload.overseerr.defaultApiUserID,
+        useSSL: action.payload.overseerr.useSSL,
+        version: action.payload.overseerr.version,
       },
       radarr: {
         hostname: action.payload.radarr.hostname,
@@ -58,6 +67,14 @@ export default function MovieClientsReducer(state = {}, action) {
       ombi: action.payload.ombi,
       command: action.payload.command,
       client: "Ombi"
+    }
+  }
+  else if (action.type === SET_OVERSEERR_CLIENT) {
+    return {
+      ...state,
+      overseerr: action.payload.overseerr,
+      command: action.payload.command,
+      client: "Overseerr"
     }
   }
 

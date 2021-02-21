@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
 using Requestrr.WebApi.config;
 using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
+using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
 using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot;
+using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
@@ -14,6 +16,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             SettingsFile.Write(settings =>
             {
+                NotificationsFile.ClearAllMovieNotifications();
                 settings.Movies.Client = movieSettings.Client;
             });
         }
@@ -23,9 +26,16 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             SettingsFile.Write(settings =>
             {
                 SetOmbiSettings(ombiSettings, settings);
+                SetMovieSettings(movieSettings, settings);
+            });
+        }
 
-                settings.Movies.Client = movieSettings.Client;
-                settings.Movies.Command = movieSettings.Command;
+        public static void SetOverseerr(MoviesSettings movieSettings, OverseerrSettingsModel overseerrSettings)
+        {
+            SettingsFile.Write(settings =>
+            {
+                SetOverseerrSettings(overseerrSettings, settings);
+                SetMovieSettings(movieSettings, settings);
             });
         }
 
@@ -54,8 +64,12 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 settings.DownloadClients.Radarr.UseSSL = radarrSettings.UseSSL;
                 settings.DownloadClients.Radarr.Version = radarrSettings.Version;
 
-                settings.Movies.Client = movieSettings.Client;
-                settings.Movies.Command = movieSettings.Command;
+                if (settings.Movies.Client != movieSettings.Client)
+                {
+                    NotificationsFile.ClearAllMovieNotifications();
+                }
+
+                SetMovieSettings(movieSettings, settings);
             });
         }
 
@@ -63,6 +77,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         {
             SettingsFile.Write(settings =>
             {
+                NotificationsFile.ClearAllTvShowNotifications();
                 settings.TvShows.Client = tvShowsSettings.Client;
             });
         }
@@ -72,10 +87,16 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             SettingsFile.Write(settings =>
             {
                 SetOmbiSettings(ombiSettings, settings);
+                SetTvShowSettings(tvShowsSettings, settings);
+            });
+        }
 
-                settings.TvShows.Client = tvShowsSettings.Client;
-                settings.TvShows.Command = tvShowsSettings.Command;
-                settings.TvShows.Restrictions = tvShowsSettings.Restrictions;
+        public static void SetOverseerr(TvShowsSettings movieSettings, OverseerrSettingsModel overseerrSettings)
+        {
+            SettingsFile.Write(settings =>
+            {
+                SetOverseerrSettings(overseerrSettings, settings);
+                SetTvShowSettings(movieSettings, settings);
             });
         }
 
@@ -106,9 +127,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 settings.DownloadClients.Sonarr.UseSSL = sonarrSettings.UseSSL;
                 settings.DownloadClients.Sonarr.Version = sonarrSettings.Version;
 
-                settings.TvShows.Client = tvSettings.Client;
-                settings.TvShows.Command = tvSettings.Command;
-                settings.TvShows.Restrictions = tvSettings.Restrictions;
+                SetTvShowSettings(tvSettings, settings);
             });
         }
 
@@ -121,6 +140,39 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             settings.DownloadClients.Ombi.BaseUrl = ombiSettings.BaseUrl;
             settings.DownloadClients.Ombi.UseSSL = ombiSettings.UseSSL;
             settings.DownloadClients.Ombi.Version = ombiSettings.Version;
+        }
+
+        private static void SetOverseerrSettings(OverseerrSettingsModel overseerrSettings, dynamic settings)
+        {
+            settings.DownloadClients.Overseerr.Hostname = overseerrSettings.Hostname;
+            settings.DownloadClients.Overseerr.Port = overseerrSettings.Port;
+            settings.DownloadClients.Overseerr.ApiKey = overseerrSettings.ApiKey;
+            settings.DownloadClients.Overseerr.DefaultApiUserID = overseerrSettings.DefaultApiUserID;
+            settings.DownloadClients.Overseerr.UseSSL = overseerrSettings.UseSSL;
+            settings.DownloadClients.Overseerr.Version = overseerrSettings.Version;
+        }
+
+        private static void SetTvShowSettings(TvShowsSettings tvSettings, dynamic settings)
+        {
+            if (settings.TvShows.Client != tvSettings.Client)
+            {
+                NotificationsFile.ClearAllTvShowNotifications();
+            }
+
+            settings.TvShows.Client = tvSettings.Client;
+            settings.TvShows.Command = tvSettings.Command;
+            settings.TvShows.Restrictions = tvSettings.Restrictions;
+        }
+
+        private static void SetMovieSettings(MoviesSettings movieSettings, dynamic settings)
+        {
+            if (settings.Movies.Client != movieSettings.Client)
+            {
+                NotificationsFile.ClearAllMovieNotifications();
+            }
+
+            settings.Movies.Client = movieSettings.Client;
+            settings.Movies.Command = movieSettings.Command;
         }
     }
 }

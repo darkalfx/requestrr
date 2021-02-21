@@ -8,6 +8,7 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
+using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
@@ -15,15 +16,18 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
     public class ChannelTvShowNotifier : ITvShowNotifier
     {
         private readonly DiscordSocketClient _discordClient;
+        private readonly DiscordSettingsProvider _discordSettingsProvider;
         private readonly string[] _channelNames;
         private readonly ILogger<ChatBot> _logger;
 
         public ChannelTvShowNotifier(
             DiscordSocketClient discordClient,
+            DiscordSettingsProvider discordSettingsProvider,
             string[] channelNames,
             ILogger<ChatBot> logger)
         {
             _discordClient = discordClient;
+            _discordSettingsProvider = discordSettingsProvider;
             _channelNames = channelNames;
             _logger = logger;
         }
@@ -73,11 +77,12 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
                 if (_discordClient.ConnectionState == ConnectionState.Connected)
                 {
                     userNotified.Add(userId.ToString());
+                    _logger.LogWarning($"An issue occurred while sending a tv show notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
                 }
             }
         }
 
-        private static async Task NotifyUsersInChannel(TvShow tvShow, int seasonNumber, HashSet<ulong> discordUserIds, HashSet<string> userNotified, SocketTextChannel channel)
+        private async Task NotifyUsersInChannel(TvShow tvShow, int seasonNumber, HashSet<ulong> discordUserIds, HashSet<string> userNotified, SocketTextChannel channel)
         {
             var usersToMention = channel.Users
                 .Where(x => discordUserIds.Contains(x.Id))
@@ -86,7 +91,11 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
             if (usersToMention.Any())
             {
                 var messageBuilder = new StringBuilder();
-                messageBuilder.AppendLine($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!");
+
+                if(_discordSettingsProvider.Provide().TvShowDownloadClient == DownloadClient.Overseerr)
+                    messageBuilder.AppendLine($"The **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!");
+                else
+                    messageBuilder.AppendLine($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!");
 
                 foreach (var user in usersToMention)
                 {

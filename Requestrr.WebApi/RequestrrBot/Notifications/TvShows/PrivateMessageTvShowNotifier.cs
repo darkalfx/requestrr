@@ -5,6 +5,7 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
+using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
@@ -12,13 +13,16 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
     public class PrivateMessageTvShowNotifier : ITvShowNotifier
     {
         private readonly DiscordSocketClient _discordClient;
+        private readonly DiscordSettingsProvider _discordSettingsProvider;
         private readonly ILogger<ChatBot> _logger;
 
         public PrivateMessageTvShowNotifier(
             DiscordSocketClient discordClient,
+            DiscordSettingsProvider discordSettingsProvider,
             ILogger<ChatBot> logger)
         {
             _discordClient = discordClient;
+            _discordSettingsProvider = discordSettingsProvider;
             _logger = logger;
         }
 
@@ -38,12 +42,17 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
                     if (user != null)
                     {
                         var channel = await user.GetOrCreateDMChannelAsync();
-                        await channel.SendMessageAsync($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** that you requested has finished downloading!", false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
+
+                        if(_discordSettingsProvider.Provide().TvShowDownloadClient == DownloadClient.Overseerr)
+                            await channel.SendMessageAsync($"The **season {seasonNumber}** of **{tvShow.Title}** that you requested has finished downloading!", false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
+                        else
+                            await channel.SendMessageAsync($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** that you requested has finished downloading!", false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
+
                         userNotified.Add(userId);
                     }
                     else if (!token.IsCancellationRequested && _discordClient.ConnectionState == ConnectionState.Connected)
                     {
-                        userNotified.Add(userId);
+                        _logger.LogWarning($"An error occurred while sending a show notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
                     }
                 }
                 catch (System.Exception ex)

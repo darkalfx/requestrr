@@ -1,6 +1,7 @@
 export const GET_SETTINGS = "movieClients:get_settings";
 export const SET_DISABLED_CLIENT = "movieClients:set_disabled_client";
 export const SET_OMBI_CLIENT = "movieClients:set_ombi_client";
+export const SET_OVERSEERR_CLIENT = "movieClients:set_overseerr_client";
 export const SET_RADARR_CLIENT = "movieClients:set_radarr_client";
 
 export function setSettings(settings) {
@@ -19,6 +20,13 @@ export function setDisabledClient() {
 export function setOmbiClient(settings) {
     return {
         type: SET_OMBI_CLIENT,
+        payload: settings
+    };
+};
+
+export function setOverseerrClient(settings) {
+    return {
+        type: SET_OVERSEERR_CLIENT,
         payload: settings
     };
 };
@@ -63,6 +71,36 @@ export function testOmbiSettings(settings) {
             body: JSON.stringify({
                 "Hostname": settings.hostname,
                 "BaseUrl": settings.baseUrl,
+                "Port": Number(settings.port),
+                "ApiKey": settings.apiKey,
+                "UseSSL": settings.useSSL,
+                "Version": settings.version,
+            })
+        })
+            .then(data => data.json())
+            .then(data => {
+                if (data.ok) {
+                    return { ok: true };
+                }
+
+                return { ok: false, error: data }
+            });
+    };
+};
+
+export function testOverseerrSettings(settings) {
+    return (dispatch, getState) => {
+        const state = getState();
+
+        return fetch("../api/movies/overseerr/test", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.user.token}`
+            },
+            body: JSON.stringify({
+                "Hostname": settings.hostname,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -346,6 +384,49 @@ export function saveOmbiClient(saveModel) {
                             apiUsername: saveModel.ombi.apiUsername,
                             useSSL: saveModel.ombi.useSSL,
                             version: saveModel.ombi.version,
+                        },
+                        command: saveModel.command
+                    }));
+                    return { ok: true };
+                }
+
+                return { ok: false, error: data }
+            });
+    }
+};
+
+export function saveOverseerrClient(saveModel) {
+    return (dispatch, getState) => {
+        const state = getState();
+
+        return fetch("../api/movies/overseerr", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${state.user.token}`
+            },
+            body: JSON.stringify({
+                'Hostname': saveModel.overseerr.hostname,
+                'Port': Number(saveModel.overseerr.port),
+                'ApiKey': saveModel.overseerr.apiKey,
+                'DefaultApiUserID': saveModel.overseerr.defaultApiUserID,
+                'UseSSL': saveModel.overseerr.useSSL,
+                'Version': saveModel.overseerr.version,
+                'Command': saveModel.command,
+            })
+        })
+            .then(data => data.json())
+            .then(data => {
+                if (data.ok) {
+                    dispatch(setOverseerrClient({
+                        overseerr: {
+                            hostname: saveModel.overseerr.hostname,
+                            port: saveModel.overseerr.port,
+                            apiKey: saveModel.overseerr.apiKey,
+                            defaultApiUserID: saveModel.overseerr.defaultApiUserID,
+                            useSSL: saveModel.overseerr.useSSL,
+                            version: saveModel.overseerr.version,
                         },
                         command: saveModel.command
                     }));

@@ -43,7 +43,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
                     }
                     else if (!token.IsCancellationRequested && _discordClient.ConnectionState == ConnectionState.Connected)
                     {
-                        userNotified.Add(userId);
+                        _logger.LogWarning($"An error occurred while sending a movie notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
                     }
                 }
                 catch (System.Exception ex)

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
 
 namespace Requestrr.WebApi
 {
@@ -85,6 +86,15 @@ namespace Requestrr.WebApi
             {
                 settingsJson.Version = "1.11.0";
                 ((JObject)settingsJson).Add("BaseUrl", string.Empty);
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
+
+            if (settingsJson.Version.ToString().Equals("1.11.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.12.0";
+
+                ((JObject)settingsJson["DownloadClients"]).Add("Overseerr", JToken.FromObject(new OverseerrSettings()));
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }

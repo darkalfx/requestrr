@@ -1,6 +1,7 @@
 export const GET_SETTINGS = "tvShowsClients:get_settings";
 export const SET_DISABLED_CLIENT = "tvShowsClients:set_disabled_client";
 export const SET_OMBI_CLIENT = "tvShowsClients:set_ombi_client";
+export const SET_OVERSEERR_CLIENT = "tvShowsClients:set_overseerr_client";
 export const SET_SONARR_CLIENT = "tvShowsClients:set_sonarr_client";
 
 export function setSettings(settings) {
@@ -19,6 +20,13 @@ export function setDisabledClient() {
 export function setOmbiClient(settings) {
     return {
         type: SET_OMBI_CLIENT,
+        payload: settings
+    };
+};
+
+export function setOverseerrClient(settings) {
+    return {
+        type: SET_OVERSEERR_CLIENT,
         payload: settings
     };
 };
@@ -62,7 +70,7 @@ export function testOmbiSettings(settings) {
             },
             body: JSON.stringify({
                 "Hostname": settings.hostname,
-                "BaseUrl" : settings.baseUrl,
+                "BaseUrl": settings.baseUrl,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
                 "UseSSL": settings.useSSL,
@@ -79,6 +87,37 @@ export function testOmbiSettings(settings) {
             });
     };
 };
+
+export function testOverseerrSettings(settings) {
+    return (dispatch, getState) => {
+        const state = getState();
+
+        return fetch("../api/tvshows/overseerr/test", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.user.token}`
+            },
+            body: JSON.stringify({
+                "Hostname": settings.hostname,
+                "Port": Number(settings.port),
+                "ApiKey": settings.apiKey,
+                "UseSSL": settings.useSSL,
+                "Version": settings.version,
+            })
+        })
+            .then(data => data.json())
+            .then(data => {
+                if (data.ok) {
+                    return { ok: true };
+                }
+
+                return { ok: false, error: data }
+            });
+    };
+};
+
 
 export function loadSonarrLanguages(settings) {
     return (dispatch, getState) => {
@@ -373,7 +412,7 @@ export function saveOmbiClient(saveModel) {
             },
             body: JSON.stringify({
                 'Hostname': saveModel.ombi.hostname,
-                "BaseUrl" : saveModel.ombi.baseUrl,
+                "BaseUrl": saveModel.ombi.baseUrl,
                 'Port': Number(saveModel.ombi.port),
                 'ApiKey': saveModel.ombi.apiKey,
                 'ApiUsername': saveModel.ombi.apiUsername,
@@ -395,6 +434,51 @@ export function saveOmbiClient(saveModel) {
                             apiUsername: saveModel.ombi.apiUsername,
                             useSSL: saveModel.ombi.useSSL,
                             version: saveModel.ombi.version,
+                        },
+                        command: saveModel.command,
+                        restrictions: saveModel.restrictions
+                    }));
+                    return { ok: true };
+                }
+
+                return { ok: false, error: data }
+            });
+    }
+};
+
+export function saveOverseerrClient(saveModel) {
+    return (dispatch, getState) => {
+        const state = getState();
+
+        return fetch("../api/tvshows/overseerr", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${state.user.token}`
+            },
+            body: JSON.stringify({
+                'Hostname': saveModel.overseerr.hostname,
+                'Port': Number(saveModel.overseerr.port),
+                'ApiKey': saveModel.overseerr.apiKey,
+                'DefaultApiUserID': saveModel.overseerr.defaultApiUserID,
+                'UseSSL': saveModel.overseerr.useSSL,
+                'Version': saveModel.overseerr.version,
+                'Command': saveModel.command,
+                'Restrictions': saveModel.restrictions,
+            })
+        })
+            .then(data => data.json())
+            .then(data => {
+                if (data.ok) {
+                    dispatch(setOverseerrClient({
+                        overseerr: {
+                            hostname: saveModel.overseerr.hostname,
+                            port: saveModel.overseerr.port,
+                            apiKey: saveModel.overseerr.apiKey,
+                            defaultApiUserID: saveModel.overseerr.defaultApiUserID,
+                            useSSL: saveModel.overseerr.useSSL,
+                            version: saveModel.overseerr.version,
                         },
                         command: saveModel.command,
                         restrictions: saveModel.restrictions

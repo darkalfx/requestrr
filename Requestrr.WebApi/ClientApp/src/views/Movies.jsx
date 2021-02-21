@@ -22,10 +22,12 @@ import { getSettings } from "../store/actions/MovieClientsActions"
 import { saveDisabledClient } from "../store/actions/MovieClientsActions"
 import { saveRadarrClient } from "../store/actions/MovieClientsActions"
 import { saveOmbiClient } from "../store/actions/MovieClientsActions"
+import { saveOverseerrClient } from "../store/actions/MovieClientsActions"
 import ValidatedTextbox from "../components/Inputs/ValidatedTextbox"
 import Dropdown from "../components/Inputs/Dropdown"
 import Radarr from "../components/DownloadClients/Radarr"
 import Ombi from "../components/DownloadClients/Ombi"
+import Overseerr from "../components/DownloadClients/Overseerr"
 
 // reactstrap components
 import {
@@ -60,6 +62,8 @@ class Movies extends React.Component {
       isRadarrValid: false,
       ombi: {},
       isOmbiValid: false,
+      overseerr: {},
+      isOverseerrValid: false,
       isCommandValid: false,
     };
 
@@ -76,6 +80,7 @@ class Movies extends React.Component {
           client: this.props.settings.client,
           radarr: this.props.settings.radarr,
           ombi: this.props.settings.ombi,
+          overseerr: this.props.settings.overseerr,
           command: this.props.settings.command,
         });
       });
@@ -89,6 +94,7 @@ class Movies extends React.Component {
     this.setState({
       radarr: this.props.settings.radarr,
       ombi: this.props.settings.ombi,
+      overseerr: this.props.settings.overseerr,
       savingAttempted: false,
       isSubmitted: false,
     });
@@ -106,6 +112,9 @@ class Movies extends React.Component {
         || (this.state.client === "Ombi"
           && this.state.isOmbiValid
           && this.state.isCommandValid)
+        || (this.state.client === "Overseerr"
+          && this.state.isOverseerrValid
+          && this.state.isCommandValid)
       )) {
         this.setState({ isSaving: true });
 
@@ -117,6 +126,12 @@ class Movies extends React.Component {
         else if (this.state.client === "Ombi") {
           saveAction = this.props.saveOmbiClient({
             ombi: this.state.ombi,
+            command: this.state.command,
+          });
+        }
+        else if (this.state.client === "Overseerr") {
+          saveAction = this.props.saveOverseerrClient({
+            overseerr: this.state.overseerr,
             command: this.state.command,
           });
         }
@@ -197,8 +212,19 @@ class Movies extends React.Component {
                           <Dropdown
                             name="Download Client"
                             value={this.state.client}
-                            items={[{ name: "Disabled", value: "Disabled" }, { name: "Radarr", value: "Radarr" }, { name: "Ombi", value: "Ombi" }]}
+                            items={[{ name: "Disabled", value: "Disabled" }, { name: "Radarr", value: "Radarr" }, { name: "Overseerr", value: "Overseerr" }, { name: "Ombi", value: "Ombi" }]}
                             onChange={newClient => { this.setState({ client: newClient }, this.onClientChange) }} />
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col lg="6">
+                          {
+                            this.props.settings.client != this.state.client && this.props.settings.client != "Disabled" ?
+                              <Alert className="text-center" color="warning">
+                                <strong>Changing the download client will delete all pending movie notifications.</strong>
+                              </Alert>
+                              : null
+                          }
                         </Col>
                       </Row>
                     </div>
@@ -210,6 +236,13 @@ class Movies extends React.Component {
                             this.state.client === "Ombi"
                               ? <>
                                 <Ombi settings={this.state.ombi} onChange={newOmbi => this.setState({ ombi: newOmbi })} onValidate={isOmbiValid => this.setState({ isOmbiValid: isOmbiValid })} isSubmitted={this.state.isSubmitted} />
+                              </>
+                              : null
+                          }
+                          {
+                            this.state.client === "Overseerr"
+                              ? <>
+                                <Overseerr settings={this.state.overseerr} onChange={newOverseerr => this.setState({ overseerr: newOverseerr })} onValidate={isOverseerrValid => this.setState({ isOverseerrValid: isOverseerrValid })} isSubmitted={this.state.isSubmitted} />
                               </>
                               : null
                           }
@@ -296,6 +329,7 @@ const mapPropsToAction = {
   saveDisabledClient: saveDisabledClient,
   saveRadarrClient: saveRadarrClient,
   saveOmbiClient: saveOmbiClient,
+  saveOverseerrClient: saveOverseerrClient,
 };
 
 export default connect(mapPropsToState, mapPropsToAction)(Movies);
