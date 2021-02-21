@@ -19,6 +19,7 @@ Requestrr is a chatbot used to simplify using services like Sonarr/Radarr/Ombi v
 - Apple's Siri integration
 - Users can get notified when their requests complete
 - Sonarr/Radarr V2/V3 integration
+- Overseer integration with support for per user permissions/quotas
 - Ombi V3 integration with support for per user roles/quotas
 - Fully configurable via a web portal
 
