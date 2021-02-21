@@ -32,7 +32,7 @@
     },
     "Overseerr": {
       "Hostname": "",
-      "Port": 3579,
+      "Port": 5055,
       "ApiKey": "",
       "DefaultApiUserID": "",
       "UseSSL": false,
