@@ -521,14 +521,14 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
             }).ToArray();
 
-            return new TvShow
+            var tvShow = new TvShow
             {
                 TheTvDbId = jsonTvShow.tvdbId.Value,
                 DownloadClientId = downloadClientId,
                 Title = jsonTvShow.title,
                 Overview = jsonTvShow.overview,
                 Quality = "",
-                IsRequested = isTvShowMonitored,
+                IsRequested = jsonTvShow.ExistsInSonarr() && jsonTvShow.monitored,
                 PlexUrl = "",
                 EmbyUrl = "",
                 Banner = GetPosterImageUrl(jsonTvShow.images),
@@ -536,6 +536,18 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 FirstAired = ((int)jsonTvShow.year).ToString(),
                 HasEnded = ((string)jsonTvShow.status).Equals("ended", StringComparison.InvariantCultureIgnoreCase)
             };
+
+            if (SonarrSettings.MonitorNewRequests && !tvShow.HasEnded)
+            {
+                tvShow.Seasons = tvShow.Seasons.Append(new FutureTvSeasons
+                {
+                    SeasonNumber = tvShow.Seasons?.Any() == true ? tvShow.Seasons.Max(x => x.SeasonNumber) + 1 : 1,
+                    IsAvailable = false,
+                    IsRequested = tvShow.IsRequested ? RequestedState.Full : RequestedState.None,
+                }).ToArray();
+            }
+
+            return tvShow;
         }
 
         private string GetPosterImageUrl(List<JSONImage> jsonImages)

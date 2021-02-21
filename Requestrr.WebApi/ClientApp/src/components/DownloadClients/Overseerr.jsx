@@ -2,7 +2,7 @@ import React from "react";
 import Loader from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
-import { testOmbiSettings } from "../../store/actions/MovieClientsActions"
+import { testOverseerrSettings } from "../../store/actions/MovieClientsActions"
 import ValidatedTextbox from "../Inputs/ValidatedTextbox"
 import Textbox from "../Inputs/Textbox"
 import Dropdown from "../Inputs/Dropdown"
@@ -14,7 +14,7 @@ import {
   Col
 } from "reactstrap";
 
-class Ombi extends React.Component {
+class Overseerr extends React.Component {
   constructor(props) {
     super(props);
 
@@ -29,10 +29,9 @@ class Ombi extends React.Component {
       isPortValid: false,
       apiKey: "",
       isApiKeyValid: false,
-      apiUsername: "",
+      defaultApiUserID: "",
       useSSL: "",
       apiVersion: "",
-      baseUrl: "",
     };
 
     this.onTestSettings = this.onTestSettings.bind(this);
@@ -61,8 +60,7 @@ class Ombi extends React.Component {
       isPortValid: false,
       apiKey: props.settings.apiKey,
       isApiKeyValid: false,
-      apiUsername: props.settings.apiUsername,
-      baseUrl: props.settings.baseUrl,
+      defaultApiUserID: props.settings.defaultApiUserID,
       useSSL: props.settings.useSSL,
       apiVersion: props.settings.version,
     });
@@ -93,7 +91,6 @@ class Ombi extends React.Component {
 
       this.props.testSettings({
         hostname: this.state.hostname,
-        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
@@ -129,10 +126,9 @@ class Ombi extends React.Component {
     this.props.onChange({
       client: this.state.client,
       hostname: this.state.hostname,
-      baseUrl: this.state.baseUrl,
       port: this.state.port,
       apiKey: this.state.apiKey,
-      apiUsername: this.state.apiUsername,
+      defaultApiUserID: this.state.defaultApiUserID,
       useSSL: this.state.useSSL,
       qualityProfile: this.state.qualityProfile,
       path: this.state.path,
@@ -152,7 +148,7 @@ class Ombi extends React.Component {
       <>
         <div>
           <h6 className="heading-small text-muted mb-4">
-            Ombi Connection Settings
+            Overseerr Connection Settings
           </h6>
         </div>
         <div className="pl-lg-4">
@@ -161,7 +157,7 @@ class Ombi extends React.Component {
               <Dropdown
                 name="API"
                 value={this.state.apiVersion}
-                items={[{ name: "Version 3-4", value: "3" }]}
+                items={[{ name: "Version 1", value: "1" }]}
                 onChange={newApiVersion => this.setState({ apiVersion: newApiVersion }, this.onValueChange)} />
             </Col>
             <Col lg="6">
@@ -204,20 +200,14 @@ class Ombi extends React.Component {
             </Col>
           </Row>
           <Row>
-            <Col lg="6">
+          <Col lg="6">
               <Textbox
-                name="Base Url"
-                placeholder="Enter base url configured in Ombi, leave empty if none configured."
-                value={this.state.baseUrl}
-                onChange={newBaseUrl => this.setState({ baseUrl: newBaseUrl }, this.onValueChange)} />
+                name="Default Overseerr User ID for requests"
+                placeholder="Enter default user ID (Optional)"
+                value={this.state.defaultApiUserID}
+                onChange={newDefaultApiUserID => this.setState({ defaultApiUserID: newDefaultApiUserID }, this.onValueChange)} />
             </Col>
-            <Col lg="6">
-              <Textbox
-                name="Default Ombi Username"
-                placeholder="Enter api username (Optional)"
-                value={this.state.apiUsername}
-                onChange={newApiUsername => this.setState({ apiUsername: newApiUsername }, this.onValueChange)} />
-            </Col>
+            <Col lg="6"></Col>
           </Row>
           <Row>
             <Col lg="6">
@@ -237,7 +227,7 @@ class Ombi extends React.Component {
               </FormGroup>
             </Col>
             <Col lg="6">
-              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Ombi#configuring-permissions" target="_blank">Click here to view how configure Ombi permissions with the bot</a>
+              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank">Click here to view how configure Overseerr permissions with the bot</a>
             </Col>
           </Row>
           <Row>
@@ -285,7 +275,7 @@ class Ombi extends React.Component {
 }
 
 const mapPropsToAction = {
-  testSettings: testOmbiSettings,
+  testSettings: testOverseerrSettings,
 };
 
-export default connect(null, mapPropsToAction)(Ombi);
+export default connect(null, mapPropsToAction)(Overseerr);

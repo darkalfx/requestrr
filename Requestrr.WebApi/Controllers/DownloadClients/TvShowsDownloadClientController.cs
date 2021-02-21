@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Requestrr.WebApi.config;
 using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
+using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.TvShows;
@@ -67,6 +68,15 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                     ApiUsername = _downloadClientsSettings.Ombi.ApiUsername,
                     UseSSL = _downloadClientsSettings.Ombi.UseSSL,
                     Version = _downloadClientsSettings.Ombi.Version
+                },
+                Overseerr = new OverseerrSettingsModel
+                {
+                    Hostname = _downloadClientsSettings.Overseerr.Hostname,
+                    Port = _downloadClientsSettings.Overseerr.Port,
+                    ApiKey = _downloadClientsSettings.Overseerr.ApiKey,
+                    DefaultApiUserID = _downloadClientsSettings.Overseerr.DefaultApiUserID,
+                    UseSSL = _downloadClientsSettings.Overseerr.UseSSL,
+                    Version = _downloadClientsSettings.Overseerr.Version
                 },
                 Command = _tvShowsSettings.Command,
                 Restrictions = _tvShowsSettings.Restrictions

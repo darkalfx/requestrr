@@ -10,6 +10,7 @@ using Requestrr.WebApi.Extensions;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.Movies;
@@ -34,6 +35,7 @@ namespace Requestrr.WebApi.RequestrrBot
         private MovieNotificationsRepository _movieNotificationRequestRepository = new MovieNotificationsRepository();
         private TvShowNotificationsRepository _tvShowNotificationRequestRepository = new TvShowNotificationsRepository();
 
+        private OverseerrClient _overseerrClient;
         private OmbiClient _ombiDownloadClient;
         private RadarrClient _radarrDownloadClient;
         private SonarrClient _sonarrDownloadClient;
@@ -44,6 +46,7 @@ namespace Requestrr.WebApi.RequestrrBot
             _logger = logger;
             _serviceProvider = serviceProvider;
             _discordSettingsProvider = discordSettingsProvider;
+            _overseerrClient = new OverseerrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<OverseerrClient>>(), serviceProvider.Get<OverseerrSettingsProvider>());
             _ombiDownloadClient = new OmbiClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<OmbiClient>>(), serviceProvider.Get<OmbiSettingsProvider>());
             _radarrDownloadClient = new RadarrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<RadarrClient>>(), serviceProvider.Get<RadarrSettingsProvider>());
             _sonarrDownloadClient = new SonarrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<SonarrClient>>(), serviceProvider.Get<SonarrSettingsProvider>());
@@ -218,6 +221,10 @@ namespace Requestrr.WebApi.RequestrrBot
             {
                 return _ombiDownloadClient as T;
             }
+            else if (settings.MovieDownloadClient == DownloadClient.Overseerr)
+            {
+                return _overseerrClient as T;
+            }
             else
             {
                 throw new Exception($"Invalid configured movie download client {settings.MovieDownloadClient}");
@@ -233,6 +240,10 @@ namespace Requestrr.WebApi.RequestrrBot
             else if (settings.TvShowDownloadClient == DownloadClient.Ombi)
             {
                 return _ombiDownloadClient as T;
+            }
+            else if (settings.TvShowDownloadClient == DownloadClient.Overseerr)
+            {
+                return _overseerrClient as T;
             }
             else
             {
@@ -333,11 +344,11 @@ namespace Requestrr.WebApi.RequestrrBot
 
                     if (_currentSettings.NotificationMode == NotificationMode.PrivateMessage)
                     {
-                        tvShowNotifier = new PrivateMessageTvShowNotifier(_client, _logger);
+                        tvShowNotifier = new PrivateMessageTvShowNotifier(_client, _discordSettingsProvider, _logger);
                     }
                     else if (_currentSettings.NotificationMode == NotificationMode.Channels)
                     {
-                        tvShowNotifier = new ChannelTvShowNotifier(_client, _currentSettings.NotificationChannels, _logger);
+                        tvShowNotifier = new ChannelTvShowNotifier(_client, _discordSettingsProvider, _currentSettings.NotificationChannels, _logger);
                     }
                     else
                     {

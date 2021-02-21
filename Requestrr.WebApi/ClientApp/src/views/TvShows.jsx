@@ -22,10 +22,12 @@ import { getSettings } from "../store/actions/TvShowsClientsActions"
 import { saveDisabledClient } from "../store/actions/TvShowsClientsActions"
 import { saveSonarrClient } from "../store/actions/TvShowsClientsActions"
 import { saveOmbiClient } from "../store/actions/TvShowsClientsActions"
+import { saveOverseerrClient } from "../store/actions/TvShowsClientsActions"
 import ValidatedTextbox from "../components/Inputs/ValidatedTextbox"
 import Dropdown from "../components/Inputs/Dropdown"
 import Sonarr from "../components/DownloadClients/Sonarr"
 import Ombi from "../components/DownloadClients/Ombi"
+import Overseerr from "../components/DownloadClients/Overseerr"
 
 // reactstrap components
 import {
@@ -61,6 +63,8 @@ class TvShows extends React.Component {
       isSonarrValid: false,
       ombi: {},
       isOmbiValid: false,
+      overseerr: {},
+      isOverseerrValid: false,
       isCommandValid: false,
     };
 
@@ -77,6 +81,7 @@ class TvShows extends React.Component {
           client: this.props.settings.client,
           sonarr: this.props.settings.sonarr,
           ombi: this.props.settings.ombi,
+          overseerr: this.props.settings.overseerr,
           command: this.props.settings.command,
           restrictions: this.props.settings.restrictions,
         });
@@ -91,6 +96,7 @@ class TvShows extends React.Component {
     this.setState({
       sonarr: this.props.settings.sonarr,
       ombi: this.props.settings.ombi,
+      overseerr: this.props.settings.overseerr,
       savingAttempted: false,
       isSubmitted: false,
     });
@@ -108,6 +114,9 @@ class TvShows extends React.Component {
         || (this.state.client === "Ombi"
           && this.state.isOmbiValid
           && this.state.isCommandValid)
+        || (this.state.client === "Overseerr"
+          && this.state.isOverseerrValid
+          && this.state.isCommandValid)
       )) {
         this.setState({ isSaving: true });
 
@@ -119,6 +128,13 @@ class TvShows extends React.Component {
         else if (this.state.client === "Ombi") {
           saveAction = this.props.saveOmbiClient({
             ombi: this.state.ombi,
+            command: this.state.command,
+            restrictions: this.state.restrictions
+          });
+        }
+        else if (this.state.client === "Overseerr") {
+          saveAction = this.props.saveOverseerrClient({
+            overseerr: this.state.overseerr,
             command: this.state.command,
             restrictions: this.state.restrictions
           });
@@ -201,8 +217,19 @@ class TvShows extends React.Component {
                           <Dropdown
                             name="Download Client"
                             value={this.state.client}
-                            items={[{ name: "Disabled", value: "Disabled" }, { name: "Sonarr", value: "Sonarr" }, { name: "Ombi", value: "Ombi" }]}
+                            items={[{ name: "Disabled", value: "Disabled" }, { name: "Sonarr", value: "Sonarr" }, { name: "Overseerr", value: "Overseerr" }, { name: "Ombi", value: "Ombi" }]}
                             onChange={newClient => { this.setState({ client: newClient }, this.onClientChange) }} />
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col lg="6">
+                          {
+                            this.props.settings.client != this.state.client && this.props.settings.client != "Disabled" ?
+                              <Alert className="text-center" color="warning">
+                                <strong>Changing the download client will delete all pending tv notifications.</strong>
+                              </Alert>
+                              : null
+                          }
                         </Col>
                       </Row>
                     </div>
@@ -214,6 +241,13 @@ class TvShows extends React.Component {
                             this.state.client === "Ombi"
                               ? <>
                                 <Ombi settings={this.state.ombi} onChange={newOmbi => this.setState({ ombi: newOmbi })} onValidate={isOmbiValid => this.setState({ isOmbiValid: isOmbiValid })} isSubmitted={this.state.isSubmitted} />
+                              </>
+                              : null
+                          }
+                          {
+                            this.state.client === "Overseerr"
+                              ? <>
+                                <Overseerr settings={this.state.overseerr} onChange={newOverseerr => this.setState({ overseerr: newOverseerr })} onValidate={isOverseerrValid => this.setState({ isOverseerrValid: isOverseerrValid })} isSubmitted={this.state.isSubmitted} />
                               </>
                               : null
                           }
@@ -305,6 +339,7 @@ const mapPropsToAction = {
   saveDisabledClient: saveDisabledClient,
   saveSonarrClient: saveSonarrClient,
   saveOmbiClient: saveOmbiClient,
+  saveOverseerrClient: saveOverseerrClient,
 };
 
 export default connect(mapPropsToState, mapPropsToAction)(TvShows);

@@ -63,6 +63,24 @@ namespace Requestrr.WebApi.RequestrrBot
             return notifications;
         }
 
+        public static void ClearAllTvShowNotifications()
+        {
+            lock (_lock)
+            {
+                _cachedNotifications.TvShows = JToken.FromObject(Array.Empty<int>());
+                _hasChanged = true;
+            }
+        }
+
+        public static void ClearAllMovieNotifications()
+        {
+            lock (_lock)
+            {
+                _cachedNotifications.Movies = JToken.FromObject(Array.Empty<int>());
+                _hasChanged = true;
+            }
+        }
+
         public static void WriteMovies(Dictionary<string, int[]> moviesNotifications)
         {
             lock (_lock)

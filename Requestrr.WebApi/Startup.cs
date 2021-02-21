@@ -17,6 +17,7 @@ using Requestrr.WebApi.RequestrrBot;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
 
 namespace Requestrr.WebApi
 {
@@ -84,6 +85,7 @@ namespace Requestrr.WebApi
             services.AddSingleton<DiscordSettingsProvider>();
             services.AddSingleton<TvShowsSettingsProvider>();
             services.AddSingleton<OmbiSettingsProvider>();
+            services.AddSingleton<OverseerrSettingsProvider>();
             services.AddSingleton<RadarrSettingsProvider>();
             services.AddSingleton<SonarrSettingsProvider>();
             services.AddSingleton<RequestrrBot.ChatBot>();

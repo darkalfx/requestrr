@@ -30,6 +30,14 @@
       "UseSSL": false,
       "Version": "3"
     },
+    "Overseerr": {
+      "Hostname": "",
+      "Port": 3579,
+      "ApiKey": "",
+      "DefaultApiUserID": "",
+      "UseSSL": false,
+      "Version": "1"
+    },
     "Radarr": {
       "Hostname": "",
       "Port": 7878,
@@ -84,5 +92,5 @@
   },
   "Port": 4545,
   "BaseUrl" : "",
-  "Version": "1.11.0"
+  "Version": "1.12.0"
 }

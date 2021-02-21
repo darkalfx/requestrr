@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
+using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
@@ -12,6 +13,8 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         public SonarrSettingsModel Sonarr { get; set; }
         [Required]
         public OmbiSettingsModel Ombi { get; set; }
+        [Required]
+        public OverseerrSettingsModel Overseerr { get; set; }
         [Required]
         public string Command { get; set; }
         [Required]

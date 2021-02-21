@@ -122,7 +122,15 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
                 else
                 {
                     await _userInterface.DisplayTvShowDetailsAsync(tvShow);
-                    await _userInterface.WarnShowHasEndedAsync(tvShow);
+                    
+                    if(tvShow.HasEnded)
+                    {
+                        await _userInterface.WarnShowHasEndedAsync(tvShow);
+                    }
+                    else
+                    {
+                        await _userInterface.WarnAlreadySeasonAlreadyRequestedAsync(tvShow, new FutureTvSeasons());
+                    }
                 }
             }
             else if (!tvShow.IsMultiSeasons() && tvShow.Seasons.OfType<NormalTvSeason>().Any())
@@ -199,16 +207,6 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
         private async Task<TvShow> GetTvShow(SearchedTvShow searchedTvShow)
         {
             var tvShow = await _searcher.GetTvShowDetailsAsync(searchedTvShow);
-
-            if (!tvShow.HasEnded)
-            {
-                tvShow.Seasons = tvShow.Seasons.Append(new FutureTvSeasons
-                {
-                    SeasonNumber = tvShow.Seasons?.Any() == true ? tvShow.Seasons.Max(x => x.SeasonNumber) + 1 : 1,
-                    IsAvailable = false,
-                    IsRequested = tvShow.IsRequested ? RequestedState.Full : RequestedState.None,
-                }).ToArray();
-            }
 
             if (tvShow.IsMultiSeasons())
             {

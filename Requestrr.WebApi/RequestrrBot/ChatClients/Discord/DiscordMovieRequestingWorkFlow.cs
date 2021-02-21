@@ -284,7 +284,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public Task DisplayRequestDeniedAsync(Movie movie)
         {
-            return ReplyToUserAsync($"Your request was denied by the provider due to an insufficient quota limit.");
+            return ReplyToUserAsync($"Your request was denied by the provider due to insufficient permissions or quota limits.");
         }
 
         public Task WarnMovieUnavailableAndAlreadyHasNotificationAsync()
