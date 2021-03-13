@@ -103,6 +103,7 @@ export function testOverseerrSettings(settings) {
                 "Hostname": settings.hostname,
                 "Port": Number(settings.port),
                 "ApiKey": settings.apiKey,
+                'DefaultApiUserID': settings.defaultApiUserID,
                 "UseSSL": settings.useSSL,
                 "Version": settings.version,
             })

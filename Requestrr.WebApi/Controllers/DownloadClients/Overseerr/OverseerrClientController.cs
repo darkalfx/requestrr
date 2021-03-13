@@ -38,6 +38,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Overseerr
                     Hostname = model.Hostname.Trim(),
                     Port = model.Port,
                     UseSSL = model.UseSSL,
+                    DefaultApiUserID = model.DefaultApiUserID,
                     Version = model.Version,
                 });
 

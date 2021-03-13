@@ -30,6 +30,7 @@ class Overseerr extends React.Component {
       apiKey: "",
       isApiKeyValid: false,
       defaultApiUserID: "",
+      isDefaultApiUserIDValid: true,
       useSSL: "",
       apiVersion: "",
     };
@@ -41,6 +42,7 @@ class Overseerr extends React.Component {
     this.updateStateFromProps = this.updateStateFromProps.bind(this);
     this.validateNonEmptyString = this.validateNonEmptyString.bind(this);
     this.validatePort = this.validatePort.bind(this);
+    this.validateDefaultUserId = this.validateDefaultUserId.bind(this);
   }
 
   componentDidMount() {
@@ -61,6 +63,7 @@ class Overseerr extends React.Component {
       apiKey: props.settings.apiKey,
       isApiKeyValid: false,
       defaultApiUserID: props.settings.defaultApiUserID,
+      isDefaultApiUserIDValid: true,
       useSSL: props.settings.useSSL,
       apiVersion: props.settings.version,
     });
@@ -80,12 +83,17 @@ class Overseerr extends React.Component {
     return /^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/.test(value);
   }
 
+  validateDefaultUserId = value => {
+    return (!value || value.length === 0 || /^\s*$/.test(value)) || (/^[1-9]\d*$/).test(value);
+  }
+
   onTestSettings = e => {
     e.preventDefault();
 
     if (!this.state.isTestingSettings
       && this.state.isHostnameValid
       && this.state.isPortValid
+      && this.state.isDefaultApiUserIDValid
       && this.state.isApiKeyValid) {
       this.setState({ isTestingSettings: true });
 
@@ -94,6 +102,7 @@ class Overseerr extends React.Component {
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
+        defaultApiUserID: this.state.defaultApiUserID,
         version: this.state.apiVersion,
       })
         .then(data => {
@@ -140,7 +149,7 @@ class Overseerr extends React.Component {
   }
 
   onValidate() {
-    this.props.onValidate(this.state.isApiKeyValid && this.state.isHostnameValid && this.state.isPortValid);
+    this.props.onValidate(this.state.isApiKeyValid && this.state.isHostnameValid && this.state.isPortValid && this.state.isDefaultApiUserIDValid);
   }
 
   render() {
@@ -200,12 +209,17 @@ class Overseerr extends React.Component {
             </Col>
           </Row>
           <Row>
-          <Col lg="6">
-              <Textbox
+            <Col lg="6">
+              <ValidatedTextbox
                 name="Default Overseerr User ID for requests"
                 placeholder="Enter default user ID (Optional)"
+                alertClassName="mt-3 mb-0"
+                errorMessage="The user id must be a number."
+                isSubmitted={this.props.isSubmitted}
                 value={this.state.defaultApiUserID}
-                onChange={newDefaultApiUserID => this.setState({ defaultApiUserID: newDefaultApiUserID }, this.onValueChange)} />
+                validation={this.validateDefaultUserId}
+                onChange={newDefaultApiUserID => this.setState({ defaultApiUserID: newDefaultApiUserID }, this.onValueChange)}
+                onValidate={isValid => this.setState({ isDefaultApiUserIDValid: isValid }, this.onValidate)} />
             </Col>
             <Col lg="6"></Col>
           </Row>
@@ -250,7 +264,7 @@ class Overseerr extends React.Component {
           <Row>
             <Col>
               <FormGroup className="text-right">
-                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid} className="btn btn-icon btn-3 btn-default" type="button">
+                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid || !this.state.isDefaultApiUserIDValid} className="btn btn-icon btn-3 btn-default" type="button">
                   <span className="btn-inner--icon">
                     {
                       this.state.isTestingSettings ? (

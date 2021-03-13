@@ -63,6 +63,26 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                     throw new Exception("Invalid host and/or port");
                 }
 
+                if (!string.IsNullOrWhiteSpace(settings.DefaultApiUserID))
+                {
+                    if (!int.TryParse(settings.DefaultApiUserID, out var userId))
+                    {
+                        throw new Exception("Overseerr default user ID must be a number.");
+                    }
+
+                    response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}user/{userId}");
+
+                    try
+                    {
+                        await response.ThrowIfNotSuccessfulAsync("OverseerrFindSpecificUser failed", x => x.error);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        logger.LogWarning(ex, $"Default overseerr user with user id  \"{userId}\" could not found: " + ex.Message);
+                        throw new Exception($"Default overseerr user with user id \"{userId}\" could not found.");
+                    }
+                }
+
                 testSuccessful = true;
             }
             catch (HttpRequestException ex)
@@ -154,7 +174,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         {
             try
             {
-                var response = await HttpGetAsync($"{BaseURL}search/?query={movieName}&page=1&language=en");
+                var response = await HttpGetAsync($"{BaseURL}search/?query={Uri.EscapeDataString(movieName)}&page=1&language=en");
                 await response.ThrowIfNotSuccessfulAsync("OverseerrMovieSearch failed", x => x.error);
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -231,7 +251,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         {
             try
             {
-                var response = await HttpGetAsync($"{BaseURL}search/?query={tvShowName}&page=1&language=en");
+                var response = await HttpGetAsync($"{BaseURL}search/?query={Uri.EscapeDataString(tvShowName)}&page=1&language=en");
                 await response.ThrowIfNotSuccessfulAsync("OverseerrTvShowSearch failed", x => x.error);
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -361,7 +381,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         {
             var response = await HttpGetAsync($"{BaseURL}user/{userId}/settings/notifications");
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            await response.ThrowIfNotSuccessfulAsync("OverseerrFindSpecificUsers failed", x => x.error);
+            await response.ThrowIfNotSuccessfulAsync("OverseerrFindSpecificUserNotifications failed", x => x.error);
 
             return JsonConvert.DeserializeObject<JSONUserNotificationSettings>(jsonResponse);
         }

@@ -2,6 +2,5 @@
 {
     public class OverseerrSettingsModel : TestOverseerrSettingsModel
     {
-        public string DefaultApiUserID { get; set; }
     }
 }

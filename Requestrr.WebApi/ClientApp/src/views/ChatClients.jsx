@@ -444,7 +444,7 @@ class ChatClients extends React.Component {
                               name="Channel(s) to monitor"
                               create={true}
                               searchable={true}
-                              placeholder="Enter channels here. Leave blank for all channels."
+                              placeholder="Enter channels names here. Leave blank for all channels."
                               labelField="name"
                               valueField="id"
                               dropdownHandle={false}
