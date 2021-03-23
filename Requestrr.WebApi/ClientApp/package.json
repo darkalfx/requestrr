@@ -29,7 +29,7 @@
     "chart.js": "2.7.3",
     "classnames": "2.2.6",
     "moment": "2.24.0",
-    "node-sass": "4.12.0",
+    "node-sass": "4.13.1",
     "nouislider": "13.1.1",
     "react": "16.8.4",
     "react-chartjs-2": "2.7.4",
