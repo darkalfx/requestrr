@@ -22,7 +22,7 @@
 
 <head>
   <script>
-    if (!window.location.pathname.toLowerCase().includes("/auth") && !window.location.pathname.toLowerCase().includes("/admin")) {
+    if (!window.location.pathname.toLowerCase().includes("/auth") && !window.location.pathname.toLowerCase().includes("/admin") && !window.location.pathname.toLowerCase().includes("/static")) {
       var newHref = window.location.href + "/auth/login"; 
       newHref = newHref.replace(/\/\//g, "/"),
       newHref = newHref.replace("http:/", "http://");
