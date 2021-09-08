@@ -29,7 +29,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 NotificationMode = settings.ChatClients.Discord.NotificationMode,
                 NotificationChannels = settings.ChatClients.Discord.NotificationChannels.ToObject<string[]>(),
                 AutomaticallyPurgeCommandMessages = settings.ChatClients.Discord.AutomaticallyPurgeCommandMessages,
-                DisplayHelpCommandInDMs = settings.ChatClients.Discord.DisplayHelpCommandInDMs,
+                DisplayHelpCommandInDMs = settings.ChatClients.Discord.DisplayHelpCommandInDMs
             };
         }
 

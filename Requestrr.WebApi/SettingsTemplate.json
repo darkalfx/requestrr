@@ -92,5 +92,6 @@
   },
   "Port": 4545,
   "BaseUrl" : "",
-  "Version": "1.12.0"
+  "Version": "1.12.0",
+  "Language":  "en-US"
 }

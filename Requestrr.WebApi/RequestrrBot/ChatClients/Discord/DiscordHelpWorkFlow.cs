@@ -69,11 +69,11 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 {
                     var channel = await Context.User.GetOrCreateDMChannelAsync();
                     await channel.SendMessageAsync(messageBuilder.ToString());
-                    await ReplyToUserAsync("I sent you a DM with the help information!");
+                    await ReplyToUserAsync(Program.LocalizedStrings.DisplayHelpCommandInDM.ToString());
                 }
                 catch
                 {
-                    await ReplyToUserAsync("I was unable to send you a DM with the help information, make sure that you haven't blocked me and that you allow direct messages from server members");
+                    await ReplyToUserAsync(Program.LocalizedStrings.DisplayHelpCommandInDMError.ToString());
                 }
             }
             else

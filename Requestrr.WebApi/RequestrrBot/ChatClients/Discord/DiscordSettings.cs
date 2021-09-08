@@ -24,7 +24,6 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
         public string[] NotificationChannels { get; set; }
         public bool AutomaticallyPurgeCommandMessages { get; set; }
         public bool DisplayHelpCommandInDMs { get; set; }
-
         public override bool Equals(object obj)
         {
             return obj is DiscordSettings settings &&
