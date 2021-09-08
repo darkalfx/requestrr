@@ -11,15 +11,29 @@ namespace Requestrr.WebApi
     {
         public static int Port = 4545;
         public static string BaseUrl = string.Empty;
-        
+        public static dynamic LocalizedStrings = null;
         public static void Main(string[] args)
         {
             UpdateSettingsFile();
-
+            CheckForLanguageFiles();
             Port = (int)SettingsFile.Read().Port;
             BaseUrl = SettingsFile.Read().BaseUrl;
-
+            LocalizedStrings = Localization.Read(SettingsFile.Read().Language.ToString());
             CreateWebHostBuilder(args).Build().Run();
+        }
+
+        private static void CheckForLanguageFiles()
+        {
+            if(!Directory.Exists("config/local"))
+            {
+                Directory.CreateDirectory("config/local");
+                FileInfo[] files = new DirectoryInfo("local/").GetFiles();
+                foreach(FileInfo file in files)
+                {
+                    string tempPath = Path.Combine("config/local",file.Name);
+                    file.CopyTo(tempPath, false);
+                }
+            }
         }
 
         private static void UpdateSettingsFile()

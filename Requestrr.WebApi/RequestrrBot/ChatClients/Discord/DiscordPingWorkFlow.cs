@@ -26,7 +26,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 return Task.CompletedTask;
             }
 
-            return ReplyToUserAsync($"pong");
+            return ReplyToUserAsync(Program.LocalizedStrings.PongResponse.ToString());
         }
     }
 }
