@@ -49,6 +49,9 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         [JsonProperty("Discord.Command.Disabled")]
         public string DiscordCommandDisabled { get; set; }
 
+        [JsonProperty("Discord.Command.Help")]
+        public string DiscordCommandHelp { get; set; }
+
         [JsonProperty("Discord.Command.Help.DirectMessage.Failure")]
         public string DiscordCommandHelpDirectMessageFailure { get; set; }
 

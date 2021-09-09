@@ -35,12 +35,12 @@ namespace Requestrr.WebApi.RequestrrBot
         private DiscordSettings _currentSettings = new DiscordSettings();
         private MovieNotificationsRepository _movieNotificationRequestRepository = new MovieNotificationsRepository();
         private TvShowNotificationsRepository _tvShowNotificationRequestRepository = new TvShowNotificationsRepository();
-
         private OverseerrClient _overseerrClient;
         private OmbiClient _ombiDownloadClient;
         private RadarrClient _radarrDownloadClient;
         private SonarrClient _sonarrDownloadClient;
         private ModuleInfo _moduleInfo = null;
+        private Language _previousLanguage = Language.Current;
 
         public ChatBot(IServiceProvider serviceProvider, ILogger<ChatBot> logger, DiscordSettingsProvider discordSettingsProvider)
         {
@@ -92,10 +92,11 @@ namespace Requestrr.WebApi.RequestrrBot
                             _logger.LogWarning("Restarting bot due to incorrect automatic reconnection.");
                         }
 
-                        if (!_currentSettings.Equals(newSettings) || mustRestart || _client.ConnectionState == ConnectionState.Disconnected)
+                        if (!_currentSettings.Equals(newSettings) || mustRestart || _client.ConnectionState == ConnectionState.Disconnected || Language.Current != _previousLanguage)
                         {
                             _logger.LogWarning("Bot configuration changed/not connected to Discord: restarting bot");
                             _currentSettings = newSettings;
+                            _previousLanguage = Language.Current;
                             await RestartBot(newSettings);
                             _logger.LogWarning("Bot has been restarted.");
                         }
@@ -147,13 +148,13 @@ namespace Requestrr.WebApi.RequestrrBot
                     }
                 }, c => c.WithName("ping").WithRunMode(RunMode.Async));
 
-                x.AddCommand("help", async (commandContext, noidea, serviceProvider, commandInfo) =>
+                x.AddCommand(Language.Current.DiscordCommandHelp, async (commandContext, noidea, serviceProvider, commandInfo) =>
                 {
                     using (var command = new DiscordHelpWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
                     {
                         await command.HandleHelpAsync();
                     }
-                }, c => c.WithName("help").WithRunMode(RunMode.Async));
+                }, c => c.WithName(Language.Current.DiscordCommandHelp).WithRunMode(RunMode.Async));
 
                 if (discordSettings.MovieDownloadClient != DownloadClient.Disabled)
                 {
