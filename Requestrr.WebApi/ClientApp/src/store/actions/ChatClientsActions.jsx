@@ -78,6 +78,7 @@ export function save(saveModel) {
                 'NotificationChannels': saveModel.notificationChannels,
                 'AutomaticallyPurgeCommandMessages': saveModel.automaticallyPurgeCommandMessages,
                 'DisplayHelpCommandInDMs': saveModel.displayHelpCommandInDMs,
+                'Language': saveModel.language,
             })
         })
             .then(data => data.json())
@@ -98,6 +99,7 @@ export function save(saveModel) {
                         notificationChannels: saveModel.notificationChannels,
                         automaticallyPurgeCommandMessages: saveModel.automaticallyPurgeCommandMessages,
                         displayHelpCommandInDMs: saveModel.displayHelpCommandInDMs,
+                        language: saveModel.language,
                     }));
                     return { ok: true };
                 }

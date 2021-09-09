@@ -188,7 +188,8 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             try
             {
-                var response = await HttpGetAsync($"{BaseURL}/series/lookup?term={tvShowName}");
+                var searchTerm = Uri.EscapeDataString(tvShowName.ToLower().Trim().Replace(" ", "+"));
+                var response = await HttpGetAsync($"{BaseURL}/series/lookup?term={searchTerm}");
                 await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookup failed", x => x.message);
                 var jsonResponse = await response.Content.ReadAsStringAsync();
 
@@ -334,7 +335,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 year = jsonTvShow.year,
                 seasonFolder = isAnime ? SonarrSettings.AnimeUseSeasonFolders : SonarrSettings.TvUseSeasonFolders,
                 rootFolderPath = isAnime ? SonarrSettings.AnimeRootFolder : SonarrSettings.TvRootFolder,
-                id = jsonTvShow.id,
                 seasons = jsonTvShow.seasons.Select(s => new
                 {
                     seasonNumber = s.seasonNumber,

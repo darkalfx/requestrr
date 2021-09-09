@@ -34,6 +34,10 @@ namespace Requestrr.WebApi.Controllers.ChatClients
         public bool AutomaticallyPurgeCommandMessages { get; set; }
 
         public bool DisplayHelpCommandInDMs { get; set; }
+
+        public string Language { get; set; }
+
+        public string[] AvailableLanguages { get; set; }
     }
 
     public class ChatClientTestSettingsModel

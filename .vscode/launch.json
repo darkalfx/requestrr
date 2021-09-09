@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Requestrr.WebApi/bin/Debug/netcoreapp3.0/Requestrr.WebApi.dll",
+            "program": "${workspaceFolder}/Requestrr.WebApi/bin/Debug/net5.0/Requestrr.WebApi.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Requestrr.WebApi",
             "stopAtEntry": false,

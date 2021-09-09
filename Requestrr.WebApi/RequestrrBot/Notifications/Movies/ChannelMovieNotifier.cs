@@ -8,6 +8,7 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
+using Requestrr.WebApi.RequestrrBot.Locale;
 using Requestrr.WebApi.RequestrrBot.Movies;
 
 namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
@@ -88,7 +89,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
             if (usersToMention.Any())
             {
                 var messageBuilder = new StringBuilder();
-                messageBuilder.AppendLine($"The movie **{movie.Title}** has finished downloading!");
+                messageBuilder.AppendLine(Language.Current.DiscordNotificationMovieChannel.ReplaceTokens(movie));
 
                 foreach (var user in usersToMention)
                 {

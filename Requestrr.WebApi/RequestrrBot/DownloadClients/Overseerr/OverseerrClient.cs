@@ -432,7 +432,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 PlexUrl = jsonMedia.MediaInfo?.PlexUrl,
                 Overview = jsonMedia.Overview,
                 HasEnded = !jsonMedia.InProduction,
-                Network = jsonMedia.Networks.First().Name,
+                Network = jsonMedia.Networks.FirstOrDefault()?.Name,
                 Status = jsonMedia.Status,
                 Seasons = ConvertSeasons(jsonMedia)
             };

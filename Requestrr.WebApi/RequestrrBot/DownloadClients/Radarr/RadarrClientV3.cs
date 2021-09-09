@@ -172,7 +172,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
         {
             try
             {
-                var searchTerm = movieName.ToLower().Trim().Replace(" ", "+");
+                var searchTerm = Uri.EscapeDataString(movieName.ToLower().Trim().Replace(" ", "+"));
                 var response = await HttpGetAsync($"{BaseURL}/movie/lookup?term={searchTerm}");
                 await response.ThrowIfNotSuccessfulAsync("RadarrMovieLookup failed", x => x.error);
 

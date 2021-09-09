@@ -3,7 +3,9 @@ using System.IO;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Requestrr.WebApi.RequestrrBot;
+using Requestrr.WebApi.RequestrrBot.Locale;
 
 namespace Requestrr.WebApi
 {
@@ -11,10 +13,11 @@ namespace Requestrr.WebApi
     {
         public static int Port = 4545;
         public static string BaseUrl = string.Empty;
-        
+
         public static void Main(string[] args)
         {
             UpdateSettingsFile();
+            SetLanguage();
 
             Port = (int)SettingsFile.Read().Port;
             BaseUrl = SettingsFile.Read().BaseUrl;
@@ -37,6 +40,11 @@ namespace Requestrr.WebApi
             {
                 File.WriteAllText(NotificationsFile.FilePath, File.ReadAllText("NotificationsTemplate.json"));
             }
+        }
+
+        private static void SetLanguage()
+        {
+            Language.Current = JsonConvert.DeserializeObject<Language>(File.ReadAllText($"Locale/{SettingsFile.Read().ChatClients.Language}.json"));
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

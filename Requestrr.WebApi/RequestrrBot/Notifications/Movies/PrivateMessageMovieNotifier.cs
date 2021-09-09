@@ -5,6 +5,7 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
+using Requestrr.WebApi.RequestrrBot.Locale;
 using Requestrr.WebApi.RequestrrBot.Movies;
 
 namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
@@ -38,7 +39,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
                     if (user != null)
                     {
                         var channel = await user.GetOrCreateDMChannelAsync();
-                        await channel.SendMessageAsync($"The movie **{movie.Title}** you requested has finished downloading!", false, await DiscordMovieRequestingWorkFlow.GenerateMovieDetailsAsync(movie, user));
+                        await channel.SendMessageAsync(Language.Current.DiscordNotificationMovieDM.ReplaceTokens(movie), false, await DiscordMovieRequestingWorkFlow.GenerateMovieDetailsAsync(movie, user));
                         userNotified.Add(userId);
                     }
                     else if (!token.IsCancellationRequested && _discordClient.ConnectionState == ConnectionState.Connected)

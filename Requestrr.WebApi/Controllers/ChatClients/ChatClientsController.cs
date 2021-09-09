@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -45,11 +46,13 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                 NotificationChannels = _chatClientsSettings.Discord.NotificationChannels ?? Array.Empty<string>(),
                 AutomaticallyPurgeCommandMessages = _chatClientsSettings.Discord.AutomaticallyPurgeCommandMessages,
                 DisplayHelpCommandInDMs = _chatClientsSettings.Discord.DisplayHelpCommandInDMs,
+                Language = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(_chatClientsSettings.Language.ToLower()),
+                AvailableLanguages = GetLanguages()
             });
         }
 
         [HttpPost("discord/test")]
-        public async Task<IActionResult> TestDiscordSettings([FromBody]ChatClientTestSettingsModel model)
+        public async Task<IActionResult> TestDiscordSettings([FromBody] ChatClientTestSettingsModel model)
         {
             try
             {
@@ -68,7 +71,7 @@ namespace Requestrr.WebApi.Controllers.ChatClients
         }
 
         [HttpPost()]
-        public async Task<IActionResult> SaveAsync([FromBody]ChatClientsSettingsModel model)
+        public async Task<IActionResult> SaveAsync([FromBody] ChatClientsSettingsModel model)
         {
             if (!model.Client.Equals("discord", System.StringComparison.InvariantCultureIgnoreCase))
             {
@@ -85,9 +88,10 @@ namespace Requestrr.WebApi.Controllers.ChatClients
 
             _chatClientsSettings.Discord.AutomaticallyNotifyRequesters = model.AutomaticallyNotifyRequesters;
             _chatClientsSettings.Discord.NotificationMode = model.NotificationMode;
-            _chatClientsSettings.Discord.NotificationChannels = (model.NotificationChannels ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();;
+            _chatClientsSettings.Discord.NotificationChannels = (model.NotificationChannels ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray(); ;
             _chatClientsSettings.Discord.AutomaticallyPurgeCommandMessages = model.AutomaticallyPurgeCommandMessages;
             _chatClientsSettings.Discord.DisplayHelpCommandInDMs = model.DisplayHelpCommandInDMs;
+            _chatClientsSettings.Language = model.Language;
 
             _botClientsSettings.Client = model.Client;
             _botClientsSettings.CommandPrefix = model.CommandPrefix.Trim();
@@ -95,6 +99,13 @@ namespace Requestrr.WebApi.Controllers.ChatClients
             ChatClientsSettingsRepository.Update(_botClientsSettings, _chatClientsSettings);
 
             return Ok(new { ok = true });
+        }
+
+        private string[] GetLanguages()
+        {
+            return Directory.GetFiles("Locale", "*.json", SearchOption.TopDirectoryOnly)
+                 .Select(x => System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Path.GetFileNameWithoutExtension(x).ToLower()))
+                 .ToArray();
         }
     }
 }

@@ -1,6 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Requestrr.WebApi.config;
 using Requestrr.WebApi.RequestrrBot;
+using Requestrr.WebApi.RequestrrBot.Locale;
 
 namespace Requestrr.WebApi.Controllers.ChatClients
 {
@@ -25,6 +28,9 @@ namespace Requestrr.WebApi.Controllers.ChatClients
 
                 settings.BotClient.Client = botClientSettings.Client;
                 settings.BotClient.CommandPrefix = botClientSettings.CommandPrefix;
+
+                settings.ChatClients.Language = chatClientsSettings.Language.ToLower();
+                Language.Current = JsonConvert.DeserializeObject<Language>(File.ReadAllText($"Locale/{settings.ChatClients.Language}.json"));
             });
         }
     }

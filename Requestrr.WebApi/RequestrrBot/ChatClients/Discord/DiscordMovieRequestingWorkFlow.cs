@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Requestrr.WebApi.RequestrrBot.Locale;
 using Requestrr.WebApi.RequestrrBot.Movies;
 using Requestrr.WebApi.RequestrrBot.Notifications;
 using Requestrr.WebApi.RequestrrBot.Notifications.Movies;
@@ -42,7 +43,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             if (!_discordSettings.EnableRequestsThroughDirectMessages && this.Context.Guild == null)
             {
-                await ReplyToUserAsync($"This command is only available within a server.");
+                await ReplyToUserAsync(Language.Current.DiscordCommandNotAvailableInDM);
                 return;
             }
             else if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
@@ -51,12 +52,17 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             }
             else if (this.Context.Guild != null && _discordSettings.MovieRoles.Any() && Context.Message.Author is SocketGuildUser guildUser && _discordSettings.MovieRoles.All(r => !guildUser.Roles.Any(ur => r.Equals(ur.Name, StringComparison.InvariantCultureIgnoreCase))))
             {
-                await ReplyToUserAsync($"You do not have the required role to request movies, please ask the server owner.");
+                await ReplyToUserAsync(Language.Current.DiscordCommandMovieMissingRoles);
                 return;
             }
             else if (!stringArgs.Any())
             {
-                await ReplyToUserAsync($"The correct usage of this command is: ```{_discordSettings.CommandPrefix}{_discordSettings.MovieCommand} name of movie```");
+                await ReplyToUserAsync(Language.Current.DiscordCommandMovieInvalidArguments.ReplaceTokens(new Dictionary<string, string>
+                {
+                    { LanguageTokens.CommandPrefix, _discordSettings.CommandPrefix },
+                    { LanguageTokens.MovieCommand, _discordSettings.MovieCommand }
+                }));
+
                 return;
             }
 
@@ -98,12 +104,12 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public Task WarnNoMovieFoundAsync(string movieName)
         {
-            return ReplyToUserAsync($"I could not find any movie with the name \"{movieName}\", please try something different.");
+            return ReplyToUserAsync(Language.Current.DiscordCommandMovieNotFound.ReplaceTokens(LanguageTokens.MovieTitle, movieName));
         }
 
         public Task WarnNoMovieFoundByTheMovieDbIdAsync(string theMovieDbIdTextValue)
         {
-            return ReplyToUserAsync($"I could not find any movie with TheMovieDbId of \"{theMovieDbIdTextValue}\", please try something different.");
+            return ReplyToUserAsync(Language.Current.DiscordCommandMovieNotFoundTMDB.ReplaceTokens(LanguageTokens.MovieTMDB, theMovieDbIdTextValue));
         }
 
         public async Task<MovieSelection> GetMovieSelectionAsync(IReadOnlyList<Movie> movies)
@@ -127,26 +133,26 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             }
 
             var embedBuilder = new EmbedBuilder()
-                .WithTitle("Movie Search")
-                .AddField("__Search Results__", embedContent.ToString())
+                .WithTitle(Language.Current.DiscordEmbedMovieSearch)
+                .AddField($"__{Language.Current.DiscordEmbedMovieSearchResult}__", embedContent.ToString())
                 .WithThumbnailUrl("https://i.imgur.com/44ueTES.png");
 
             var reply = await ReplyAsync(string.Empty, false, embedBuilder.Build());
-            var replyHelp = await ReplyToUserAsync($"Please select one of the search results shown above by typing its corresponding number shown on the left. (ex: **{_discordSettings.CommandPrefix}2**) To abort type **{_discordSettings.CommandPrefix}cancel**");
+            var replyHelp = await ReplyToUserAsync(Language.Current.DiscordCommandMovieRequestHelp.ReplaceTokens(LanguageTokens.CommandPrefix, _discordSettings.CommandPrefix));
 
             var selectionMessage = await NextMessageAsync(Context);
-            var selectionMessageContent = selectionMessage?.Content?.Trim() ?? "cancel";
+            var selectionMessageContent = selectionMessage?.Content?.Trim() ?? Language.Current.DiscordCommandMovieCancelCommand.ToLower();
 
             selectionMessageContent = !string.IsNullOrWhiteSpace(selectionMessageContent) && !string.IsNullOrWhiteSpace(_discordSettings.CommandPrefix) && selectionMessageContent.StartsWith(_discordSettings.CommandPrefix)
             ? selectionMessageContent.Remove(0, _discordSettings.CommandPrefix.Length)
             : selectionMessageContent;
 
-            if (selectionMessageContent.ToLower().StartsWith("cancel"))
+            if (selectionMessageContent.ToLower().StartsWith(Language.Current.DiscordCommandMovieCancelCommand.ToLower()))
             {
                 await DeleteSafeAsync(reply);
                 await DeleteSafeAsync(replyHelp);
                 await DeleteSafeAsync(selectionMessage);
-                await ReplyToUserAsync("Your request has been cancelled!!");
+                await ReplyToUserAsync(Language.Current.DiscordCommandMovieRequestCancelled);
 
                 return new MovieSelection
                 {
@@ -170,7 +176,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public Task WarnInvalidMovieSelectionAsync()
         {
-            return ReplyToUserAsync("I didn't understand your dramatic babbling, I'm afraid you'll have to make a new request.");
+            return ReplyToUserAsync(Language.Current.DiscordCommandMovieRequestInvalid);
         }
 
         public async Task DisplayMovieDetailsAsync(Movie movie)
@@ -198,7 +204,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             }
 
             if (!string.IsNullOrEmpty(movie.PosterPath) && movie.PosterPath.StartsWith("http", StringComparison.InvariantCultureIgnoreCase)) embedBuilder.WithImageUrl(movie.PosterPath);
-            if (!string.IsNullOrWhiteSpace(movie.Quality)) embedBuilder.AddField("__Quality__", $"{movie.Quality}p", true);
+            if (!string.IsNullOrWhiteSpace(movie.Quality)) embedBuilder.AddField($"__{Language.Current.DiscordEmbedMovieQuality}__", $"{movie.Quality}p", true);
 
             if (movieSearcher != null)
             {
@@ -208,16 +214,16 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
                     if (!string.IsNullOrWhiteSpace(details.InTheatersDate))
                     {
-                        embedBuilder.AddField("__In Theaters__", $"{details.InTheatersDate}", true);
+                        embedBuilder.AddField($"__{Language.Current.DiscordEmbedMovieInTheaters}__", $"{details.InTheatersDate}", true);
                     }
                     else if (!string.IsNullOrWhiteSpace(movie.ReleaseDate))
                     {
-                        embedBuilder.AddField("__In Theaters__", $"{DateTime.Parse(movie.ReleaseDate).ToString("MMMM dd yyyy", DateTimeFormatInfo.InvariantInfo)}", true);
+                        embedBuilder.AddField($"__{Language.Current.DiscordEmbedMovieInTheaters}__", $"{DateTime.Parse(movie.ReleaseDate).ToString("MMMM dd yyyy", DateTimeFormatInfo.InvariantInfo)}", true);
                     }
 
                     if (!string.IsNullOrWhiteSpace(details.PhysicalReleaseName) && !string.IsNullOrWhiteSpace(details.PhysicalReleaseDate))
                     {
-                        embedBuilder.AddField($"__{details.PhysicalReleaseName} Release__", $"{details.PhysicalReleaseDate}", true);
+                        embedBuilder.AddField($"__{details.PhysicalReleaseName} {Language.Current.DiscordEmbedMovieRelease}__", $"{details.PhysicalReleaseDate}", true);
                     }
                 }
                 catch
@@ -226,8 +232,8 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(movie.PlexUrl)) embedBuilder.AddField("__Plex__", $"[Watch now]({movie.PlexUrl})", true);
-            if (!string.IsNullOrWhiteSpace(movie.EmbyUrl)) embedBuilder.AddField("__Emby__", $"[Watch now]({movie.EmbyUrl})", true);
+            if (!string.IsNullOrWhiteSpace(movie.PlexUrl)) embedBuilder.AddField($"__Plex__", $"[{Language.Current.DiscordEmbedMovieWatchNow}]({movie.PlexUrl})", true);
+            if (!string.IsNullOrWhiteSpace(movie.EmbyUrl)) embedBuilder.AddField($"__Emby__", $"[{Language.Current.DiscordEmbedMovieWatchNow}]({movie.EmbyUrl})", true);
 
             return embedBuilder.Build();
         }
@@ -240,16 +246,16 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             {
                 if (releaseDate > DateTime.UtcNow)
                 {
-                    await ReplyToUserAsync("This movie has not released yet, if you want to request this movie please click on the ⬇ reaction directly above this message.");
+                    await ReplyToUserAsync(Language.Current.DiscordCommandMovieNotReleased);
                 }
                 else
                 {
-                    await ReplyToUserAsync("If you want to request this movie please click on the ⬇ reaction directly above this message.");
+                    await ReplyToUserAsync(Language.Current.DiscordCommandMovieRequestConfirm);
                 }
             }
             else
             {
-                await ReplyToUserAsync("If you want to request this movie please click on the ⬇ reaction directly above this message.");
+                await ReplyToUserAsync(Language.Current.DiscordCommandMovieRequestConfirm);
             }
 
             var reaction = await WaitForReactionAsync(Context, _lastCommandMessage, new Emoji("⬇"));
@@ -259,18 +265,18 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public Task WarnMovieAlreadyAvailableAsync()
         {
-            return ReplyToUserAsync("This movie is already available, enjoy!");
+            return ReplyToUserAsync(Language.Current.DiscordCommandMovieAlreadyAvailable);
         }
 
         public Task DisplayRequestSuccessAsync(Movie movie)
         {
-            return ReplyToUserAsync($"Your request for **{movie.Title}** was sent successfully!");
+            return ReplyToUserAsync(Language.Current.DiscordCommandMovieRequestSuccess.ReplaceTokens(movie));
         }
 
         public async Task<bool> AskForNotificationRequestAsync()
         {
             await _lastCommandMessage?.AddReactionAsync(new Emoji("🔔"));
-            await ReplyToUserAsync("This movie has already been requested, you can click on the 🔔 reaction directly above this message to be notified when it becomes available.");
+            await ReplyToUserAsync(Language.Current.DiscordCommandMovieNotificationRequest);
 
             var reaction = await WaitForReactionAsync(Context, _lastCommandMessage, new Emoji("🔔"));
 
@@ -279,22 +285,22 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public Task DisplayNotificationSuccessAsync(Movie movie)
         {
-            return ReplyToUserAsync($"You will now receive a notification as soon as **{movie.Title}** becomes available to watch.");
+            return ReplyToUserAsync(Language.Current.DiscordCommandMovieNotificationSuccess.ReplaceTokens(movie));
         }
 
         public Task DisplayRequestDeniedAsync(Movie movie)
         {
-            return ReplyToUserAsync($"Your request was denied by the provider due to insufficient permissions or quota limits.");
+            return ReplyToUserAsync(Language.Current.DiscordCommandMovieRequestDenied);
         }
 
         public Task WarnMovieUnavailableAndAlreadyHasNotificationAsync()
         {
-            return ReplyToUserAsync("This movie has already been requested and you will be notified when it becomes available.");
+            return ReplyToUserAsync(Language.Current.DiscordCommandMovieRequestAlreadyExistNotified);
         }
 
         public Task WarnMovieAlreadyRequestedAsync()
         {
-            return ReplyToUserAsync("This movie has already been requested.");
+            return ReplyToUserAsync(Language.Current.DiscordCommandMovieRequestAlreadyExist);
         }
     }
 }

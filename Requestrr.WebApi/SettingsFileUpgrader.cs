@@ -98,6 +98,15 @@ namespace Requestrr.WebApi
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
+
+            if (settingsJson.Version.ToString().Equals("1.12.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.13.0";
+
+                ((JObject)settingsJson["ChatClients"]).Add("Language", "english");
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
         }
     }
 }

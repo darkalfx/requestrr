@@ -3,6 +3,7 @@ namespace Requestrr.WebApi.config
     public class ChatClientsSettings
     {
         public DiscordSettings Discord { get; set; }
+        public string Language { get; set; }
     }
 
     public class DiscordSettings

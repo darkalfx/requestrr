@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using Requestrr.WebApi.RequestrrBot.Locale;
 
 namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 {
@@ -26,7 +27,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 return Task.CompletedTask;
             }
 
-            return ReplyToUserAsync($"pong");
+            return ReplyToUserAsync(Language.Current.DiscordCommandPingResponse);
         }
     }
 }

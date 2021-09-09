@@ -13,6 +13,7 @@ using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
+using Requestrr.WebApi.RequestrrBot.Locale;
 using Requestrr.WebApi.RequestrrBot.Movies;
 using Requestrr.WebApi.RequestrrBot.Notifications;
 using Requestrr.WebApi.RequestrrBot.Notifications.Movies;
@@ -402,7 +403,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 _logger.LogError($"An unknown occurred error while processing a command: {result.ErrorReason}");
             }
 
-            await context.Channel.SendMessageAsync("An unexpected error occurred while trying to process your request.");
+            await context.Channel.SendMessageAsync(Language.Current.Error);
         }
     }
 }

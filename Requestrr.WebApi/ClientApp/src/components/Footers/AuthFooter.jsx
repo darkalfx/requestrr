@@ -31,7 +31,7 @@ class AuthFooter extends React.Component {
               <Col xl="6">
                 <div className="copyright text-center text-xl-left text-muted">
                   © {new Date().getFullYear()}{" "}
-                  Requestrr (v1.0.17)
+                  Requestrr (v1.0.18)
                 </div>
               </Col>
             </Row>

@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.Locale;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
@@ -44,9 +45,9 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
                         var channel = await user.GetOrCreateDMChannelAsync();
 
                         if(_discordSettingsProvider.Provide().TvShowDownloadClient == DownloadClient.Overseerr)
-                            await channel.SendMessageAsync($"The **season {seasonNumber}** of **{tvShow.Title}** that you requested has finished downloading!", false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
+                            await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMSeason.ReplaceTokens(tvShow, seasonNumber), false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
                         else
-                            await channel.SendMessageAsync($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** that you requested has finished downloading!", false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
+                            await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMFirstEpisode.ReplaceTokens(tvShow, seasonNumber), false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
 
                         userNotified.Add(userId);
                     }

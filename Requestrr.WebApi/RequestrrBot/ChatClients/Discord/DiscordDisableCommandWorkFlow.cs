@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using Requestrr.WebApi.RequestrrBot.Locale;
 
 namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 {
@@ -23,14 +24,14 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
         {
             if (!_discordSettings.EnableRequestsThroughDirectMessages && this.Context.Guild == null)
             {
-                return ReplyToUserAsync($"This command is only available within a server.");
+                return ReplyToUserAsync(Language.Current.DiscordCommandNotAvailableInDM);
             }
             else if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
             {
                 return Task.CompletedTask;
             }
 
-            return ReplyToUserAsync($"This command has been disabled by the server owner.");
+            return ReplyToUserAsync(Language.Current.DiscordCommandDisabled);
         }
     }
 }

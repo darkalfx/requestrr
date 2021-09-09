@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.Locale;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
@@ -93,9 +94,9 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
                 var messageBuilder = new StringBuilder();
 
                 if(_discordSettingsProvider.Provide().TvShowDownloadClient == DownloadClient.Overseerr)
-                    messageBuilder.AppendLine($"The **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!");
+                    messageBuilder.AppendLine(Language.Current.DiscordNotificationTvChannelSeason.ReplaceTokens(tvShow, seasonNumber));
                 else
-                    messageBuilder.AppendLine($"The first episode of **season {seasonNumber}** of **{tvShow.Title}** has finished downloading!");
+                    messageBuilder.AppendLine(Language.Current.DiscordNotificationTvChannelFirstEpisode.ReplaceTokens(tvShow, seasonNumber));
 
                 foreach (var user in usersToMention)
                 {

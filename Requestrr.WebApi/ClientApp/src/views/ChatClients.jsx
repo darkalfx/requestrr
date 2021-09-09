@@ -76,6 +76,8 @@ class ChatClients extends React.Component {
       notificationChannels: [],
       automaticallyPurgeCommandMessages: true,
       displayHelpCommandInDMs: true,
+      language: "english",
+      availableLanguages: [],
     };
 
     this.onSaving = this.onSaving.bind(this);
@@ -108,6 +110,8 @@ class ChatClients extends React.Component {
           notificationChannels: this.props.settings.notificationChannels,
           automaticallyPurgeCommandMessages: this.props.settings.automaticallyPurgeCommandMessages,
           displayHelpCommandInDMs: this.props.settings.displayHelpCommandInDMs,
+          language: this.props.settings.language,
+          availableLanguages: this.props.settings.availableLanguages,
         });
       });
   }
@@ -199,6 +203,7 @@ class ChatClients extends React.Component {
           notificationChannels: this.state.notificationChannels,
           automaticallyPurgeCommandMessages: this.state.automaticallyPurgeCommandMessages,
           displayHelpCommandInDMs: this.state.displayHelpCommandInDMs,
+          language: this.state.language,
         })
           .then(data => {
             this.setState({ isSaving: false });
@@ -513,15 +518,15 @@ class ChatClients extends React.Component {
                       {
                         this.state.notificationMode !== "Disabled"
                           ? <>
-                          <Row>
-                            <Col lg="6">
-                              {
-                                <Alert className="text-center" color="warning">
+                            <Row>
+                              <Col lg="6">
+                                {
+                                  <Alert className="text-center" color="warning">
                                     <strong>In order for notifications to work, make sure to enable the [Presence Intent] and [Server Members Intent] settings for the bot in the Discord Developper Portal</strong>
-                                </Alert>
-                              }
-                            </Col>
-                          </Row>
+                                  </Alert>
+                                }
+                              </Col>
+                            </Row>
                             <Row>
                               <Col md="12">
                                 <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
@@ -656,7 +661,7 @@ class ChatClients extends React.Component {
                     </h6>
                     <div className="pl-lg-4">
                       <Row>
-                        <Col lg="4">
+                        <Col lg="6">
                           <FormGroup>
                             <label
                               className="form-control-label"
@@ -673,7 +678,12 @@ class ChatClients extends React.Component {
                             />
                           </FormGroup>
                         </Col>
-                        <Col lg="4">
+                        <Col lg="6">
+                          <Dropdown
+                            name="Language"
+                            value={this.state.language}
+                            items={this.state.availableLanguages.map(x => { return { name: x, value: x } })}
+                            onChange={newLanguage => this.setState({ language: newLanguage }, this.onValueChange)} />
                         </Col>
                       </Row>
                       <Row>
@@ -697,7 +707,7 @@ class ChatClients extends React.Component {
                               <span className="btn-inner--text">Save Changes</span>
                             </button>
                           </FormGroup>
-                        </Col>
+                        </Col> 
                       </Row>
                     </div>
                   </Form>
