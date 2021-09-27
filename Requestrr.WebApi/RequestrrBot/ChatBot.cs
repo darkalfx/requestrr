@@ -216,7 +216,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     _movieNotificationEngine = _movieWorkflowFactory.CreateMovieNotificationEngine(_client, _logger);
                 }
 
-                _movieNotificationEngine.Start();
+                _movieNotificationEngine?.Start();
             }
             catch (System.Exception ex)
             {
@@ -235,7 +235,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     _tvShowNotificationEngine = _tvShowWorkflowFactory.CreateTvShowNotificationEngine(_client, _logger);
                 }
 
-                _tvShowNotificationEngine.Start();
+                _tvShowNotificationEngine?.Start();
             }
             catch (System.Exception ex)
             {
