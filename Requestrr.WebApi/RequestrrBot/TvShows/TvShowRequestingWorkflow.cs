@@ -31,99 +31,69 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             _settings = settings;
         }
 
-        public async Task RequestTvShowAsync(string tvShowName)
+        public async Task SearchTvShowAsync(string tvShowName)
         {
-            var searchedTvShows = await SearchTvShowAsync(tvShowName);
+            var searchedTvShows = await SearchTvShowByNameAsync(tvShowName);
 
             if (searchedTvShows.Any())
             {
                 if (searchedTvShows.Count > 1)
                 {
-                    var tvShowSelection = await _userInterface.GetTvShowSelectionAsync(searchedTvShows);
-
-                    if (!tvShowSelection.IsCancelled && tvShowSelection.SelectedTvShow.IsSpecified)
-                    {
-                        var selection = tvShowSelection.SelectedTvShow.Value;
-                        await HandleTvShowSelection(selection);
-                    }
-                    else if (!tvShowSelection.IsCancelled)
-                    {
-                        await _userInterface.WarnInvalidTvShowSelectionAsync();
-                    }
+                    await _userInterface.ShowTvShowSelection(searchedTvShows);
                 }
                 else if (searchedTvShows.Count == 1)
                 {
                     var selection = searchedTvShows.Single();
-                    await HandleTvShowSelection(selection);
+                    await HandleTvShowSelectionAsync(selection.TheTvDbId);
                 }
             }
         }
 
-        public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(string tvShowName)
+        public async Task SearchTvShowAsync(int tvDbId)
+        {
+            try
+            {
+                var searchedTvShow = await _searcher.SearchTvShowAsync(tvDbId);
+                await HandleTvShowSelectionAsync(tvDbId);
+            }
+            catch
+            {
+                await _userInterface.WarnNoTvShowFoundByTvDbIdAsync(tvDbId);
+            }
+        }
+
+        private async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowByNameAsync(string tvShowName)
         {
             IReadOnlyList<SearchedTvShow> searchedTvShows = Array.Empty<SearchedTvShow>();
 
-            if (tvShowName.Trim().ToLower().StartsWith("tvdb"))
+            tvShowName = tvShowName.Replace(".", " ");
+            searchedTvShows = await _searcher.SearchTvShowAsync(tvShowName);
+
+            if (!searchedTvShows.Any())
             {
-                var tvDbIdTextValue = tvShowName.ToLower().Split("tvdb")[1]?.Trim();
-
-                if (int.TryParse(tvDbIdTextValue, out var tvDbId))
-                {
-                    try
-                    {
-                        var searchedTvShow = await _searcher.SearchTvShowAsync(tvDbId);
-                        searchedTvShows = new List<SearchedTvShow> { searchedTvShow }.Where(x => x != null).ToArray();
-                    }
-                    catch
-                    {
-                        searchedTvShows = new List<SearchedTvShow>();
-                    }
-
-                    if (!searchedTvShows.Any())
-                    {
-                        await _userInterface.WarnNoTvShowFoundByTvDbIdAsync(tvDbIdTextValue);
-                    }
-                }
-                else
-                {
-                    await _userInterface.WarnNoTvShowFoundByTvDbIdAsync(tvDbIdTextValue);
-                }
-            }
-            else
-            {
-                tvShowName = tvShowName.Replace(".", " ");
-                searchedTvShows = await _searcher.SearchTvShowAsync(tvShowName);
-
-                if (!searchedTvShows.Any())
-                {
-                    await _userInterface.WarnNoTvShowFoundAsync(tvShowName);
-                }
+                await _userInterface.WarnNoTvShowFoundAsync(tvShowName);
             }
 
             return searchedTvShows;
         }
 
-        private async Task HandleTvShowSelection(SearchedTvShow searchedTvShow)
+        public async Task HandleTvShowSelectionAsync(int tvDbId)
         {
-            var tvShow = await GetTvShow(searchedTvShow);
+            var tvShow = await GetTvShowAsync(tvDbId);
 
-            if (!tvShow.Seasons.Any() && tvShow.HasEnded)
+            if (tvShow.Seasons.Count() > 25 || (!tvShow.Seasons.Any() && tvShow.HasEnded))
             {
-                await _userInterface.DisplayTvShowDetailsAsync(tvShow);
                 await _userInterface.WarnShowCannotBeRequestedAsync(tvShow);
             }
             else if (tvShow.AllSeasonsFullyRequested())
             {
                 if (tvShow.Seasons.OfType<FutureTvSeasons>().Any())
                 {
-                    await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                        .RequestAsync(tvShow, tvShow.Seasons.OfType<FutureTvSeasons>().FirstOrDefault());
+                    await HandleSeasonSelectionAsync(tvShow, tvShow.Seasons.OfType<FutureTvSeasons>().Single());
                 }
                 else
                 {
-                    await _userInterface.DisplayTvShowDetailsAsync(tvShow);
-                    
-                    if(tvShow.HasEnded)
+                    if (tvShow.HasEnded)
                     {
                         await _userInterface.WarnShowHasEndedAsync(tvShow);
                     }
@@ -135,78 +105,90 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             }
             else if (!tvShow.IsMultiSeasons() && tvShow.Seasons.OfType<NormalTvSeason>().Any())
             {
-                await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                    .RequestAsync(tvShow, tvShow.Seasons.OfType<NormalTvSeason>().Single());
+                await HandleSeasonSelectionAsync(tvShow, tvShow.Seasons.OfType<NormalTvSeason>().Single());
             }
             else
             {
-                await RequestTvShowSeason(tvShow);
+                await _userInterface.DisplayMultiSeasonSelectionAsync(tvShow, GetAvailableTvShowSeasonsBasedOnRestrictions(tvShow));
             }
         }
 
-        private async Task RequestTvShowSeason(TvShow tvShow)
+        private TvSeason[] GetAvailableTvShowSeasonsBasedOnRestrictions(TvShow tvShow)
         {
-            var seasonSelection = await GetTvShowSelectionBasedOnRestrictions(tvShow);
-
-            if (!seasonSelection.IsCancelled && seasonSelection.SelectedSeason.IsSpecified)
-            {
-                var selectedSeason = seasonSelection.SelectedSeason.Value;
-
-                switch (selectedSeason)
-                {
-                    case FutureTvSeasons futureTvSeasons:
-                        await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                            .RequestAsync(tvShow, futureTvSeasons);
-                        break;
-                    case AllTvSeasons allTvSeasons:
-                        await new AllSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                            .RequestAsync(tvShow, allTvSeasons);
-                        break;
-                    case NormalTvSeason normalTvSeason:
-                        await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                            .RequestAsync(tvShow, normalTvSeason);
-                        break;
-                    default:
-                        throw new Exception($"Could not handle season of type \"{selectedSeason.GetType().Name}\"");
-                }
-            }
-            else if (!seasonSelection.IsCancelled)
-            {
-                await _userInterface.WarnInvalidSeasonSelectionAsync();
-            }
-        }
-
-        private async Task<TvSeasonsSelection> GetTvShowSelectionBasedOnRestrictions(TvShow tvShow)
-        {
-            TvSeasonsSelection seasonSelection = null;
-
             if (_settings.Restrictions == TvShowsRestrictions.AllSeasons)
             {
-                seasonSelection = new TvSeasonsSelection
-                {
-                    SelectedSeason = tvShow.Seasons.OfType<AllTvSeasons>().Single()
-                };
+                return tvShow.Seasons.OfType<AllTvSeasons>().ToArray();
             }
             else if (_settings.Restrictions == TvShowsRestrictions.SingleSeason)
             {
-                tvShow.Seasons = tvShow.Seasons.Where(x => !(x is AllTvSeasons)).ToArray();
-                seasonSelection = await _userInterface.GetTvShowSeasonSelectionAsync(tvShow);
+                return tvShow.Seasons.Where(x => !(x is AllTvSeasons)).ToArray();
             }
             else if (_settings.Restrictions == TvShowsRestrictions.None)
             {
-                seasonSelection = await _userInterface.GetTvShowSeasonSelectionAsync(tvShow);
+                return tvShow.Seasons;
             }
             else
             {
                 throw new NotImplementedException($"Tv shows restriction of type {_settings.Restrictions} has not been implemented.");
             }
-
-            return seasonSelection;
         }
 
-        private async Task<TvShow> GetTvShow(SearchedTvShow searchedTvShow)
+        public async Task HandleSeasonSelectionAsync(int tvDbId, int seasonNumber)
         {
-            var tvShow = await _searcher.GetTvShowDetailsAsync(searchedTvShow);
+            var tvShow = await GetTvShowAsync(tvDbId);
+            var selectedSeason = tvShow.Seasons.Single(x => x.SeasonNumber == seasonNumber);
+
+            await HandleSeasonSelectionAsync(tvShow, selectedSeason);
+        }
+
+        private async Task HandleSeasonSelectionAsync(TvShow tvShow, TvSeason selectedSeason)
+        {
+            switch (selectedSeason)
+            {
+                case FutureTvSeasons futureTvSeasons:
+                    await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .HandleSelectionAsync(tvShow, futureTvSeasons);
+                    break;
+                case AllTvSeasons allTvSeasons:
+                    await new AllSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .HandleSelectionAsync(tvShow, allTvSeasons);
+                    break;
+                case NormalTvSeason normalTvSeason:
+                    await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .HandleSelectionAsync(tvShow, normalTvSeason);
+                    break;
+                default:
+                    throw new Exception($"Could not handle season of type \"{selectedSeason.GetType().Name}\"");
+            }
+        }
+
+        public async Task RequestSeasonSelectionAsync(int tvDbId, int seasonNumber)
+        {
+            var tvShow = await GetTvShowAsync(tvDbId);
+            var selectedSeason = tvShow.Seasons.Single(x => x.SeasonNumber == seasonNumber);
+
+            switch (selectedSeason)
+            {
+                case FutureTvSeasons futureTvSeasons:
+                    await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .RequestAsync(tvShow, futureTvSeasons);
+                    break;
+                case AllTvSeasons allTvSeasons:
+                    await new AllSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .RequestAsync(tvShow, allTvSeasons);
+                    break;
+                case NormalTvSeason normalTvSeason:
+                    await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .RequestAsync(tvShow, normalTvSeason);
+                    break;
+                default:
+                    throw new Exception($"Could not handle season of type \"{selectedSeason.GetType().Name}\"");
+            }
+        }
+
+        private async Task<TvShow> GetTvShowAsync(int tvDbId)
+        {
+            var tvShow = await _searcher.GetTvShowDetailsAsync(tvDbId);
 
             if (tvShow.IsMultiSeasons())
             {

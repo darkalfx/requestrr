@@ -68,7 +68,6 @@ export function save(saveModel) {
                 'ClientId': saveModel.clientId,
                 'BotToken': saveModel.botToken,
                 'StatusMessage': saveModel.statusMessage,
-                'CommandPrefix': saveModel.commandPrefix,
                 'MonitoredChannels': saveModel.monitoredChannels,
                 'TvShowRoles': saveModel.tvShowRoles,
                 'MovieRoles': saveModel.movieRoles,
@@ -77,7 +76,6 @@ export function save(saveModel) {
                 'NotificationMode': saveModel.notificationMode,
                 'NotificationChannels': saveModel.notificationChannels,
                 'AutomaticallyPurgeCommandMessages': saveModel.automaticallyPurgeCommandMessages,
-                'DisplayHelpCommandInDMs': saveModel.displayHelpCommandInDMs,
                 'Language': saveModel.language,
             })
         })
@@ -88,7 +86,6 @@ export function save(saveModel) {
                         chatClient: saveModel.client,
                         clientId: saveModel.clientId,
                         botToken: saveModel.botToken,
-                        commandPrefix: saveModel.commandPrefix,
                         statusMessage: saveModel.statusMessage,
                         monitoredChannels: saveModel.monitoredChannels,
                         tvShowRoles: saveModel.tvShowRoles,
@@ -98,7 +95,6 @@ export function save(saveModel) {
                         notificationMode: saveModel.notificationMode,
                         notificationChannels: saveModel.notificationChannels,
                         automaticallyPurgeCommandMessages: saveModel.automaticallyPurgeCommandMessages,
-                        displayHelpCommandInDMs: saveModel.displayHelpCommandInDMs,
                         language: saveModel.language,
                     }));
                     return { ok: true };

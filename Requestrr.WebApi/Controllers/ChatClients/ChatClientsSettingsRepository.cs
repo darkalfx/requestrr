@@ -24,13 +24,11 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                 settings.ChatClients.Discord.NotificationMode = chatClientsSettings.Discord.NotificationMode;
                 settings.ChatClients.Discord.NotificationChannels = JToken.FromObject(chatClientsSettings.Discord.NotificationChannels);
                 settings.ChatClients.Discord.AutomaticallyPurgeCommandMessages = chatClientsSettings.Discord.AutomaticallyPurgeCommandMessages;
-                settings.ChatClients.Discord.DisplayHelpCommandInDMs = chatClientsSettings.Discord.DisplayHelpCommandInDMs;
 
                 settings.BotClient.Client = botClientSettings.Client;
-                settings.BotClient.CommandPrefix = botClientSettings.CommandPrefix;
 
                 settings.ChatClients.Language = chatClientsSettings.Language.ToLower();
-                Language.Current = JsonConvert.DeserializeObject<Language>(File.ReadAllText($"Locale/{settings.ChatClients.Language}.json"));
+                Language.Current = JsonConvert.DeserializeObject<Language>(File.ReadAllText($"locales/{settings.ChatClients.Language}.json"));
             });
         }
     }

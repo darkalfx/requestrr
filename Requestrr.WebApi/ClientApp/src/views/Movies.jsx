@@ -57,14 +57,12 @@ class Movies extends React.Component {
       saveSuccess: false,
       saveError: "",
       client: "",
-      command: "",
       radarr: {},
       isRadarrValid: false,
       ombi: {},
       isOmbiValid: false,
       overseerr: {},
       isOverseerrValid: false,
-      isCommandValid: false,
     };
 
     this.onSaving = this.onSaving.bind(this);
@@ -81,7 +79,6 @@ class Movies extends React.Component {
           radarr: this.props.settings.radarr,
           ombi: this.props.settings.ombi,
           overseerr: this.props.settings.overseerr,
-          command: this.props.settings.command,
         });
       });
   }
@@ -107,14 +104,11 @@ class Movies extends React.Component {
     if (!this.state.isSaving) {
       if ((this.state.client === "Disabled"
         || (this.state.client === "Radarr"
-          && this.state.isRadarrValid
-          && this.state.isCommandValid)
+          && this.state.isRadarrValid)
         || (this.state.client === "Ombi"
-          && this.state.isOmbiValid
-          && this.state.isCommandValid)
+          && this.state.isOmbiValid)
         || (this.state.client === "Overseerr"
-          && this.state.isOverseerrValid
-          && this.state.isCommandValid)
+          && this.state.isOverseerrValid)
       )) {
         this.setState({ isSaving: true });
 
@@ -126,19 +120,16 @@ class Movies extends React.Component {
         else if (this.state.client === "Ombi") {
           saveAction = this.props.saveOmbiClient({
             ombi: this.state.ombi,
-            command: this.state.command,
           });
         }
         else if (this.state.client === "Overseerr") {
           saveAction = this.props.saveOverseerrClient({
             overseerr: this.state.overseerr,
-            command: this.state.command,
           });
         }
         else if (this.state.client === "Radarr") {
           saveAction = this.props.saveRadarrClient({
             radarr: this.state.radarr,
-            command: this.state.command,
           });
         }
 
@@ -253,36 +244,10 @@ class Movies extends React.Component {
                               </>
                               : null
                           }
-                          <hr className="my-4" />
-                          <h6 className="heading-small text-muted mb-4">
-                            Chat Command Options
-                          </h6>
                         </>
                         : null
                     }
                     <div className="pl-lg-4">
-                      {
-                        this.state.client !== "Disabled"
-                          ? <>
-                            <Row>
-                              <Col lg="4">
-                                <ValidatedTextbox
-                                  name="Command"
-                                  placeholder="Enter chat command"
-                                  alertClassName="mt-3"
-                                  errorMessage="A chat command is required."
-                                  isSubmitted={this.state.isSubmitted}
-                                  value={this.state.command}
-                                  validation={this.validateNonEmptyString}
-                                  onChange={newCommand => this.setState({ command: newCommand })}
-                                  onValidate={isValid => this.setState({ isCommandValid: isValid })} />
-                              </Col>
-                              <Col lg="4">
-                              </Col>
-                            </Row>
-                          </>
-                          : null
-                      }
                       <Row>
                         <Col>
                           <FormGroup className="mt-4">

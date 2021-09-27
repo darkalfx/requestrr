@@ -15,8 +15,6 @@ namespace Requestrr.WebApi.Controllers.ChatClients
 
         public string StatusMessage { get; set; }
 
-        public string CommandPrefix { get; set; }
-
         public string[] MonitoredChannels { get; set; }
 
         public string[] TvShowRoles { get; set; }
@@ -32,8 +30,6 @@ namespace Requestrr.WebApi.Controllers.ChatClients
         public string[] NotificationChannels { get; set; }
 
         public bool AutomaticallyPurgeCommandMessages { get; set; }
-
-        public bool DisplayHelpCommandInDMs { get; set; }
 
         public string Language { get; set; }
 

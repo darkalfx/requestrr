@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using DSharpPlus;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
@@ -13,14 +13,14 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
 {
     public class PrivateMessageTvShowNotifier : ITvShowNotifier
     {
-        private readonly DiscordSocketClient _discordClient;
+        private readonly DiscordClient _discordClient;
         private readonly DiscordSettingsProvider _discordSettingsProvider;
-        private readonly ILogger<ChatBot> _logger;
+        private readonly ILogger _logger;
 
         public PrivateMessageTvShowNotifier(
-            DiscordSocketClient discordClient,
+            DiscordClient discordClient,
             DiscordSettingsProvider discordSettingsProvider,
-            ILogger<ChatBot> logger)
+            ILogger logger)
         {
             _discordClient = discordClient;
             _discordSettingsProvider = discordSettingsProvider;
@@ -38,20 +38,20 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
 
                 try
                 {
-                    var user = _discordClient.GetUser(ulong.Parse(userId));
+                    var user = _discordClient.Guilds.Values.Where(x => x.Members.ContainsKey(ulong.Parse(userId))).FirstOrDefault().Members[ulong.Parse(userId)];
 
                     if (user != null)
                     {
-                        var channel = await user.GetOrCreateDMChannelAsync();
+                        var channel = await user.CreateDmChannelAsync();
 
                         if(_discordSettingsProvider.Provide().TvShowDownloadClient == DownloadClient.Overseerr)
-                            await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMSeason.ReplaceTokens(tvShow, seasonNumber), false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
+                            await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMSeason.ReplaceTokens(tvShow, seasonNumber), DiscordTvShowUserInterface.GenerateTvShowDetailsAsync(tvShow));
                         else
-                            await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMFirstEpisode.ReplaceTokens(tvShow, seasonNumber), false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow, user));
+                            await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMFirstEpisode.ReplaceTokens(tvShow, seasonNumber), DiscordTvShowUserInterface.GenerateTvShowDetailsAsync(tvShow));
 
                         userNotified.Add(userId);
                     }
-                    else if (!token.IsCancellationRequested && _discordClient.ConnectionState == ConnectionState.Connected)
+                    else if (!token.IsCancellationRequested)
                     {
                         _logger.LogWarning($"An error occurred while sending a show notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
                     }

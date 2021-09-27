@@ -58,14 +58,12 @@ class TvShows extends React.Component {
       saveError: "",
       client: "",
       restrictions: "None",
-      command: "",
       sonarr: {},
       isSonarrValid: false,
       ombi: {},
       isOmbiValid: false,
       overseerr: {},
       isOverseerrValid: false,
-      isCommandValid: false,
     };
 
     this.onSaving = this.onSaving.bind(this);
@@ -82,7 +80,6 @@ class TvShows extends React.Component {
           sonarr: this.props.settings.sonarr,
           ombi: this.props.settings.ombi,
           overseerr: this.props.settings.overseerr,
-          command: this.props.settings.command,
           restrictions: this.props.settings.restrictions,
         });
       });
@@ -109,14 +106,11 @@ class TvShows extends React.Component {
     if (!this.state.isSaving) {
       if ((this.state.client === "Disabled"
         || (this.state.client === "Sonarr"
-          && this.state.isSonarrValid
-          && this.state.isCommandValid)
+          && this.state.isSonarrValid)
         || (this.state.client === "Ombi"
-          && this.state.isOmbiValid
-          && this.state.isCommandValid)
+          && this.state.isOmbiValid)
         || (this.state.client === "Overseerr"
-          && this.state.isOverseerrValid
-          && this.state.isCommandValid)
+          && this.state.isOverseerrValid)
       )) {
         this.setState({ isSaving: true });
 
@@ -128,21 +122,18 @@ class TvShows extends React.Component {
         else if (this.state.client === "Ombi") {
           saveAction = this.props.saveOmbiClient({
             ombi: this.state.ombi,
-            command: this.state.command,
             restrictions: this.state.restrictions
           });
         }
         else if (this.state.client === "Overseerr") {
           saveAction = this.props.saveOverseerrClient({
             overseerr: this.state.overseerr,
-            command: this.state.command,
             restrictions: this.state.restrictions
           });
         }
         else if (this.state.client === "Sonarr") {
           saveAction = this.props.saveSonarrClient({
             sonarr: this.state.sonarr,
-            command: this.state.command,
             restrictions: this.state.restrictions
           });
         }
@@ -258,41 +249,10 @@ class TvShows extends React.Component {
                               </>
                               : null
                           }
-                          <hr className="my-4" />
-                          <h6 className="heading-small text-muted mb-4">
-                            Chat Command Options
-                        </h6>
                         </>
                         : null
                     }
                     <div className="pl-lg-4">
-                      {
-                        this.state.client !== "Disabled"
-                          ? <>
-                            <Row>
-                              <Col lg="4">
-                                <ValidatedTextbox
-                                  name="Command"
-                                  placeholder="Enter chat command"
-                                  alertClassName="mt-3"
-                                  errorMessage="A chat command is required."
-                                  isSubmitted={this.state.isSubmitted}
-                                  value={this.state.command}
-                                  validation={this.validateNonEmptyString}
-                                  onChange={newCommand => this.setState({ command: newCommand })}
-                                  onValidate={isValid => this.setState({ isCommandValid: isValid })} />
-                              </Col>
-                              <Col lg="4">
-                                <Dropdown
-                                  name="Restrictions"
-                                  value={this.state.restrictions}
-                                  items={[{ name: "No restrictions", value: "None" }, { name: "Force all seasons", value: "AllSeasons" }, { name: "Force single season", value: "SingleSeason" }]}
-                                  onChange={newRestrictions => { this.setState({ restrictions: newRestrictions }) }} />
-                              </Col>
-                            </Row>
-                          </>
-                          : null
-                      }
                       <Row>
                         <Col>
                           <FormGroup className="mt-4">

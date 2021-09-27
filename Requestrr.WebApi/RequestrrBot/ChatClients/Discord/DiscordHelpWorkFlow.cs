@@ -1,66 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Discord.Commands;
-using Discord.WebSocket;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
 using Requestrr.WebApi.RequestrrBot.Locale;
 
 namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 {
-    public class DiscordHelpWorkFlow : RequestrrModuleBase<SocketCommandContext>
+    public class DiscordHelpWorkFlow
     {
         private readonly DiscordSettings _discordSettings;
-        private readonly DiscordSocketClient _discord;
+        private readonly DiscordClient _discordClient;
+        private readonly InteractionContext _context;
 
         public DiscordHelpWorkFlow(
-            SocketCommandContext context,
-            DiscordSocketClient discord,
+            DiscordClient discordClient,
+            InteractionContext context,
             DiscordSettingsProvider discordSettingsProvider)
-                : base(discord, context, discordSettingsProvider)
         {
             _discordSettings = discordSettingsProvider.Provide();
-            _discord = discord;
+            _discordClient = discordClient;
+            _context = context;
         }
-
         public async Task HandleHelpAsync()
         {
-            if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
-            {
-                return;
-            }
-
             var message = Language.Current.DiscordCommandHelpMessage.ReplaceTokens(new Dictionary<string, string>
             {
-                { LanguageTokens.AuthorUsername, Context.Message.Author.Mention },
-                { LanguageTokens.BotUsername, _discord.CurrentUser.Username },
-                { LanguageTokens.CommandPrefix, _discordSettings.CommandPrefix },
-                { LanguageTokens.TvShowCommand, _discordSettings.TvShowCommand},
-                { LanguageTokens.MovieCommand, _discordSettings.MovieCommand },
+                { LanguageTokens.AuthorUsername, _context.User.Mention },
+                { LanguageTokens.BotUsername, _discordClient.CurrentUser.Username },
+                { LanguageTokens.CommandPrefix, "/" },
+                { LanguageTokens.TvShowCommand, $"{Language.Current.DiscordCommandRequestGroupName.ToLower()} {Language.Current.DiscordCommandTvRequestGroupName.ToLower()}" },
+                { LanguageTokens.MovieCommand, $"{Language.Current.DiscordCommandRequestGroupName.ToLower()} {Language.Current.DiscordCommandMovieRequestGroupName.ToLower()}" },
+                { LanguageTokens.MovieCommandTitle, $"{Language.Current.DiscordCommandMovieRequestTitleOptionName.ToLower()}" },
+                { LanguageTokens.TvShowCommandTitle, $"{Language.Current.DiscordCommandTvRequestTitleName.ToLower()}" },
             });
 
-            if (this.Context.Guild == null)
-            {
-                var channel = await Context.User.GetOrCreateDMChannelAsync();
-                await channel.SendMessageAsync(message);
-            }
-            else if (_discordSettings.DisplayHelpCommandInDMs)
-            {
-                try
-                {
-                    var channel = await Context.User.GetOrCreateDMChannelAsync();
-                    await channel.SendMessageAsync(message);
-                    await ReplyToUserAsync(Language.Current.DiscordCommandHelpDirectMessageSuccess);
-                }
-                catch
-                {
-                    await ReplyToUserAsync(Language.Current.DiscordCommandHelpDirectMessageFailure);
-                }
-            }
-            else
-            {
-                await ReplyAsync(message);
-            }
+            await _context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true).WithContent(message));
         }
     }
 }

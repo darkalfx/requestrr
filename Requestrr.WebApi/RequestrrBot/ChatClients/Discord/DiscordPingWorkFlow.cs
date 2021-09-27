@@ -1,33 +1,25 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.Commands;
-using Discord.WebSocket;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
 using Requestrr.WebApi.RequestrrBot.Locale;
 
 namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 {
-    public class DiscordPingWorkFlow : RequestrrModuleBase<SocketCommandContext>
+    public class DiscordPingWorkFlow
     {
-        private readonly DiscordSettings _discordSettings;
+        private readonly InteractionContext _context;
 
-        public DiscordPingWorkFlow(
-            SocketCommandContext context,
-            DiscordSocketClient discord,
-            DiscordSettingsProvider discordSettingsProvider)
-                : base(discord, context, discordSettingsProvider)
+        public DiscordPingWorkFlow(InteractionContext context)
         {
-            _discordSettings = discordSettingsProvider.Provide();
+            _context = context;
         }
 
-        public Task HandlePingAsync() 
+        public async Task HandlePingAsync() 
         {
-            if (this.Context.Guild != null && _discordSettings.MonitoredChannels.Any() && _discordSettings.MonitoredChannels.All(c => !Context.Message.Channel.Name.Equals(c, StringComparison.InvariantCultureIgnoreCase)))
-            {
-                return Task.CompletedTask;
-            }
-
-            return ReplyToUserAsync(Language.Current.DiscordCommandPingResponse);
+            await _context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true).WithContent(Language.Current.DiscordCommandPingResponse));
         }
     }
 }

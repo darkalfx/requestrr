@@ -12,12 +12,9 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             return new DiscordSettings
             {
                 BotToken = settings.ChatClients.Discord.BotToken,
-                CommandPrefix = settings.BotClient.CommandPrefix,
                 MovieDownloadClient = settings.Movies.Client,
-                MovieCommand = settings.Movies.Command,
                 MovieDownloadClientConfigurationHash = ComputeMovieClientConfigurationHashCode(settings),
                 TvShowDownloadClient = settings.TvShows.Client,
-                TvShowCommand = settings.TvShows.Command,
                 TvShowDownloadClientConfigurationHash = ComputeTvClientConfigurationHashCode(settings),
                 StatusMessage = settings.ChatClients.Discord.StatusMessage,
                 MonitoredChannels = settings.ChatClients.Discord.MonitoredChannels.ToObject<string[]>(),
@@ -29,7 +26,6 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 NotificationMode = settings.ChatClients.Discord.NotificationMode,
                 NotificationChannels = settings.ChatClients.Discord.NotificationChannels.ToObject<string[]>(),
                 AutomaticallyPurgeCommandMessages = settings.ChatClients.Discord.AutomaticallyPurgeCommandMessages,
-                DisplayHelpCommandInDMs = settings.ChatClients.Discord.DisplayHelpCommandInDMs,
             };
         }
 

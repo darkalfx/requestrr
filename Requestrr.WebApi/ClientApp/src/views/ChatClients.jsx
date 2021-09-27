@@ -56,7 +56,6 @@ class ChatClients extends React.Component {
       testSettingsRequested: false,
       testSettingsSuccess: false,
       testSettingsError: "",
-      commandPrefix: "",
       monitoredChannels: [],
       statusMessage: "",
       enableRequestsThroughDirectMessages: true,
@@ -75,7 +74,6 @@ class ChatClients extends React.Component {
       notificationMode: "PrivateMessages",
       notificationChannels: [],
       automaticallyPurgeCommandMessages: true,
-      displayHelpCommandInDMs: true,
       language: "english",
       availableLanguages: [],
     };
@@ -100,7 +98,6 @@ class ChatClients extends React.Component {
           clientId: this.props.settings.clientId,
           botToken: this.props.settings.botToken,
           statusMessage: this.props.settings.statusMessage,
-          commandPrefix: this.props.settings.commandPrefix,
           monitoredChannels: this.props.settings.monitoredChannels,
           enableRequestsThroughDirectMessages: this.props.settings.enableRequestsThroughDirectMessages,
           tvShowRoles: this.props.settings.tvShowRoles,
@@ -109,7 +106,6 @@ class ChatClients extends React.Component {
           notificationMode: this.props.settings.notificationMode,
           notificationChannels: this.props.settings.notificationChannels,
           automaticallyPurgeCommandMessages: this.props.settings.automaticallyPurgeCommandMessages,
-          displayHelpCommandInDMs: this.props.settings.displayHelpCommandInDMs,
           language: this.props.settings.language,
           availableLanguages: this.props.settings.availableLanguages,
         });
@@ -171,10 +167,6 @@ class ChatClients extends React.Component {
     return /\S/.test(this.state.botToken);
   }
 
-  onCommandPrefixChange = event => {
-    this.setState({ commandPrefix: event.target.value });
-  }
-
   onSaving = e => {
     e.preventDefault();
 
@@ -193,7 +185,6 @@ class ChatClients extends React.Component {
           clientId: this.state.clientId,
           botToken: this.state.botToken,
           statusMessage: this.state.statusMessage,
-          commandPrefix: this.state.commandPrefix,
           monitoredChannels: this.state.monitoredChannels,
           tvShowRoles: this.state.tvShowRoles,
           movieRoles: this.state.movieRoles,
@@ -202,7 +193,6 @@ class ChatClients extends React.Component {
           notificationMode: this.state.notificationMode,
           notificationChannels: this.state.notificationChannels,
           automaticallyPurgeCommandMessages: this.state.automaticallyPurgeCommandMessages,
-          displayHelpCommandInDMs: this.state.displayHelpCommandInDMs,
           language: this.state.language,
         })
           .then(data => {
@@ -417,7 +407,7 @@ class ChatClients extends React.Component {
                               name="Roles allowed to request tv shows"
                               create={true}
                               searchable={true}
-                              placeholder="Enter roles here. Leave blank for all roles."
+                              placeholder="Enter role ids here. Leave blank for all roles."
                               labelField="name"
                               valueField="id"
                               dropdownHandle={false}
@@ -432,7 +422,7 @@ class ChatClients extends React.Component {
                               name="Roles allowed to request movies"
                               create={true}
                               searchable={true}
-                              placeholder="Enter roles here. Leave blank for all roles."
+                              placeholder="Enter role ids here. Leave blank for all roles."
                               labelField="name"
                               valueField="id"
                               dropdownHandle={false}
@@ -449,7 +439,7 @@ class ChatClients extends React.Component {
                               name="Channel(s) to monitor"
                               create={true}
                               searchable={true}
-                              placeholder="Enter channels names here. Leave blank for all channels."
+                              placeholder="Enter channels ids here. Leave blank for all channels."
                               labelField="name"
                               valueField="id"
                               dropdownHandle={false}
@@ -502,7 +492,7 @@ class ChatClients extends React.Component {
                                     name="Channel(s) to send notifications to"
                                     create={true}
                                     searchable={true}
-                                    placeholder="Enter channels names here"
+                                    placeholder="Enter channels ids here"
                                     labelField="name"
                                     valueField="id"
                                     dropdownHandle={false}
@@ -570,7 +560,7 @@ class ChatClients extends React.Component {
                               className="custom-control-label"
                               htmlFor="enableRequestDM"
                             >
-                              <span className="text-muted">Enable anyone to request via a private message. <strong>(Those will ignore configured roles)</strong></span>
+                              <span className="text-muted">Enable requesting via a private message, all role restrictions will be ignored, even on the servers.<br/><strong>(It might take up to an hour for the commands to show up on your servers.)</strong></span>
                             </label>
                           </FormGroup>
                         </Col>
@@ -589,28 +579,13 @@ class ChatClients extends React.Component {
                               className="custom-control-label"
                               htmlFor="deleteRequestMessages"
                             >
-                              <span className="text-muted">Automatically delete user/bot messages (ex: !movie the matrix)</span>
+                              <span className="text-muted">Hide slash command request messages in channels.</span>
                             </label>
                           </FormGroup>
                         </Col>
                       </Row>
                       <Row>
                         <Col md="12">
-                          <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
-                            <Input
-                              className="custom-control-input"
-                              id="helpInDMs"
-                              type="checkbox"
-                              onChange={e => { this.setState({ displayHelpCommandInDMs: !this.state.displayHelpCommandInDMs }); }}
-                              checked={this.state.displayHelpCommandInDMs}
-                            />
-                            <label
-                              className="custom-control-label"
-                              htmlFor="helpInDMs"
-                            >
-                              <span className="text-muted">Send the help command response in a private message instead of the current channel</span>
-                            </label>
-                          </FormGroup>
                         </Col>
                       </Row>
                     </div>
@@ -661,23 +636,6 @@ class ChatClients extends React.Component {
                     </h6>
                     <div className="pl-lg-4">
                       <Row>
-                        <Col lg="6">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-command-prefix"
-                            >
-                              Command Prefix
-                            </label>
-                            <Input
-                              value={this.state.commandPrefix} onChange={this.onCommandPrefixChange}
-                              className="form-control-alternative"
-                              id="input-command-prefix"
-                              placeholder="Enter command prefix (Optional)"
-                              type="text"
-                            />
-                          </FormGroup>
-                        </Col>
                         <Col lg="6">
                           <Dropdown
                             name="Language"

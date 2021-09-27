@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using DSharpPlus;
+using DSharpPlus.Entities;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.Locale;
@@ -15,24 +15,24 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
 {
     public class ChannelMovieNotifier : IMovieNotifier
     {
-        private readonly DiscordSocketClient _discordClient;
-        private readonly string[] _channelNames;
-        private readonly ILogger<ChatBot> _logger;
+        private readonly DiscordClient _discordClient;
+        private readonly ulong[] _channelIds;
+        private readonly ILogger _logger;
 
         public ChannelMovieNotifier(
-            DiscordSocketClient discordClient,
-            string[] channelNames,
-            ILogger<ChatBot> logger)
+            DiscordClient discordClient,
+            ulong[] channelNames,
+            ILogger logger)
         {
             _discordClient = discordClient;
-            _channelNames = channelNames;
+            _channelIds = channelNames;
             _logger = logger;
         }
 
         public async Task<HashSet<string>> NotifyAsync(IReadOnlyCollection<string> userIds, Movie movie, CancellationToken token)
         {
             var discordUserIds = new HashSet<ulong>(userIds.Select(x => ulong.Parse(x)));
-            var userNotified = new HashSet<string>();
+            var userNotified = new HashSet<ulong>();
 
             var channels = GetNotificationChannels();
 
@@ -41,7 +41,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
             foreach (var channel in channels)
             {
                 if (token.IsCancellationRequested)
-                    return userNotified;
+                    return new HashSet<string>(userNotified.Select(x => x.ToString()));;
 
                 try
                 {
@@ -53,57 +53,57 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
                 }
             }
 
-            return userNotified;
+            return new HashSet<string>(userNotified.Select(x => x.ToString()));
         }
 
-        private SocketTextChannel[] GetNotificationChannels()
+        private DiscordChannel[] GetNotificationChannels()
         {
             return _discordClient.Guilds
-                .SelectMany(x => x.Channels)
-                .Where(x => _channelNames.Any(n => n.Equals(x.Name, StringComparison.InvariantCultureIgnoreCase)))
-                .OfType<SocketTextChannel>()
+                .SelectMany(x => x.Value.Channels.Values)
+                .Where(x => _channelIds.Any(n => n == x.Id))
+                .OfType<DiscordChannel>()
                 .ToArray();
         }
 
-        private void HandleRemovedUsers(HashSet<ulong> discordUserIds, HashSet<string> userNotified, CancellationToken token)
+        private void HandleRemovedUsers(HashSet<ulong> discordUserIds, HashSet<ulong> userNotified, CancellationToken token)
         {
-            foreach (var userId in discordUserIds.Where(x => _discordClient.GetUser(x) == null))
+            foreach (var userId in discordUserIds.Where(x => _discordClient.GetUserAsync(x) == null))
             {
                 if (token.IsCancellationRequested)
                     return;
 
-                if (_discordClient.ConnectionState == ConnectionState.Connected)
-                {
-                    userNotified.Add(userId.ToString());
-                    _logger.LogWarning($"An issue occurred while sending a movie notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
-                }
+                userNotified.Add(userId);
+                _logger.LogWarning($"An issue occurred while sending a movie notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
             }
         }
 
-        private static async Task NotifyUsersInChannel(Movie movie, HashSet<ulong> discordUserIds, HashSet<string> userNotified, SocketTextChannel channel)
+        private static async Task NotifyUsersInChannel(Movie movie, HashSet<ulong> discordUserIds, HashSet<ulong> userNotified, DiscordChannel channel)
         {
-            var usersToMention = channel.Users
-                .Where(x => discordUserIds.Contains(x.Id))
-                .Where(x => !userNotified.Contains(x.Id.ToString()));
+            var usersToNotify = discordUserIds.Where(x => !userNotified.Contains(x));
 
-            if (usersToMention.Any())
+            if (usersToNotify.Any())
             {
                 var messageBuilder = new StringBuilder();
                 messageBuilder.AppendLine(Language.Current.DiscordNotificationMovieChannel.ReplaceTokens(movie));
 
-                foreach (var user in usersToMention)
+                foreach (var userId in usersToNotify)
                 {
-                    var userMentionText = $"{user.Mention} ";
+                    try
+                    {
+                        var user = await channel.Guild.GetMemberAsync(userId);
+                        var userMentionText = $"{user.Mention} ";
 
-                    if (messageBuilder.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
-                        messageBuilder.Append(userMentionText);
+                        if (messageBuilder.Length + userMentionText.Length < DiscordConstants.MaxMessageLength)
+                            messageBuilder.Append(userMentionText);
+                    }
+                    catch{}
                 }
 
-                await channel.SendMessageAsync(messageBuilder.ToString(), false, await DiscordMovieRequestingWorkFlow.GenerateMovieDetailsAsync(movie));
+                await channel.SendMessageAsync(messageBuilder.ToString(), await DiscordMovieUserInterface.GenerateMovieDetailsAsync(movie));
 
-                foreach (var user in usersToMention)
+                foreach (var user in usersToNotify)
                 {
-                    userNotified.Add(user.Id.ToString());
+                    userNotified.Add(user);
                 }
             }
         }

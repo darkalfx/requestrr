@@ -211,15 +211,13 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while searching for tv show from Sonarr");
         }
 
-        public async Task<TvShow> GetTvShowDetailsAsync(SearchedTvShow searchedTvShow)
+        public async Task<TvShow> GetTvShowDetailsAsync(int tvDbId)
         {
             try
             {
-                var tvDbId = searchedTvShow.TheTvDbId;
                 var jsonTvShow = await FindSeriesInSonarrAsync(tvDbId);
 
                 var convertedTvShow = Convert(jsonTvShow, jsonTvShow.seasons, jsonTvShow.id.HasValue ? await GetSonarrEpisodesAsync(jsonTvShow.id.Value) : new Dictionary<int, JSONEpisode[]>());
-                convertedTvShow.Banner = searchedTvShow.Banner;
 
                 return convertedTvShow;
             }
@@ -532,6 +530,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 PlexUrl = "",
                 EmbyUrl = "",
                 Banner = GetPosterImageUrl(jsonTvShow.images),
+                WebsiteUrl = jsonTvShow.tvdbId != null ? $"https://www.thetvdb.com/?id={jsonTvShow.tvdbId.Value}&tab=series" : null,
                 Seasons = tvSeasons.OrderBy(x => x.SeasonNumber).ToArray(),
                 FirstAired = ((int)jsonTvShow.year).ToString(),
                 HasEnded = ((string)jsonTvShow.status).Equals("ended", StringComparison.InvariantCultureIgnoreCase)

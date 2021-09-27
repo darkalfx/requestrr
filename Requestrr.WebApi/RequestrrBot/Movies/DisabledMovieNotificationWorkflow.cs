@@ -20,5 +20,10 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         {
             return _userInterface.WarnMovieAlreadyRequestedAsync();
         }
+
+        public Task AddNotificationAsync(string userId, int theMovieDbId)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

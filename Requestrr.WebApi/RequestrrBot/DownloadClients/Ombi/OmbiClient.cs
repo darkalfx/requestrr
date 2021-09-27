@@ -311,7 +311,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             throw new System.Exception("Something went wrong while requesting a tv show from Ombi");
         }
 
-        public async Task<TvShow> GetTvShowDetailsAsync(SearchedTvShow searchedTvShow)
+        public async Task<TvShow> GetTvShowDetailsAsync(int TheTvDbId)
         {
             var retryCount = 0;
 
@@ -319,7 +319,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             {
                 try
                 {
-                    var jsonTvShow = await FindTvShowByTheTvDbIdAsync(searchedTvShow.TheTvDbId.ToString());
+                    var jsonTvShow = await FindTvShowByTheTvDbIdAsync(TheTvDbId.ToString());
                     return Convert(jsonTvShow);
                 }
                 catch (System.Exception ex)
@@ -349,7 +349,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
 
                         try
                         {
-                            var show = await GetTvShowDetailsAsync(new SearchedTvShow { TheTvDbId = showId });
+                            var show = await GetTvShowDetailsAsync(showId);
                             tvShows.Add(show);
                         }
                         catch
@@ -487,6 +487,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
                 FirstAired = jsonTvShow.firstAired,
                 Network = jsonTvShow.network,
                 Status = jsonTvShow.status,
+                WebsiteUrl = $"https://www.thetvdb.com/?id={jsonTvShow.id}&tab=series",
                 HasEnded = !string.IsNullOrWhiteSpace(jsonTvShow.status) && jsonTvShow.status.Equals("ended", StringComparison.InvariantCultureIgnoreCase),
                 Seasons = jsonTvShow.seasonRequests.Select(x => new NormalTvSeason
                 {

@@ -6,7 +6,6 @@ export default function ChatClientsReducer(state = {}, action) {
       chatClient: action.payload.client,
       clientId: action.payload.clientId,
       botToken: action.payload.botToken,
-      commandPrefix: action.payload.commandPrefix,
       statusMessage: action.payload.statusMessage,
       monitoredChannels: action.payload.monitoredChannels,
       tvShowRoles: action.payload.tvShowRoles,
@@ -16,7 +15,6 @@ export default function ChatClientsReducer(state = {}, action) {
       notificationMode: action.payload.notificationMode,
       notificationChannels: action.payload.notificationChannels,
       automaticallyPurgeCommandMessages: action.payload.automaticallyPurgeCommandMessages,
-      displayHelpCommandInDMs: action.payload.displayHelpCommandInDMs,
       language: action.payload.language,
       availableLanguages: action.payload.availableLanguages,
     }

@@ -8,7 +8,7 @@
     "Discord": {
       "BotToken": "",
       "ClientId": "",
-      "StatusMessage": "!help",
+      "StatusMessage": "/help",
       "TvShowRoles": [],
       "MovieRoles": [],
       "MonitoredChannels": [],
@@ -16,8 +16,7 @@
       "AutomaticallyNotifyRequesters": true,
       "NotificationMode": "PrivateMessages",
       "NotificationChannels": [],
-      "AutomaticallyPurgeCommandMessages": false,
-      "DisplayHelpCommandInDMs": true
+      "AutomaticallyPurgeCommandMessages": true
     },
     "Language": "english"
   },
@@ -79,16 +78,13 @@
     }
   },
   "BotClient": {
-    "Client": "",
-    "CommandPrefix": "!"
+    "Client": ""
   },
   "Movies": {
-    "Client": "Disabled",
-    "Command": "movie"
+    "Client": "Disabled"
   },
   "TvShows": {
     "Client": "Disabled",
-    "Command": "tv",
     "Restrictions": "None"
   },
   "Port": 4545,

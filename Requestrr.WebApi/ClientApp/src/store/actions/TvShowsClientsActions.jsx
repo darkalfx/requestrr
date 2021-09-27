@@ -357,7 +357,6 @@ export function saveSonarrClient(saveModel) {
                 'SearchNewRequests': saveModel.sonarr.searchNewRequests,
                 'MonitorNewRequests': saveModel.sonarr.monitorNewRequests,
                 "Version": saveModel.sonarr.version,
-                'Command': saveModel.command,
                 'Restrictions': saveModel.restrictions,
             })
         })
@@ -389,7 +388,6 @@ export function saveSonarrClient(saveModel) {
                             useSSL: saveModel.sonarr.useSSL,
                             version: saveModel.sonarr.version
                         },
-                        command: saveModel.command,
                         restrictions: saveModel.restrictions
                     }));
                     return { ok: true };
@@ -419,7 +417,6 @@ export function saveOmbiClient(saveModel) {
                 'ApiUsername': saveModel.ombi.apiUsername,
                 'UseSSL': saveModel.ombi.useSSL,
                 'Version': saveModel.ombi.version,
-                'Command': saveModel.command,
                 'Restrictions': saveModel.restrictions,
             })
         })
@@ -436,7 +433,6 @@ export function saveOmbiClient(saveModel) {
                             useSSL: saveModel.ombi.useSSL,
                             version: saveModel.ombi.version,
                         },
-                        command: saveModel.command,
                         restrictions: saveModel.restrictions
                     }));
                     return { ok: true };
@@ -465,7 +461,6 @@ export function saveOverseerrClient(saveModel) {
                 'DefaultApiUserID': saveModel.overseerr.defaultApiUserID,
                 'UseSSL': saveModel.overseerr.useSSL,
                 'Version': saveModel.overseerr.version,
-                'Command': saveModel.command,
                 'Restrictions': saveModel.restrictions,
             })
         })
@@ -481,7 +476,6 @@ export function saveOverseerrClient(saveModel) {
                             useSSL: saveModel.overseerr.useSSL,
                             version: saveModel.overseerr.version,
                         },
-                        command: saveModel.command,
                         restrictions: saveModel.restrictions
                     }));
                     return { ok: true };

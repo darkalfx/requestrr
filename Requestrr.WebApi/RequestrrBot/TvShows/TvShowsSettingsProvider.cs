@@ -10,7 +10,6 @@
             return new TvShowsSettings
             {
                 Client = settings.TvShows.Client,
-                Command = settings.TvShows.Command,
                 Restrictions = settings.TvShows.Restrictions,
             };
         }

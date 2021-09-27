@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using DSharpPlus;
+using DSharpPlus.Entities;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
@@ -16,16 +16,16 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
 {
     public class ChannelTvShowNotifier : ITvShowNotifier
     {
-        private readonly DiscordSocketClient _discordClient;
+        private readonly DiscordClient _discordClient;
         private readonly DiscordSettingsProvider _discordSettingsProvider;
         private readonly string[] _channelNames;
-        private readonly ILogger<ChatBot> _logger;
+        private readonly ILogger _logger;
 
         public ChannelTvShowNotifier(
-            DiscordSocketClient discordClient,
+            DiscordClient discordClient,
             DiscordSettingsProvider discordSettingsProvider,
             string[] channelNames,
-            ILogger<ChatBot> logger)
+            ILogger logger)
         {
             _discordClient = discordClient;
             _discordSettingsProvider = discordSettingsProvider;
@@ -59,31 +59,28 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
             return userNotified;
         }
 
-        private SocketTextChannel[] GetNotificationChannels()
+        private DiscordChannel[] GetNotificationChannels()
         {
             return _discordClient.Guilds
-                .SelectMany(x => x.Channels)
+                .SelectMany(x => x.Value.Channels.Values)
                 .Where(x => _channelNames.Any(n => n.Equals(x.Name, StringComparison.InvariantCultureIgnoreCase)))
-                .OfType<SocketTextChannel>()
+                .OfType<DiscordChannel>()
                 .ToArray();
         }
 
         private void HandleRemovedUsers(HashSet<ulong> discordUserIds, HashSet<string> userNotified, CancellationToken token)
         {
-            foreach (var userId in discordUserIds.Where(x => _discordClient.GetUser(x) == null))
+            foreach (var userId in discordUserIds.Where(x => _discordClient.GetUserAsync(x) == null))
             {
                 if (token.IsCancellationRequested)
                     return;
 
-                if (_discordClient.ConnectionState == ConnectionState.Connected)
-                {
-                    userNotified.Add(userId.ToString());
-                    _logger.LogWarning($"An issue occurred while sending a tv show notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
-                }
+                userNotified.Add(userId.ToString());
+                _logger.LogWarning($"An issue occurred while sending a tv show notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
             }
         }
 
-        private async Task NotifyUsersInChannel(TvShow tvShow, int seasonNumber, HashSet<ulong> discordUserIds, HashSet<string> userNotified, SocketTextChannel channel)
+        private async Task NotifyUsersInChannel(TvShow tvShow, int seasonNumber, HashSet<ulong> discordUserIds, HashSet<string> userNotified, DiscordChannel channel)
         {
             var usersToMention = channel.Users
                 .Where(x => discordUserIds.Contains(x.Id))
@@ -106,7 +103,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
                         messageBuilder.Append(userMentionText);
                 }
 
-                await channel.SendMessageAsync(messageBuilder.ToString(), false, DiscordTvShowsRequestingWorkFlow.GenerateTvShowDetailsAsync(tvShow));
+                await channel.SendMessageAsync(messageBuilder.ToString(), DiscordTvShowUserInterface.GenerateTvShowDetailsAsync(tvShow));
 
                 foreach (var user in usersToMention)
                 {

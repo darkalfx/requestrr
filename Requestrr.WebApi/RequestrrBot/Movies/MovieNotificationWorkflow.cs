@@ -7,15 +7,18 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
     {
         private readonly MovieNotificationsRepository _notificationsRepository;
         private readonly IMovieUserInterface _userInterface;
+        private readonly IMovieSearcher _movieSearcher;
         private readonly bool _automaticNotificationForNewRequests;
 
         public MovieNotificationWorkflow(
         MovieNotificationsRepository movieNotificationsRepository,
         IMovieUserInterface userInterface,
+        IMovieSearcher movieSearcher,
         bool automaticNotificationForNewRequests)
         {
             _notificationsRepository = movieNotificationsRepository;
             _userInterface = userInterface;
+            _movieSearcher = movieSearcher;
             _automaticNotificationForNewRequests = automaticNotificationForNewRequests;
         }
 
@@ -33,18 +36,19 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         {
             if (IsAlreadyNotified(userId, movie))
             {
-                await _userInterface.WarnMovieUnavailableAndAlreadyHasNotificationAsync();
+                await _userInterface.WarnMovieUnavailableAndAlreadyHasNotificationAsync(movie);
             }
             else
             {
-                var isRequested = await _userInterface.AskForNotificationRequestAsync();
-
-                if (isRequested)
-                {
-                    _notificationsRepository.AddNotification(userId, int.Parse(movie.TheMovieDbId));
-                    await _userInterface.DisplayNotificationSuccessAsync(movie);
-                }
+                await _userInterface.AskForNotificationRequestAsync(movie);
             }
+        }
+
+        public async Task AddNotificationAsync(string userId, int theMovieDbId)
+        {
+            var movie = await _movieSearcher.SearchMovieAsync(theMovieDbId);
+            _notificationsRepository.AddNotification(userId, int.Parse(movie.TheMovieDbId));
+            await _userInterface.DisplayNotificationSuccessAsync(movie);
         }
 
         private bool IsAlreadyNotified(string userId, Movie movie)

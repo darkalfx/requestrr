@@ -18,8 +18,5 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
 
         [Required]
         public OverseerrSettingsModel Overseerr { get; set; }
-
-        [Required]
-        public string Command { get; set; }
     }
 }

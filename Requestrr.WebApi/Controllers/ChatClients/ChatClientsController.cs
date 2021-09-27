@@ -2,8 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using DSharpPlus;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -37,7 +36,6 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                 BotToken = _chatClientsSettings.Discord.BotToken,
                 ClientId = _chatClientsSettings.Discord.ClientId,
                 EnableRequestsThroughDirectMessages = _chatClientsSettings.Discord.EnableRequestsThroughDirectMessages,
-                CommandPrefix = _botClientsSettings.CommandPrefix,
                 TvShowRoles = _chatClientsSettings.Discord.TvShowRoles ?? Array.Empty<string>(),
                 MovieRoles = _chatClientsSettings.Discord.MovieRoles ?? Array.Empty<string>(),
                 MonitoredChannels = _chatClientsSettings.Discord.MonitoredChannels ?? Array.Empty<string>(),
@@ -45,7 +43,6 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                 NotificationMode = _chatClientsSettings.Discord.NotificationMode,
                 NotificationChannels = _chatClientsSettings.Discord.NotificationChannels ?? Array.Empty<string>(),
                 AutomaticallyPurgeCommandMessages = _chatClientsSettings.Discord.AutomaticallyPurgeCommandMessages,
-                DisplayHelpCommandInDMs = _chatClientsSettings.Discord.DisplayHelpCommandInDMs,
                 Language = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(_chatClientsSettings.Language.ToLower()),
                 AvailableLanguages = GetLanguages()
             });
@@ -56,11 +53,15 @@ namespace Requestrr.WebApi.Controllers.ChatClients
         {
             try
             {
-                using (var discord = new DiscordSocketClient())
+                var discord = new DiscordClient(new DiscordConfiguration
                 {
-                    await discord.LoginAsync(TokenType.Bot, model.BotToken.Trim());
-                    await discord.LogoutAsync();
-                }
+                    Token = model.BotToken,
+                    TokenType = TokenType.Bot
+                });
+
+                await discord.ConnectAsync();
+                await discord.DisconnectAsync();
+                discord.Dispose();
 
                 return Ok(new { ok = true });
             }
@@ -78,6 +79,26 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                 return BadRequest("Invalid client was selected");
             }
 
+            if (model.TvShowRoles.Any(x => !ulong.TryParse(x, System.Globalization.NumberStyles.Integer, null, out _)))
+            {
+                return BadRequest("Invalid tv show roles, please make sure to enter the discord role ids.");
+            }
+
+            if (model.MovieRoles.Any(x => !ulong.TryParse(x, System.Globalization.NumberStyles.Integer, null, out _)))
+            {
+                return BadRequest("Invalid movie roles, please make sure to enter the discord role ids.");
+            }
+
+            if (model.NotificationChannels.Any(x => !ulong.TryParse(x, System.Globalization.NumberStyles.Integer, null, out _)))
+            {
+                return BadRequest("Invalid notification channels, please make sure to enter the discord channel ids.");
+            }
+
+            if (model.MonitoredChannels.Any(x => !ulong.TryParse(x, System.Globalization.NumberStyles.Integer, null, out _)))
+            {
+                return BadRequest("Invalid monitored channels channels, please make sure to enter the monitored channel ids.");
+            }
+
             _chatClientsSettings.Discord.BotToken = model.BotToken.Trim();
             _chatClientsSettings.Discord.ClientId = model.ClientId;
             _chatClientsSettings.Discord.StatusMessage = model.StatusMessage.Trim();
@@ -90,11 +111,9 @@ namespace Requestrr.WebApi.Controllers.ChatClients
             _chatClientsSettings.Discord.NotificationMode = model.NotificationMode;
             _chatClientsSettings.Discord.NotificationChannels = (model.NotificationChannels ?? Array.Empty<string>()).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray(); ;
             _chatClientsSettings.Discord.AutomaticallyPurgeCommandMessages = model.AutomaticallyPurgeCommandMessages;
-            _chatClientsSettings.Discord.DisplayHelpCommandInDMs = model.DisplayHelpCommandInDMs;
             _chatClientsSettings.Language = model.Language;
 
             _botClientsSettings.Client = model.Client;
-            _botClientsSettings.CommandPrefix = model.CommandPrefix.Trim();
 
             ChatClientsSettingsRepository.Update(_botClientsSettings, _chatClientsSettings);
 
@@ -103,7 +122,7 @@ namespace Requestrr.WebApi.Controllers.ChatClients
 
         private string[] GetLanguages()
         {
-            return Directory.GetFiles("Locale", "*.json", SearchOption.TopDirectoryOnly)
+            return Directory.GetFiles("locales", "*.json", SearchOption.TopDirectoryOnly)
                  .Select(x => System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Path.GetFileNameWithoutExtension(x).ToLower()))
                  .ToArray();
         }

@@ -13,7 +13,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
         private object _lock = new object();
         private readonly IMovieSearcher _movieSearcher;
         private readonly IMovieNotifier _notifier;
-        private readonly ILogger<ChatBot> _logger;
+        private readonly ILogger _logger;
         private readonly MovieNotificationsRepository _notificationRequestRepository;
         private Task _notificationTask = null;
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
@@ -21,7 +21,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
         public MovieNotificationEngine(
             IMovieSearcher movieSearcher,
             IMovieNotifier notifier,
-            ILogger<ChatBot> logger,
+            ILogger logger,
             MovieNotificationsRepository notificationRequestRepository)
         {
             _movieSearcher = movieSearcher;

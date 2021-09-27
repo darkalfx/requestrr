@@ -24,32 +24,30 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
             _tvShowNotificationWorkflow = tvShowNotificationWorkflow;
         }
 
-        public async Task RequestAsync(TvShow tvShow, NormalTvSeason selectedSeason)
+        public async Task HandleSelectionAsync(TvShow tvShow, NormalTvSeason selectedSeason)
         {
-            await _userInterface.DisplayTvShowDetailsAsync(tvShow);
-
             if (selectedSeason.IsRequested == RequestedState.Full)
             {
                 await RequestNotificationsForSeasonAsync(tvShow, selectedSeason);
             }
             else
             {
-                var wasRequested = await _userInterface.GetTvShowRequestConfirmationAsync(selectedSeason);
+                await _userInterface.DisplayTvShowDetailsForSeasonAsync(tvShow, selectedSeason);
+            }
+        }
 
-                if (wasRequested)
-                {
-                    var result = await _requester.RequestTvShowAsync(_user, tvShow, selectedSeason);
+        public async Task RequestAsync(TvShow tvShow, NormalTvSeason selectedSeason)
+        {
+            var result = await _requester.RequestTvShowAsync(_user, tvShow, selectedSeason);
 
-                    if (result.WasDenied)
-                    {
-                        await _userInterface.DisplayRequestDeniedForSeasonAsync(selectedSeason);
-                    }
-                    else
-                    {
-                        await _userInterface.DisplayRequestSuccessForSeasonAsync(selectedSeason);
-                        await _tvShowNotificationWorkflow.NotifyForNewRequestAsync(_user.UserId, tvShow, selectedSeason);
-                    }
-                }
+            if (result.WasDenied)
+            {
+                await _userInterface.DisplayRequestDeniedForSeasonAsync(selectedSeason);
+            }
+            else
+            {
+                await _userInterface.DisplayRequestSuccessForSeasonAsync(tvShow, selectedSeason);
+                await _tvShowNotificationWorkflow.NotifyForNewRequestAsync(_user.UserId, tvShow, selectedSeason);
             }
         }
 
@@ -57,7 +55,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
         {
             if (selectedSeason.IsAvailable)
             {
-                await _userInterface.WarnSeasonAlreadyAvailableAsync(selectedSeason);
+                await _userInterface.WarnSeasonAlreadyAvailableAsync(tvShow, selectedSeason);
             }
             else
             {

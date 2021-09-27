@@ -44,7 +44,6 @@ export default function MovieClientsReducer(state = {}, action) {
         monitorNewRequests: action.payload.radarr.monitorNewRequests,
         version: action.payload.radarr.version,
       },
-      command: action.payload.command,
     }
   }
   else if (action.type === SET_DISABLED_CLIENT) {
@@ -57,7 +56,6 @@ export default function MovieClientsReducer(state = {}, action) {
     return {
       ...state,
       radarr: action.payload.radarr,
-      command: action.payload.command,
       client: "Radarr"
     }
   }
@@ -65,7 +63,6 @@ export default function MovieClientsReducer(state = {}, action) {
     return {
       ...state,
       ombi: action.payload.ombi,
-      command: action.payload.command,
       client: "Ombi"
     }
   }
@@ -73,7 +70,6 @@ export default function MovieClientsReducer(state = {}, action) {
     return {
       ...state,
       overseerr: action.payload.overseerr,
-      command: action.payload.command,
       client: "Overseerr"
     }
   }

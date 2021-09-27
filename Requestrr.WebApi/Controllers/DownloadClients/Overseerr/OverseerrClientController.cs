@@ -55,8 +55,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Overseerr
         {
             var movieSettings = new MoviesSettings
             {
-                Client = DownloadClient.Overseerr,
-                Command = model.Command.Trim(),
+                Client = DownloadClient.Overseerr
             };
 
             var overseerrSettings = Sanitize(model);
@@ -72,7 +71,6 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Overseerr
             var tvShowsSettings = new TvShowsSettings
             {
                 Client = DownloadClient.Overseerr,
-                Command = model.Command.Trim(),
                 Restrictions = model.Restrictions
             };
 

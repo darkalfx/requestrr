@@ -22,7 +22,5 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
         public int[] AnimeTags { get; set; }
         public bool SearchNewRequests { get; set; }
         public bool MonitorNewRequests { get; set; }
-        [Required]
-        public string Command { get; set; }
     }
 }

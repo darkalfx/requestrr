@@ -24,6 +24,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
         public string FirstAired { get; set; }
         public string Network { get; set; }
         public string Status { get; set; }
+        public string WebsiteUrl { get; set; }
         public TvSeason[] Seasons { get; set; }
         public bool IsRequested { get; set; }
 

@@ -5,7 +5,6 @@ using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
 using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot;
-using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
@@ -160,7 +159,6 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             }
 
             settings.TvShows.Client = tvSettings.Client;
-            settings.TvShows.Command = tvSettings.Command;
             settings.TvShows.Restrictions = tvSettings.Restrictions;
         }
 
@@ -172,7 +170,6 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             }
 
             settings.Movies.Client = movieSettings.Client;
-            settings.Movies.Command = movieSettings.Command;
         }
     }
 }

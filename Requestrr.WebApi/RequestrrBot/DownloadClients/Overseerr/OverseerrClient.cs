@@ -152,7 +152,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 {
                     try
                     {
-                        var show = await GetTvShowDetailsAsync(new SearchedTvShow { TheTvDbId = showId });
+                        var show = await GetTvShowDetailsAsync(showId);
                         tvShows.Add(show);
                     }
                     catch (System.Exception ex)
@@ -191,6 +191,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 throw new System.Exception("An error occurred while searching for movies from Overseerr: " + ex.Message);
             }
         }
+        
         public async Task<Movie> SearchMovieAsync(int theMovieDbId)
         {
             try
@@ -269,23 +270,23 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
-        public async Task<TvShow> GetTvShowDetailsAsync(SearchedTvShow searchedTvShow)
+        public async Task<TvShow> GetTvShowDetailsAsync(int theTvDbId)
         {
             try
             {
-                var response = await HttpGetAsync($"{BaseURL}tv/{searchedTvShow.TheTvDbId}");
+                var response = await HttpGetAsync($"{BaseURL}tv/{theTvDbId}");
                 await response.ThrowIfNotSuccessfulAsync("OverseerrGetTvShowDetail failed", x => x.error);
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
 
-                var movie = JsonConvert.DeserializeObject<JSONMedia>(jsonResponse);
+                var tvShow = JsonConvert.DeserializeObject<JSONMedia>(jsonResponse);
 
-                return ConvertTvShow(movie);
+                return ConvertTvShow(tvShow);
             }
             catch (System.Exception ex)
             {
-                _logger.LogError(ex, $"An error occurred while searching for a tv show by tmdbId \"{searchedTvShow.TheTvDbId}\" from Overseerr: " + ex.Message);
-                throw new System.Exception($"An error occurred while searching for a tv show by tmdbId \"{searchedTvShow.TheTvDbId}\" from Overseerr: " + ex.Message);
+                _logger.LogError(ex, $"An error occurred while searching for a tv show by tmdbId \"{theTvDbId}\" from Overseerr: " + ex.Message);
+                throw new System.Exception($"An error occurred while searching for a tv show by tmdbId \"{theTvDbId}\" from Overseerr: " + ex.Message);
             }
         }
 
@@ -429,6 +430,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                     || jsonMedia.MediaInfo?.Status == MediaStatus.PARTIALLY_AVAILABLE
                     || jsonMedia.MediaInfo?.Status == MediaStatus.AVAILABLE,
                 Quality = string.Empty,
+                WebsiteUrl = jsonMedia.MediaInfo?.TvdbId != null ? $"https://www.thetvdb.com/?id={jsonMedia.MediaInfo?.TvdbId}&tab=series" : null,
                 PlexUrl = jsonMedia.MediaInfo?.PlexUrl,
                 Overview = jsonMedia.Overview,
                 HasEnded = !jsonMedia.InProduction,

@@ -6,5 +6,6 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
     {
         Task NotifyForNewRequestAsync(string userId, TvShow tvShow, TvSeason selectedSeason);
         Task NotifyForExistingRequestAsync(string userId, TvShow tvShow, TvSeason selectedSeason);
+        Task AddNotificationAsync(string userId, int theTvDbId, string seasonData);
     }
 }

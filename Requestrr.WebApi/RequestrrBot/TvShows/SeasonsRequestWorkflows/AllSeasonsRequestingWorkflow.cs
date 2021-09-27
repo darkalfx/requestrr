@@ -25,28 +25,26 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
             _tvShowNotificationWorkflow = tvShowNotificationWorkflow;
         }
 
+        public async Task HandleSelectionAsync(TvShow tvShow, AllTvSeasons selectedSeason)
+        {
+            await _userInterface.DisplayTvShowDetailsForSeasonAsync(tvShow, selectedSeason);
+        }
+
         public async Task RequestAsync(TvShow tvShow, AllTvSeasons selectedSeason)
         {
-            await _userInterface.DisplayTvShowDetailsAsync(tvShow);
+            var result = await _requester.RequestTvShowAsync(_user, tvShow, selectedSeason);
 
-            var wasRequested = await _userInterface.GetTvShowRequestConfirmationAsync(selectedSeason);
-
-            if (wasRequested)
+            if (result.WasDenied)
             {
-                var result = await _requester.RequestTvShowAsync(_user, tvShow, selectedSeason);
+                await _userInterface.DisplayRequestDeniedForSeasonAsync(selectedSeason);
+            }
+            else
+            {
+                await _userInterface.DisplayRequestSuccessForSeasonAsync(tvShow, selectedSeason);
 
-                if (result.WasDenied)
+                foreach (var season in tvShow.Seasons.OfType<NormalTvSeason>().Where(x => !x.IsAvailable))
                 {
-                    await _userInterface.DisplayRequestDeniedForSeasonAsync(selectedSeason);
-                }
-                else
-                {
-                    await _userInterface.DisplayRequestSuccessForSeasonAsync(selectedSeason);
-
-                    foreach (var season in tvShow.Seasons.OfType<NormalTvSeason>().Where(x => !x.IsAvailable))
-                    {
-                        await _tvShowNotificationWorkflow.NotifyForNewRequestAsync(_user.UserId, tvShow, season);
-                    }
+                    await _tvShowNotificationWorkflow.NotifyForNewRequestAsync(_user.UserId, tvShow, season);
                 }
             }
         }

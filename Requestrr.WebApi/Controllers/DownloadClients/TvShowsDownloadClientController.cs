@@ -78,7 +78,6 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                     UseSSL = _downloadClientsSettings.Overseerr.UseSSL,
                     Version = _downloadClientsSettings.Overseerr.Version
                 },
-                Command = _tvShowsSettings.Command,
                 Restrictions = _tvShowsSettings.Restrictions
             });
         }

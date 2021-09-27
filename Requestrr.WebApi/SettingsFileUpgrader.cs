@@ -107,6 +107,31 @@ namespace Requestrr.WebApi
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
+
+            if (settingsJson.Version.ToString().Equals("1.13.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.14.0";
+
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Remove("DisplayHelpCommandInDMs");
+                ((JObject)settingsJson["BotClient"]).Remove("CommandPrefix");
+
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Remove("TvShowRoles");
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("TvShowRoles", JToken.FromObject(Array.Empty<int>()));
+
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Remove("MovieRoles");
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("MovieRoles", JToken.FromObject(Array.Empty<int>()));
+
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Remove("NotificationChannels");
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("NotificationChannels", JToken.FromObject(Array.Empty<int>()));
+
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Remove("MonitoredChannels");
+                ((JObject)settingsJson["ChatClients"]["Discord"]).Add("MonitoredChannels", JToken.FromObject(Array.Empty<int>()));
+
+                ((JObject)settingsJson["Movies"]).Remove("Command");
+                ((JObject)settingsJson["TvShows"]).Remove("Command");
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
         }
     }
 }

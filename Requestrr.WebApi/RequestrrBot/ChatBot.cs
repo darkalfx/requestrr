@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.EventArgs;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.Extensions;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
@@ -24,23 +29,26 @@ namespace Requestrr.WebApi.RequestrrBot
 {
     public class ChatBot
     {
-        private DiscordSocketClient _client;
+        private DiscordClient _client;
         private MovieNotificationEngine _movieNotificationEngine;
         private TvShowNotificationEngine _tvShowNotificationEngine;
-        private CommandService _commandService;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ChatBot> _logger;
         private readonly DiscordSettingsProvider _discordSettingsProvider;
         private readonly ConcurrentBag<Func<Task>> _refreshQueue = new ConcurrentBag<Func<Task>>();
         private DiscordSettings _currentSettings = new DiscordSettings();
-        private MovieNotificationsRepository _movieNotificationRequestRepository = new MovieNotificationsRepository();
-        private TvShowNotificationsRepository _tvShowNotificationRequestRepository = new TvShowNotificationsRepository();
+        private MovieWorkflowFactory _movieWorkflowFactory;
+        private TvShowWorkflowFactory _tvShowWorkflowFactory;
+        private MovieNotificationsRepository _movieNotificationRepository = new MovieNotificationsRepository();
+        private TvShowNotificationsRepository _tvShowNotificationRepository = new TvShowNotificationsRepository();
         private OverseerrClient _overseerrClient;
         private OmbiClient _ombiDownloadClient;
         private RadarrClient _radarrDownloadClient;
         private SonarrClient _sonarrDownloadClient;
-        private ModuleInfo _moduleInfo = null;
+        private SlashCommandsExtension _slashCommands = null;
+        private HashSet<ulong> _currentGuilds = new HashSet<ulong>();
         private Language _previousLanguage = Language.Current;
+
 
         public ChatBot(IServiceProvider serviceProvider, ILogger<ChatBot> logger, DiscordSettingsProvider discordSettingsProvider)
         {
@@ -51,54 +59,43 @@ namespace Requestrr.WebApi.RequestrrBot
             _ombiDownloadClient = new OmbiClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<OmbiClient>>(), serviceProvider.Get<OmbiSettingsProvider>());
             _radarrDownloadClient = new RadarrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<RadarrClient>>(), serviceProvider.Get<RadarrSettingsProvider>());
             _sonarrDownloadClient = new SonarrClient(serviceProvider.Get<IHttpClientFactory>(), serviceProvider.Get<ILogger<SonarrClient>>(), serviceProvider.Get<SonarrSettingsProvider>());
+            _movieWorkflowFactory = new MovieWorkflowFactory(_discordSettingsProvider, _movieNotificationRepository, _overseerrClient, _ombiDownloadClient, _radarrDownloadClient);
+            _tvShowWorkflowFactory = new TvShowWorkflowFactory(serviceProvider.Get<TvShowsSettingsProvider>(), _discordSettingsProvider, _tvShowNotificationRepository, _overseerrClient, _ombiDownloadClient, _sonarrDownloadClient);
         }
 
         public async void Start()
         {
-            _commandService = new CommandService(new CommandServiceConfig
-            {
-                CaseSensitiveCommands = false,
-            });
-
-            _client = new DiscordSocketClient();
-            _client.Log += LogAsync;
-            _client.Connected += Connected;
-            _commandService.CommandExecuted += CommandExecutedAsync;
-            _client.MessageReceived += MessageReceivedAsync;
-
             Task.Run(async () =>
             {
                 while (true)
                 {
                     try
                     {
+                        var previousGuildCount = _currentGuilds.Count;
                         var newSettings = _discordSettingsProvider.Provide();
-                        var mustRestart = false;
 
                         try
                         {
-                            if (_client.ConnectionState == ConnectionState.Connected)
+                            var newGuilds = new HashSet<ulong>(_client?.Guilds.Keys.ToArray() ?? Array.Empty<ulong>());
+
+                            if (newGuilds.Any())
                             {
-                                mustRestart = string.IsNullOrEmpty(_client.CurrentUser.Username);
+                                _currentGuilds.UnionWith(newGuilds);
                             }
-                        }
-                        catch
-                        {
-                            mustRestart = true;
-                        }
 
-                        if (mustRestart)
-                        {
-                            _logger.LogWarning("Restarting bot due to incorrect automatic reconnection.");
                         }
+                        catch (System.Exception) { }
 
-                        if (!_currentSettings.Equals(newSettings) || mustRestart || _client.ConnectionState == ConnectionState.Disconnected || Language.Current != _previousLanguage)
+                        if (!_currentSettings.Equals(newSettings) || Language.Current != _previousLanguage || _currentGuilds.Count != previousGuildCount)
                         {
-                            _logger.LogWarning("Bot configuration changed/not connected to Discord: restarting bot");
+                            var previousSettings = _currentSettings;
+                            _logger.LogWarning("Bot configuration changed: restarting bot");
                             _currentSettings = newSettings;
                             _previousLanguage = Language.Current;
-                            await RestartBot(newSettings);
+                            await RestartBot(previousSettings, newSettings, _currentGuilds);
                             _logger.LogWarning("Bot has been restarted.");
+
+                            SlashCommandBuilder.CleanUp();
                         }
                     }
                     catch (Exception ex)
@@ -111,195 +108,102 @@ namespace Requestrr.WebApi.RequestrrBot
             });
         }
 
-        private async Task RestartBot(DiscordSettings discordSettings)
+        private async Task RestartBot(DiscordSettings previousSettings, DiscordSettings newSettings, HashSet<ulong> currentGuilds)
         {
-            await _client.StopAsync();
-            await _client.LogoutAsync();
-
-            if (_moduleInfo != null)
+            if (!string.IsNullOrEmpty(newSettings.BotToken))
             {
-                await _commandService.RemoveModuleAsync(_moduleInfo);
-            }
+                if (!string.Equals(previousSettings.BotToken, newSettings.BotToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (_client != null)
+                    {
+                        await _client.DisconnectAsync();
+                        _client.Ready -= Connected;
+                        _client.ComponentInteractionCreated -= DiscordComponentInteractionCreatedHandler;
+                        _client.Dispose();
+                    }
 
-            if (!string.IsNullOrEmpty(discordSettings.BotToken))
-            {
-                await ApplyBotConfigurationAsync(discordSettings);
+                    if (_slashCommands != null)
+                    {
+                        _slashCommands.SlashCommandErrored -= SlashCommandErrorHandler;
+                    }
 
-                await _client.LoginAsync(TokenType.Bot, discordSettings.BotToken);
-                await _client.StartAsync();
-            }
-            else
-            {
-                _logger.LogWarning("No Bot Token for Discord has been configured.");
+                    _client = new DiscordClient(new DiscordConfiguration()
+                    {
+                        Token = newSettings.BotToken,
+                        TokenType = TokenType.Bot,
+                        AutoReconnect = true,
+                        MinimumLogLevel = LogLevel.Warning
+                    });
+
+                    _slashCommands = _client.UseSlashCommands(new SlashCommandsConfiguration
+                    {
+                        Services = new ServiceCollection()
+                            .AddSingleton<DiscordClient>(_client)
+                            .AddSingleton<ILogger>(_logger)
+                            .AddSingleton<DiscordSettingsProvider>(_discordSettingsProvider)
+                            .AddSingleton<MovieWorkflowFactory>(_movieWorkflowFactory)
+                            .AddSingleton<TvShowWorkflowFactory>(_tvShowWorkflowFactory)
+                            .BuildServiceProvider()
+                    });
+
+                    _slashCommands.SlashCommandErrored += SlashCommandErrorHandler;
+
+                    _client.Ready += Connected;
+                    _client.ComponentInteractionCreated += DiscordComponentInteractionCreatedHandler;
+
+                    _currentGuilds = new HashSet<ulong>();
+                    await _client.ConnectAsync();
+                }
+
+                if (_client != null)
+                {
+                    if (_client.Guilds.Any())
+                    {
+                        await _client.UpdateStatusAsync(new DiscordActivity(newSettings.StatusMessage, ActivityType.Playing));
+                        
+                        var prop = _slashCommands.GetType().GetProperty("_updateList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        prop.SetValue(_slashCommands, new List<KeyValuePair<ulong?, Type>>());
+                        
+                        var slashCommandType = SlashCommandBuilder.Build(_logger, newSettings);
+
+                        if (newSettings.EnableRequestsThroughDirectMessages)
+                        {
+                            _slashCommands.RegisterCommands(slashCommandType);
+
+                            foreach (var guildId in _client.Guilds.Keys)
+                            {
+                                _slashCommands.RegisterCommands<EmptySlashCommands>(guildId);
+                            }
+                        }
+                        else
+                        {
+                            _slashCommands.RegisterCommands<EmptySlashCommands>();
+
+                            foreach (var guildId in _client.Guilds.Keys)
+                            {
+                                _slashCommands.RegisterCommands(slashCommandType, guildId);
+                            }
+                        }
+
+                        await _slashCommands.RefreshCommands();
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("No Bot Token for Discord has been configured.");
+                }
             }
         }
 
         private async Task ApplyBotConfigurationAsync(DiscordSettings discordSettings)
         {
-            await _client.SetGameAsync(discordSettings.StatusMessage);
-
-            _moduleInfo = await _commandService.CreateModuleAsync(string.Empty, x =>
-            {
-                x.AddCommand("ping", async (commandContext, noidea, serviceProvider, commandInfo) =>
-                {
-                    using (var command = new DiscordPingWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
-                    {
-                        await command.HandlePingAsync();
-                    }
-                }, c => c.WithName("ping").WithRunMode(RunMode.Async));
-
-                x.AddCommand(Language.Current.DiscordCommandHelp, async (commandContext, noidea, serviceProvider, commandInfo) =>
-                {
-                    using (var command = new DiscordHelpWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
-                    {
-                        await command.HandleHelpAsync();
-                    }
-                }, c => c.WithName(Language.Current.DiscordCommandHelp).WithRunMode(RunMode.Async));
-
-                if (discordSettings.MovieDownloadClient != DownloadClient.Disabled)
-                {
-                    x.AddCommand(discordSettings.MovieCommand, async (commandContext, message, serviceProvider, commandInfo) =>
-                    {
-                        using (var command = new DiscordMovieRequestingWorkFlow(
-                        (SocketCommandContext)commandContext,
-                        _client,
-                        GetMovieClient<IMovieSearcher>(discordSettings),
-                        GetMovieClient<IMovieRequester>(discordSettings),
-                        serviceProvider.Get<DiscordSettingsProvider>(),
-                        _movieNotificationRequestRepository))
-                        {
-                            await command.HandleMovieRequestAsync(message);
-                        }
-                    }, c => c.WithName("movie").WithRunMode(RunMode.Async).AddParameter<string>("movieName", p => p.WithIsRemainder(true).WithIsOptional(true)));
-                }
-                else
-                {
-                    x.AddCommand(discordSettings.MovieCommand, async (commandContext, message, serviceProvider, commandInfo) =>
-                    {
-                        using (var command = new DiscordDisableCommandWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
-                        {
-                            await command.HandleDisabledCommandAsync();
-                        }
-                    }, c => c.WithName("movie").WithRunMode(RunMode.Sync).AddParameter<string>("movieName", p => p.WithIsRemainder(true).WithIsOptional(true)));
-                }
-
-                if (discordSettings.TvShowDownloadClient != DownloadClient.Disabled)
-                {
-                    x.AddCommand(discordSettings.TvShowCommand, async (commandContext, message, serviceProvider, commandInfo) =>
-                    {
-                        using (var command = new DiscordTvShowsRequestingWorkFlow(
-                           (SocketCommandContext)commandContext,
-                           _client,
-                            GetTvShowClient<ITvShowSearcher>(discordSettings),
-                            GetTvShowClient<ITvShowRequester>(discordSettings),
-                            serviceProvider.Get<DiscordSettingsProvider>(),
-                            serviceProvider.Get<TvShowsSettingsProvider>(),
-                           _tvShowNotificationRequestRepository))
-                        {
-                            await command.HandleTvShowRequestAsync(message);
-                        }
-                    }, c => c.WithName("tv").WithRunMode(RunMode.Async).AddParameter<string>("tvShowName", p => p.WithIsRemainder(true).WithIsOptional(true)));
-                }
-                else
-                {
-                    x.AddCommand(discordSettings.TvShowCommand, async (commandContext, message, serviceProvider, commandInfo) =>
-                    {
-                        using (var command = new DiscordDisableCommandWorkFlow((SocketCommandContext)commandContext, _client, serviceProvider.Get<DiscordSettingsProvider>()))
-                        {
-                            await command.HandleDisabledCommandAsync();
-                        }
-                    }, c => c.WithName("tv").WithRunMode(RunMode.Sync).AddParameter<string>("tvShowName", p => p.WithIsRemainder(true).WithIsOptional(true)));
-                }
-            });
+            await _client.UpdateStatusAsync(new DiscordActivity(discordSettings.StatusMessage, ActivityType.Playing));
         }
 
-        private T GetMovieClient<T>(DiscordSettings settings) where T : class
+        private async Task Connected(DiscordClient client, ReadyEventArgs args)
         {
-            if (settings.MovieDownloadClient == DownloadClient.Radarr)
-            {
-                return _radarrDownloadClient as T;
-            }
-            else if (settings.MovieDownloadClient == DownloadClient.Ombi)
-            {
-                return _ombiDownloadClient as T;
-            }
-            else if (settings.MovieDownloadClient == DownloadClient.Overseerr)
-            {
-                return _overseerrClient as T;
-            }
-            else
-            {
-                throw new Exception($"Invalid configured movie download client {settings.MovieDownloadClient}");
-            }
-        }
+            await ApplyBotConfigurationAsync(_currentSettings);
 
-        private T GetTvShowClient<T>(DiscordSettings settings) where T : class
-        {
-            if (settings.TvShowDownloadClient == DownloadClient.Sonarr)
-            {
-                return _sonarrDownloadClient as T;
-            }
-            else if (settings.TvShowDownloadClient == DownloadClient.Ombi)
-            {
-                return _ombiDownloadClient as T;
-            }
-            else if (settings.TvShowDownloadClient == DownloadClient.Overseerr)
-            {
-                return _overseerrClient as T;
-            }
-            else
-            {
-                throw new Exception($"Invalid configured tv show download client {settings.TvShowDownloadClient}");
-            }
-        }
-
-        private Task LogAsync(LogMessage log)
-        {
-            switch (log.Severity)
-            {
-                case LogSeverity.Critical:
-                    _logger.LogCritical(log.Exception, $"[Discord] {log.Message}");
-
-                    if (_client.ConnectionState == ConnectionState.Connected)
-                    {
-                        _logger.LogCritical($"[Discord] Disconnecting from Discord due to error");
-                        _client.StopAsync().ContinueWith(x => _client.LogoutAsync());
-                    }
-
-                    break;
-                case LogSeverity.Error:
-                    _logger.LogError(log.Exception, $"[Discord] {log.Message}");
-                    if (_client.ConnectionState == ConnectionState.Connected)
-                    {
-                        _logger.LogError($"[Discord] Disconnecting from Discord due to error");
-                        _client.StopAsync().ContinueWith(x => _client.LogoutAsync());
-                    }
-                    break;
-                case LogSeverity.Warning:
-                    _logger.LogWarning(log.Exception, $"[Discord] {log.Message}");
-
-                    if (log.Exception != null && _client.ConnectionState == ConnectionState.Connected)
-                    {
-                        _logger.LogWarning($"[Discord] Disconnecting from Discord due to error");
-                        _client.StopAsync().ContinueWith(x => _client.LogoutAsync());
-                    }
-                    break;
-                case LogSeverity.Info:
-                    _logger.LogInformation(log.Exception, $"[Discord] {log.Message}");
-                    break;
-                case LogSeverity.Debug:
-                    _logger.LogDebug(log.Exception, $"[Discord] {log.Message}");
-                    break;
-                case LogSeverity.Verbose:
-                    _logger.LogTrace(log.Exception, $"[Discord] {log.Message}");
-                    break;
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private async Task Connected()
-        {
             try
             {
                 if (_movieNotificationEngine != null)
@@ -309,24 +213,10 @@ namespace Requestrr.WebApi.RequestrrBot
 
                 if (_currentSettings.MovieDownloadClient != DownloadClient.Disabled && _currentSettings.NotificationMode != NotificationMode.Disabled)
                 {
-                    IMovieNotifier movieNotifier = null;
-
-                    if (_currentSettings.NotificationMode == NotificationMode.PrivateMessage)
-                    {
-                        movieNotifier = new PrivateMessageMovieNotifier(_client, _logger);
-                    }
-                    else if (_currentSettings.NotificationMode == NotificationMode.Channels)
-                    {
-                        movieNotifier = new ChannelMovieNotifier(_client, _currentSettings.NotificationChannels, _logger);
-                    }
-                    else
-                    {
-                        throw new Exception($"Could not create movie notifier of type \"{_currentSettings.NotificationMode}\"");
-                    }
-
-                    _movieNotificationEngine = new MovieNotificationEngine(GetMovieClient<IMovieSearcher>(_currentSettings), movieNotifier, _logger, _movieNotificationRequestRepository);
-                    _movieNotificationEngine.Start();
+                    _movieNotificationEngine = _movieWorkflowFactory.CreateMovieNotificationEngine(_client, _logger);
                 }
+
+                _movieNotificationEngine.Start();
             }
             catch (System.Exception ex)
             {
@@ -342,24 +232,10 @@ namespace Requestrr.WebApi.RequestrrBot
 
                 if (_currentSettings.TvShowDownloadClient != DownloadClient.Disabled && _currentSettings.NotificationMode != NotificationMode.Disabled)
                 {
-                    ITvShowNotifier tvShowNotifier = null;
-
-                    if (_currentSettings.NotificationMode == NotificationMode.PrivateMessage)
-                    {
-                        tvShowNotifier = new PrivateMessageTvShowNotifier(_client, _discordSettingsProvider, _logger);
-                    }
-                    else if (_currentSettings.NotificationMode == NotificationMode.Channels)
-                    {
-                        tvShowNotifier = new ChannelTvShowNotifier(_client, _discordSettingsProvider, _currentSettings.NotificationChannels, _logger);
-                    }
-                    else
-                    {
-                        throw new Exception($"Could not create tv show notifier of type \"{_currentSettings.NotificationMode}\"");
-                    }
-
-                    _tvShowNotificationEngine = new TvShowNotificationEngine(GetTvShowClient<ITvShowSearcher>(_currentSettings), tvShowNotifier, _logger, _tvShowNotificationRequestRepository);
-                    _tvShowNotificationEngine.Start();
+                    _tvShowNotificationEngine = _tvShowWorkflowFactory.CreateTvShowNotificationEngine(_client, _logger);
                 }
+
+                _tvShowNotificationEngine.Start();
             }
             catch (System.Exception ex)
             {
@@ -367,44 +243,140 @@ namespace Requestrr.WebApi.RequestrrBot
             }
         }
 
-        public async Task MessageReceivedAsync(SocketMessage rawMessage)
+        private async Task DiscordComponentInteractionCreatedHandler(DiscordClient client, ComponentInteractionCreateEventArgs e)
         {
-            if (!(rawMessage is SocketUserMessage message)) return;
-            if (message.Source != MessageSource.User && message.Source != MessageSource.Webhook) return;
+            try
+            {
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
+                var authorId = ulong.Parse(e.Id.Split("/").Skip(1).First());
 
-            var argPos = 0;
+                if (e.User.Id == authorId)
+                {
+                    if (e.Id.ToLower().StartsWith("mr"))
+                    {
+                        await HandleMovieRequestAsync(e);
+                    }
+                    else if (e.Id.ToLower().StartsWith("mnr"))
+                    {
+                        await CreateMovieNotificationWorkflow(e)
+                            .AddNotificationAsync(e.Id.Split("/").Skip(1).First(), int.Parse(e.Id.Split("/").Last()));
+                    }
+                    if (e.Id.ToLower().StartsWith("tr") || e.Id.ToLower().StartsWith("ts"))
+                    {
+                        await HandleTvRequestAsync(e);
+                    }
+                    else if (e.Id.ToLower().StartsWith("tnr"))
+                    {
+                        var splitValues = e.Id.Split("/").Skip(1).ToArray();
+                        var userId = splitValues[0];
+                        var tvDbId = int.Parse(splitValues[1]);
+                        var seasonData = splitValues[02];
 
-            if (!string.IsNullOrWhiteSpace(_currentSettings.CommandPrefix) && !message.HasStringPrefix(_currentSettings.CommandPrefix, ref argPos)) return;
-
-            var context = new SocketCommandContext(_client, message);
-
-            await _commandService.ExecuteAsync(context, argPos, _serviceProvider);
+                        await CreateTvShowNotificationWorkflow(e)
+                            .AddNotificationAsync(userId, tvDbId, seasonData);
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.Error));
+                _logger.LogError(ex, "Error while handling interaction: " + ex.Message);
+            }
         }
 
-        public async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
+        private async Task SlashCommandErrorHandler(SlashCommandsExtension extension, SlashCommandErrorEventArgs args)
         {
-            if (!command.IsSpecified)
-                return;
-
-            if (result.IsSuccess)
-                return;
-
-            if (result.Error == CommandError.BadArgCount)
+            try
             {
-                await context.Channel.SendMessageAsync(command.Value.Summary);
-                return;
+                if (args.Exception is SlashExecutionChecksFailedException slex)
+                {
+                    foreach (var check in slex.FailedChecks)
+                        if (check is RequireChannelsAttribute requireChannelAttribute)
+                            await args.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true).WithContent(Language.Current.DiscordCommandNotAvailableInChannel));
+                        else if (check is RequireRolesAttribute requireRoleAttribute)
+                            await args.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true).WithContent(Language.Current.DiscordCommandMissingRoles));
+                        else
+                            await args.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true).WithContent(Language.Current.DiscordCommandUnknownPrecondition));
+                }
             }
-
-            if (result is ExecuteResult executeResult)
+            catch (System.Exception ex)
             {
-                _logger.LogError(executeResult.Exception, $"An exception occurred while processing a command: {executeResult.Exception.Message}");
+                _logger.LogError(ex, "Error while handling interaction error: " + ex.Message);
             }
-            else
-            {
-                _logger.LogError($"An unknown occurred error while processing a command: {result.ErrorReason}");
-            }
+        }
 
-            await context.Channel.SendMessageAsync(Language.Current.Error);
+        private async Task HandleMovieRequestAsync(ComponentInteractionCreateEventArgs e)
+        {
+            if (e.Id.ToLower().StartsWith("mrs"))
+            {
+                if (e.Values != null && e.Values.Any())
+                {
+                    await CreateMovieRequestWorkFlow(e)
+                        .HandleMovieSelectionAsync(int.Parse(e.Values.Single()));
+                }
+            }
+            else if (e.Id.ToLower().StartsWith("mrc"))
+            {
+                await CreateMovieRequestWorkFlow(e)
+                    .RequestMovieAsync(int.Parse(e.Id.Split("/").Last()));
+            }
+        }
+
+        private async Task HandleTvRequestAsync(ComponentInteractionCreateEventArgs e)
+        {
+            if (e.Id.ToLower().StartsWith("trs"))
+            {
+                if (e.Values != null && e.Values.Any())
+                {
+                    await CreateTvShowRequestWorkFlow(e)
+                        .HandleTvShowSelectionAsync(int.Parse(e.Values.Single()));
+                }
+            }
+            else if (e.Id.ToLower().StartsWith("tss"))
+            {
+                if (e.Values != null && e.Values.Any())
+                {
+                    var splitValues = e.Values.Single().Split("/");
+                    var tvDbId = int.Parse(splitValues.First());
+                    var seasonNumber = int.Parse(splitValues.Last());
+
+                    await CreateTvShowRequestWorkFlow(e)
+                        .HandleSeasonSelectionAsync(tvDbId, seasonNumber);
+                }
+            }
+            else if (e.Id.ToLower().StartsWith("trc"))
+            {
+                var splitValues = e.Id.Split("/").Skip(2);
+                var tvDbId = int.Parse(splitValues.First());
+                var seasonNumber = int.Parse(splitValues.Last());
+
+                await CreateTvShowRequestWorkFlow(e)
+                    .RequestSeasonSelectionAsync(tvDbId, seasonNumber);
+            }
+        }
+
+        private MovieRequestingWorkflow CreateMovieRequestWorkFlow(ComponentInteractionCreateEventArgs e)
+        {
+            return _movieWorkflowFactory
+                .CreateRequestingWorkflow(e.Interaction);
+        }
+
+        private IMovieNotificationWorkflow CreateMovieNotificationWorkflow(ComponentInteractionCreateEventArgs e)
+        {
+            return _movieWorkflowFactory
+                .CreateNotificationWorkflow(e.Interaction);
+        }
+
+        private TvShowRequestingWorkflow CreateTvShowRequestWorkFlow(ComponentInteractionCreateEventArgs e)
+        {
+            return _tvShowWorkflowFactory
+                .CreateRequestingWorkflow(e.Interaction);
+        }
+
+        private ITvShowNotificationWorkflow CreateTvShowNotificationWorkflow(ComponentInteractionCreateEventArgs e)
+        {
+            return _tvShowWorkflowFactory
+                .CreateNotificationWorkflow(e.Interaction);
         }
     }
 }

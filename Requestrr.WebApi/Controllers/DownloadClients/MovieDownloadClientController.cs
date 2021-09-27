@@ -74,8 +74,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                     DefaultApiUserID = _downloadClientsSettings.Overseerr.DefaultApiUserID,
                     UseSSL = _downloadClientsSettings.Overseerr.UseSSL,
                     Version = _downloadClientsSettings.Overseerr.Version
-                },
-                Command = _moviesSettings.Command
+                }
             });
         }
 

@@ -14,6 +14,8 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         public static string CommandPrefix = "[CommandPrefix]";
         public static string TvShowCommand = "[TvShowCommand]";
         public static string MovieCommand = "[MovieCommand]";
+        public static string MovieCommandTitle = "[MovieCommandTitle]";
+        public static string TvShowCommandTitle = "[TvShowCommandTitle]";
     }
 
     public class Language
@@ -21,6 +23,102 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         public static Language Current = null;
 
         public string Error { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Help.Dropdown")]
+        public string DiscordCommandMovieRequestHelpDropdown { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Help.Search.Dropdown")]
+        public string DiscordCommandTvRequestHelpSearchDropdown { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Help.Seasons.Dropdown")]
+        public string DiscordCommandTvRequestHelpSeasonsDropdown { get; set; }
+
+        [JsonProperty("Discord.Command.MissingRoles")]
+        public string DiscordCommandMissingRoles { get; set; }
+
+        [JsonProperty("Discord.Command.NotAvailableInChannel")]
+        public string DiscordCommandNotAvailableInChannel { get; set; }
+
+        [JsonProperty("Discord.Command.UnknownPrecondition")]
+        public string DiscordCommandUnknownPrecondition { get; set; }
+
+        [JsonProperty("Discord.Command.Request.Group.Name")]
+        public string DiscordCommandRequestGroupName { get; set; }
+
+        [JsonProperty("Discord.Command.Request.Group.Description")]
+        public string DiscordCommandRequestGroupDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Group.Name")]
+        public string DiscordCommandMovieRequestGroupName { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Group.Description")]
+        public string DiscordCommandMovieRequestGroupDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Title.Name")]
+        public string DiscordCommandMovieRequestTitleName { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Title.Description")]
+        public string DiscordCommandMovieRequestTitleDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Title.Option.Name")]
+        public string DiscordCommandMovieRequestTitleOptionName { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Title.Option.Description")]
+        public string DiscordCommandMovieRequestTitleOptionDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Tmbd.Name")]
+        public string DiscordCommandMovieRequestTmbdName { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Tmbd.Description")]
+        public string DiscordCommandMovieRequestTmbdDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Tmbd.Option.Name")]
+        public string DiscordCommandMovieRequestTmbdOptionName { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Request.Tmbd.Option.Description")]
+        public string DiscordCommandMovieRequestTmbdOptionDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Group.Name")]
+        public string DiscordCommandTvRequestGroupName { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Group.Description")]
+        public string DiscordCommandTvRequestGroupDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Title.Name")]
+        public string DiscordCommandTvRequestTitleName { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Title.Description")]
+        public string DiscordCommandTvRequestTitleDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Title.Option.Name")]
+        public string DiscordCommandTvRequestTitleOptionName { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Title.Option.Description")]
+        public string DiscordCommandTvRequestTitleOptionDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Tvdb.Name")]
+        public string DiscordCommandTvRequestTvdbName { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Tvdb.Description")]
+        public string DiscordCommandTvRequestTvdbDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Tvdb.Option.Name")]
+        public string DiscordCommandTvRequestTvdbOptionName { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Request.Tvdb.Option.Description")]
+        public string DiscordCommandTvRequestTvdbOptionDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Ping.Request.Name")]
+        public string DiscordCommandPingRequestName { get; set; }
+
+        [JsonProperty("Discord.Command.Ping.Request.Description")]
+        public string DiscordCommandPingRequestDescription { get; set; }
+
+        [JsonProperty("Discord.Command.Help.Request.Name")]
+        public string DiscordCommandHelpRequestName { get; set; }
+
+        [JsonProperty("Discord.Command.Help.Request.Description")]
+        public string DiscordCommandHelpRequestDescription { get; set; }
 
         [JsonProperty("Discord.Notification.Tv.Channel.Season")]
         public string DiscordNotificationTvChannelSeason { get; set; }
@@ -43,20 +141,8 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         [JsonProperty("Discord.Command.Ping.Response")]
         public string DiscordCommandPingResponse { get; set; }
 
-        [JsonProperty("Discord.Command.NotAvailableInDM")]
-        public string DiscordCommandNotAvailableInDM { get; set; }
-
-        [JsonProperty("Discord.Command.Disabled")]
-        public string DiscordCommandDisabled { get; set; }
-
         [JsonProperty("Discord.Command.Help")]
         public string DiscordCommandHelp { get; set; }
-
-        [JsonProperty("Discord.Command.Help.DirectMessage.Failure")]
-        public string DiscordCommandHelpDirectMessageFailure { get; set; }
-
-        [JsonProperty("Discord.Command.Help.DirectMessage.Success")]
-        public string DiscordCommandHelpDirectMessageSuccess { get; set; }
 
         [JsonProperty("Discord.Command.Help.Message")]
         public string DiscordCommandHelpMessage { get; set; }
@@ -67,20 +153,17 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         [JsonProperty("Discord.Command.Movie.NotFoundTMDB")]
         public string DiscordCommandMovieNotFoundTMDB { get; set; }
 
-        [JsonProperty("Discord.Command.Movie.InvalidArguments")]
-        public string DiscordCommandMovieInvalidArguments { get; set; }
-
-        [JsonProperty("Discord.Command.Movie.MissingRoles")]
-        public string DiscordCommandMovieMissingRoles { get; set; }
-
         [JsonProperty("Discord.Command.Movie.AlreadyAvailable")]
         public string DiscordCommandMovieAlreadyAvailable { get; set; }
 
         [JsonProperty("Discord.Command.Movie.Request.Success")]
         public string DiscordCommandMovieRequestSuccess { get; set; }
 
-        [JsonProperty("Discord.Command.Movie.Request.Cancelled")]
-        public string DiscordCommandMovieRequestCancelled { get; set; }
+        [JsonProperty("Discord.Command.NotifyMe")]
+        public string DiscordCommandNotifyMe { get; set; }
+
+        [JsonProperty("Discord.Command.RequestButton")]
+        public string DiscordCommandRequestButton { get; set; }
 
         [JsonProperty("Discord.Command.Movie.Request.Help")]
         public string DiscordCommandMovieRequestHelp { get; set; }
@@ -96,9 +179,6 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
 
         [JsonProperty("Discord.Command.Movie.Request.Denied")]
         public string DiscordCommandMovieRequestDenied { get; set; }
-
-        [JsonProperty("Discord.Command.Movie.Request.Invalid")]
-        public string DiscordCommandMovieRequestInvalid { get; set; }
 
         [JsonProperty("Discord.Command.Movie.NotReleased")]
         public string DiscordCommandMovieNotReleased { get; set; }
@@ -129,12 +209,6 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
 
         [JsonProperty("Discord.Embed.Movie.WatchNow")]
         public string DiscordEmbedMovieWatchNow { get; set; }
-
-        [JsonProperty("Discord.Command.Tv.Request.Invalid")]
-        public string DiscordCommandTvRequestInvalid { get; set; }
-
-        [JsonProperty("Discord.Command.Tv.Request.Cancelled")]
-        public string DiscordCommandTvRequestCancelled { get; set; }
 
         [JsonProperty("Discord.Command.Tv.Request.Help.Search")]
         public string DiscordCommandTvRequestHelpSearch { get; set; }
@@ -204,12 +278,6 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
 
         [JsonProperty("Discord.Command.Tv.NotFound")]
         public string DiscordCommandTvNotFound { get; set; }
-
-        [JsonProperty("Discord.Command.Tv.InvalidArguments")]
-        public string DiscordCommandTvInvalidArguments { get; set; }
-
-        [JsonProperty("Discord.Command.Tv.MissingRoles")]
-        public string DiscordCommandTvMissingRoles { get; set; }
 
         [JsonProperty("Discord.Command.Tv.Notification.Request.Season")]
         public string DiscordCommandTvNotificationRequestSeason { get; set; }

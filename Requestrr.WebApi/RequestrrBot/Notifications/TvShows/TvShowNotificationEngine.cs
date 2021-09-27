@@ -13,7 +13,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
         private object _lock = new object();
         private readonly ITvShowSearcher _tvShowSearcher;
         private readonly ITvShowNotifier _notifier;
-        private readonly ILogger<ChatBot> _logger;
+        private readonly ILogger _logger;
         private readonly TvShowNotificationsRepository _notificationRequestRepository;
         private Task _notificationTask = null;
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
@@ -21,7 +21,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
         public TvShowNotificationEngine(
             ITvShowSearcher tvShowSearcher,
             ITvShowNotifier notifier,
-            ILogger<ChatBot> logger,
+            ILogger logger,
             TvShowNotificationsRepository notificationRequestRepository)
         {
             _tvShowSearcher = tvShowSearcher;

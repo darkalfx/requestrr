@@ -90,9 +90,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             return CreateInstance<ITvShowSearcher>().SearchTvShowAsync(tvShowName);
         }
 
-        public Task<TvShow> GetTvShowDetailsAsync(SearchedTvShow searchedTvShow)
+        public Task<TvShow> GetTvShowDetailsAsync(int theTvDbId)
         {
-            return CreateInstance<ITvShowSearcher>().GetTvShowDetailsAsync(searchedTvShow);
+            return CreateInstance<ITvShowSearcher>().GetTvShowDetailsAsync(theTvDbId);
         }
 
         public Task<IReadOnlyList<TvShow>> GetTvShowDetailsAsync(HashSet<int> theTvDbIds, CancellationToken token)

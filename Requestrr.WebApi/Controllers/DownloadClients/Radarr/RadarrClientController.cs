@@ -104,8 +104,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
         {
             var movieSettings = new MoviesSettings
             {
-                Client = DownloadClient.Radarr,
-                Command = model.Command.Trim()
+                Client = DownloadClient.Radarr
             };
 
             var radarrSetting = new RadarrSettingsModel

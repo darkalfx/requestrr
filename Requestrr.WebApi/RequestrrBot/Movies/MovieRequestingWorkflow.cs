@@ -27,7 +27,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
             _notificationWorkflow = movieNotificationWorkflow;
         }
 
-        public async Task RequestMovieAsync(string movieName)
+        public async Task SearchMovieAsync(string movieName)
         {
             var movies = await SearchMoviesAsync(movieName);
 
@@ -35,17 +35,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
             {
                 if (movies.Count > 1)
                 {
-                    var movieSelection = await _userInterface.GetMovieSelectionAsync(movies);
-
-                    if (!movieSelection.IsCancelled && movieSelection.Movie != null)
-                    {
-                        var movie = movieSelection.Movie;
-                        await HandleMovieSelectionAsync(movie);
-                    }
-                    else if (!movieSelection.IsCancelled)
-                    {
-                        await _userInterface.WarnInvalidMovieSelectionAsync();
-                    }
+                    await _userInterface.ShowMovieSelection(movies);
                 }
                 else if (movies.Count == 1)
                 {
@@ -55,83 +45,71 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
             }
         }
 
-        public async Task<IReadOnlyList<Movie>> SearchMoviesAsync(string movieName)
+        public async Task SearchMovieAsync(int theMovieDbId)
+        {
+            try
+            {
+                var movie = await _searcher.SearchMovieAsync(theMovieDbId);
+                await HandleMovieSelectionAsync(movie);
+            }
+            catch
+            {
+                await _userInterface.WarnNoMovieFoundByTheMovieDbIdAsync(theMovieDbId.ToString());
+            }
+        }
+
+        private async Task<IReadOnlyList<Movie>> SearchMoviesAsync(string movieName)
         {
             IReadOnlyList<Movie> movies = Array.Empty<Movie>();
 
-            if (movieName.Trim().ToLower().StartsWith("tmdb"))
+            movieName = movieName.Replace(".", " ");
+            movies = await _searcher.SearchMovieAsync(movieName);
+
+            if (!movies.Any())
             {
-                var theMovieDbIdTextValue = movieName.ToLower().Split("tmdb")[1]?.Trim();
-
-                if (int.TryParse(theMovieDbIdTextValue, out var theMovieDbId))
-                {
-                    try
-                    {
-                        var movie = await _searcher.SearchMovieAsync(theMovieDbId);
-                        movies = new List<Movie> { movie }.Where(x => x != null).ToArray();
-                    }
-                    catch
-                    {
-                        movies = new List<Movie>();
-                    }
-
-                    if (!movies.Any())
-                    {
-                        await _userInterface.WarnNoMovieFoundByTheMovieDbIdAsync(theMovieDbIdTextValue);
-                    }
-                }
-                else
-                {
-                    await _userInterface.WarnNoMovieFoundByTheMovieDbIdAsync(theMovieDbIdTextValue);
-                }
-            }
-            else
-            {
-                movieName = movieName.Replace(".", " ");
-                movies = await _searcher.SearchMovieAsync(movieName);
-
-                if (!movies.Any())
-                {
-                    await _userInterface.WarnNoMovieFoundAsync(movieName);
-                }
+                await _userInterface.WarnNoMovieFoundAsync(movieName);
             }
 
             return movies;
         }
 
+        public async Task HandleMovieSelectionAsync(int theMovieDbId)
+        {
+            await HandleMovieSelectionAsync(await _searcher.SearchMovieAsync(theMovieDbId));
+        }
+
         private async Task HandleMovieSelectionAsync(Movie movie)
         {
-            await _userInterface.DisplayMovieDetailsAsync(movie);
-
             if (CanBeRequested(movie))
             {
-                var wasRequested = await _userInterface.GetMovieRequestAsync(movie);
-
-                if (wasRequested)
-                {
-                    var result = await _requester.RequestMovieAsync(_user, movie);
-
-                    if (result.WasDenied)
-                    {
-                        await _userInterface.DisplayRequestDeniedAsync(movie);
-                    }
-                    else
-                    {
-                        await _userInterface.DisplayRequestSuccessAsync(movie);
-                        await _notificationWorkflow.NotifyForNewRequestAsync(_user.UserId, movie);
-                    }
-                }
+                await _userInterface.DisplayMovieDetailsAsync(movie);
             }
             else
             {
                 if (movie.Available)
                 {
-                    await _userInterface.WarnMovieAlreadyAvailableAsync();
+                    await _userInterface.WarnMovieAlreadyAvailableAsync(movie);
                 }
                 else
                 {
                     await _notificationWorkflow.NotifyForExistingRequestAsync(_user.UserId, movie);
                 }
+            }
+        }
+
+        public async Task RequestMovieAsync(int theMovieDbId)
+        {
+            var movie = await _searcher.SearchMovieAsync(theMovieDbId);
+            var result = await _requester.RequestMovieAsync(_user, movie);
+
+            if (result.WasDenied)
+            {
+                await _userInterface.DisplayRequestDeniedAsync(movie);
+            }
+            else
+            {
+                await _userInterface.DisplayRequestSuccessAsync(movie);
+                await _notificationWorkflow.NotifyForNewRequestAsync(_user.UserId, movie);
             }
         }
 

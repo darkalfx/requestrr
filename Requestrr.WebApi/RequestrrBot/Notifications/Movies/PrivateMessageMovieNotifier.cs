@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using DSharpPlus;
+using DSharpPlus.Entities;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.Locale;
@@ -12,12 +13,12 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
 {
     public class PrivateMessageMovieNotifier : IMovieNotifier
     {
-        private readonly DiscordSocketClient _discordClient;
-        private readonly ILogger<ChatBot> _logger;
+        private readonly DiscordClient _discordClient;
+        private readonly ILogger _logger;
 
         public PrivateMessageMovieNotifier(
-            DiscordSocketClient discordClient,
-            ILogger<ChatBot> logger)
+            DiscordClient discordClient,
+            ILogger logger)
         {
             _discordClient = discordClient;
             _logger = logger;
@@ -34,15 +35,25 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
 
                 try
                 {
-                    var user = _discordClient.GetUser(ulong.Parse(userId));
+                    DiscordMember user = null;
+
+                    foreach (var guild in _discordClient.Guilds.Values)
+                    {
+                        try
+                        {
+                             user = await guild.GetMemberAsync(ulong.Parse(userId));
+                             break;
+                        }
+                        catch{}
+                    }
 
                     if (user != null)
                     {
-                        var channel = await user.GetOrCreateDMChannelAsync();
-                        await channel.SendMessageAsync(Language.Current.DiscordNotificationMovieDM.ReplaceTokens(movie), false, await DiscordMovieRequestingWorkFlow.GenerateMovieDetailsAsync(movie, user));
+                        var channel = await user.CreateDmChannelAsync();
+                        await channel.SendMessageAsync(Language.Current.DiscordNotificationMovieDM.ReplaceTokens(movie), await DiscordMovieUserInterface.GenerateMovieDetailsAsync(movie));
                         userNotified.Add(userId);
                     }
-                    else if (!token.IsCancellationRequested && _discordClient.ConnectionState == ConnectionState.Connected)
+                    else if (!token.IsCancellationRequested)
                     {
                         _logger.LogWarning($"An error occurred while sending a movie notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
                     }

@@ -46,7 +46,6 @@ export default function TvShowsClientsReducer(state = {}, action) {
         useSSL: action.payload.sonarr.useSSL,
         version: action.payload.sonarr.version
       },
-      command: action.payload.command,
       restrictions: action.payload.restrictions
     }
   }
@@ -60,7 +59,6 @@ export default function TvShowsClientsReducer(state = {}, action) {
     return {
       ...state,
       sonarr: action.payload.sonarr,
-      command: action.payload.command,
       restrictions: action.payload.restrictions,
       client: "Sonarr"
     }
@@ -69,7 +67,6 @@ export default function TvShowsClientsReducer(state = {}, action) {
     return {
       ...state,
       ombi: action.payload.ombi,
-      command: action.payload.command,
       restrictions: action.payload.restrictions,
       client: "Ombi"
     }
@@ -78,7 +75,6 @@ export default function TvShowsClientsReducer(state = {}, action) {
     return {
       ...state,
       overseerr: action.payload.overseerr,
-      command: action.payload.command,
       restrictions: action.payload.restrictions,
       client: "Overseerr"
     }

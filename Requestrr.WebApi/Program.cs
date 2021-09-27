@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -44,7 +45,7 @@ namespace Requestrr.WebApi
 
         private static void SetLanguage()
         {
-            Language.Current = JsonConvert.DeserializeObject<Language>(File.ReadAllText($"Locale/{SettingsFile.Read().ChatClients.Language}.json"));
+            Language.Current = JsonConvert.DeserializeObject<Language>(File.ReadAllText($"locales/{SettingsFile.Read().ChatClients.Language}.json"));
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
