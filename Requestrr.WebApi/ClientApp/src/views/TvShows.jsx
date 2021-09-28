@@ -249,10 +249,29 @@ class TvShows extends React.Component {
                               </>
                               : null
                           }
+                          <hr className="my-4" />
+                          <h6 className="heading-small text-muted mb-4">
+                            Chat Command Options
+                          </h6>
                         </>
                         : null
                     }
                     <div className="pl-lg-4">
+                      {
+                        this.state.client !== "Disabled"
+                          ? <>
+                            <Row>
+                              <Col lg="4">
+                                <Dropdown
+                                  name="Restrictions"
+                                  value={this.state.restrictions}
+                                  items={[{ name: "No restrictions", value: "None" }, { name: "Force all seasons", value: "AllSeasons" }, { name: "Force single season", value: "SingleSeason" }]}
+                                  onChange={newRestrictions => { this.setState({ restrictions: newRestrictions }) }} />
+                              </Col>
+                            </Row>
+                          </>
+                          : null
+                      }
                       <Row>
                         <Col>
                           <FormGroup className="mt-4">

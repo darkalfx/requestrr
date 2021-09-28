@@ -606,7 +606,7 @@ class ChatClients extends React.Component {
                       <Row>
                         <Col>
                           <FormGroup className="text-right">
-                            <Input id="discordlink" readOnly={true} className="d-none" value={"https://discord.com/api/oauth2/authorize?&client_id=" + this.state.clientId + "&scope=bot&permissions=522304"} />
+                            <Input id="discordlink" readOnly={true} className="d-none" value={"https://discord.com/api/oauth2/authorize?client_id=" + this.state.clientId + "&permissions=522304&scope=bot%20applications.commands"} />
                             <button onClick={this.onTestSettings} disabled={!(this.validateBotToken() && this.validateClientId())} className="btn mt-3 btn-icon btn-3 btn-default" type="button">
                               <span className="btn-inner--icon">
                                 {

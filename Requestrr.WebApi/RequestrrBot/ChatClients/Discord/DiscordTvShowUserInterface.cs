@@ -62,12 +62,15 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public async Task DisplayNotificationSuccessForSeasonAsync(TvShow tvShow, TvSeason requestedSeason)
         {
+            var embed = GenerateTvShowDetailsAsync(tvShow);
+            var successButton = new DiscordButtonComponent(ButtonStyle.Success, $"0/1/0", Language.Current.DiscordCommandNotifyMeSuccess);
+
             if (requestedSeason is FutureTvSeasons)
             {
-                await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.DiscordCommandTvNotificationSuccessFutureSeasons.ReplaceTokens(tvShow)));
+                await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(successButton).WithContent(Language.Current.DiscordCommandTvNotificationSuccessFutureSeasons.ReplaceTokens(tvShow)));
             }
 
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.DiscordCommandTvNotificationSuccessSeason.ReplaceTokens(tvShow, requestedSeason.SeasonNumber)));
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(successButton).WithContent(Language.Current.DiscordCommandTvNotificationSuccessSeason.ReplaceTokens(tvShow, requestedSeason.SeasonNumber)));
         }
 
         public async Task AskForSeasonNotificationRequestAsync(TvShow tvShow, TvSeason selectedSeason)
@@ -96,20 +99,27 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(requestButton).WithContent(message));
         }
 
-        public async Task DisplayRequestDeniedForSeasonAsync(TvSeason selectedSeason)
+        public async Task DisplayRequestDeniedForSeasonAsync(TvShow tvShow, TvSeason selectedSeason)
         {
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.DiscordCommandTvRequestDenied));
+            var embed = GenerateTvShowDetailsAsync(tvShow);
+            var deniedButton = new DiscordButtonComponent(ButtonStyle.Danger, $"0/1/0", Language.Current.DiscordCommandRequestButtonDenied);
+
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(deniedButton).WithContent(Language.Current.DiscordCommandTvRequestDenied));
         }
 
         public async Task DisplayRequestSuccessForSeasonAsync(TvShow tvShow, TvSeason season)
         {
+            var embed = GenerateTvShowDetailsAsync(tvShow);
+
             var message = season is AllTvSeasons
                 ? Language.Current.DiscordCommandTvRequestSuccessAllSeasons.ReplaceTokens(tvShow, season.SeasonNumber)
                 : season is FutureTvSeasons
                     ? Language.Current.DiscordCommandTvRequestSuccessFutureSeasons.ReplaceTokens(tvShow, season.SeasonNumber)
                     : Language.Current.DiscordCommandTvRequestSuccessSeason.ReplaceTokens(tvShow, season.SeasonNumber);
 
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(message));
+
+            var successButton = new DiscordButtonComponent(ButtonStyle.Success, $"0/1/0", Language.Current.DiscordCommandRequestButtonSuccess);
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddComponents(successButton).AddEmbed(embed).WithContent(message));
         }
 
         public async Task DisplayTvShowDetailsForSeasonAsync(TvShow tvShow, TvSeason season)

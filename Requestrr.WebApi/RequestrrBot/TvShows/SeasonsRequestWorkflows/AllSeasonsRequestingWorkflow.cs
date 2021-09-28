@@ -36,7 +36,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
 
             if (result.WasDenied)
             {
-                await _userInterface.DisplayRequestDeniedForSeasonAsync(selectedSeason);
+                await _userInterface.DisplayRequestDeniedForSeasonAsync(tvShow, selectedSeason);
             }
             else
             {

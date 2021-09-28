@@ -9,6 +9,7 @@ using Requestrr.WebApi.Extensions;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.Movies;
 using Requestrr.WebApi.RequestrrBot.TvShows;
+using Requestrr.WebApi.RequestrrBot.Locale;
 
 namespace Requestrr.WebApi.RequestrrBot
 {
@@ -27,108 +28,91 @@ namespace Requestrr.WebApi.RequestrrBot
         [SlashCommandGroup("[REQUEST_GROUP_NAME]", "[REQUEST_GROUP_DESCRIPTION]")]
         public class RequestGroup : ApplicationCommandModule
         {
-            [MOVIE_COMMAND_START]
-            [SlashCommandGroup("[REQUEST_MOVIE_GROUP_NAME]", "[REQUEST_MOVIE_GROUP_DESCRIPTION]")]
-            public class RequestMovieCommands : ApplicationCommandModule
+            private readonly IServiceProvider _serviceProvider;
+            private readonly ILogger _logger;
+
+            public RequestGroup(IServiceProvider serviceProvider)
             {
-                private readonly IServiceProvider _serviceProvider;
-                private readonly ILogger _logger;
+                _serviceProvider = serviceProvider;
+                _logger = _serviceProvider.Get<ILogger>();
+            }
 
-                public RequestMovieCommands(IServiceProvider serviceProvider)
+            [MOVIE_COMMAND_START]
+            [SlashCommand("[REQUEST_MOVIE_TITLE_NAME]", "[REQUEST_MOVIE_TITLE_DESCRIPTION]")]
+            [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
+            [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
+            public async Task MovieByTitle(InteractionContext ctx, [Option("[REQUEST_MOVIE_TITLE_OPTION_NAME]", "[REQUEST_MOVIE_TITLE_OPTION_DESCRIPTION]")] string movieTitle)
+            {
+                try
                 {
-                    _serviceProvider = serviceProvider;
-                    _logger = _serviceProvider.Get<ILogger>();
+                    var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
+
+                    var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
+                    await workFlow.SearchMovieAsync(movieTitle.Trim());
                 }
-
-                [SlashCommand("[REQUEST_MOVIE_TITLE_NAME]", "[REQUEST_MOVIE_TITLE_DESCRIPTION]")]
-                [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
-                [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
-                public async Task ByTitle(InteractionContext ctx, [Option("[REQUEST_MOVIE_TITLE_OPTION_NAME]", "[REQUEST_MOVIE_TITLE_OPTION_DESCRIPTION]")] string movieTitle)
+                catch (System.Exception ex)
                 {
-                    try
-                    {
-                        var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
-                        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages));
-
-                        var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
-                        await workFlow.SearchMovieAsync(movieTitle.Trim());
-                    }
-                    catch (System.Exception ex)
-                    {
-                        _logger.LogError(ex, "Error while sending help command: " + ex.Message);
-                    }
+                    _logger.LogError(ex, "Error while sending help command: " + ex.Message);
                 }
+            }
 
-                [SlashCommand("[REQUEST_MOVIE_TMDB_NAME]", "[REQUEST_MOVIE_TMDB_DESCRIPTION]")]
-                [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
-                [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
-                public async Task ByTmdb(InteractionContext ctx, [Option("[REQUEST_MOVIE_TMDB_OPTION_NAME]", "[REQUEST_MOVIE_TMDB_OPTION_DESCRIPTION]")] long theMovieDbId)
+            [SlashCommand("[REQUEST_MOVIE_TMDB_NAME]", "[REQUEST_MOVIE_TMDB_DESCRIPTION]")]
+            [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
+            [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
+            public async Task ByTmdb(InteractionContext ctx, [Option("[REQUEST_MOVIE_TMDB_OPTION_NAME]", "[REQUEST_MOVIE_TMDB_OPTION_DESCRIPTION]")] long theMovieDbId)
+            {
+                try
                 {
-                    try
-                    {
-                        var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
-                        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages));
+                    var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
 
-                        var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
-                        await workFlow.SearchMovieAsync((int)theMovieDbId);
-                    }
-                    catch (System.Exception ex)
-                    {
-                        _logger.LogError(ex, "Error while sending help command: " + ex.Message);
-                    }
+                    var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
+                    await workFlow.SearchMovieAsync((int)theMovieDbId);
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, "Error while sending help command: " + ex.Message);
                 }
             }
             [MOVIE_COMMAND_END]
 
             [TV_COMMAND_START]
-            [SlashCommandGroup("[REQUEST_TV_GROUP_NAME]", "[REQUEST_TV_GROUP_DESCRIPTION]")]
-            public class RequestTvShowCommands : ApplicationCommandModule
+            [SlashCommand("[REQUEST_TV_TITLE_NAME]", "[REQUEST_TV_TITLE_DESCRIPTION]")]
+            [RequireRoles(new ulong[] { [REQUIRED_TV_ROLE_IDS] })]
+            [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
+            public async Task TvByTitle(InteractionContext ctx, [Option("[REQUEST_TV_TITLE_OPTION_NAME]", "[REQUEST_TV_TITLE_OPTION_DESCRIPTION]")] string tvShowTitle)
             {
-                private readonly IServiceProvider _serviceProvider;
-                private readonly ILogger _logger;
-
-                public RequestTvShowCommands(IServiceProvider serviceProvider)
+                try
                 {
-                    _serviceProvider = serviceProvider;
-                    _logger = _serviceProvider.Get<ILogger>();
+                    var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
+
+                    var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
+                    await workFlow.SearchTvShowAsync(tvShowTitle.Trim());
                 }
-
-                [SlashCommand("[REQUEST_TV_TITLE_NAME]", "[REQUEST_TV_TITLE_DESCRIPTION]")]
-                [RequireRoles(new ulong[] { [REQUIRED_TV_ROLE_IDS] })]
-                [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
-                public async Task ByTitle(InteractionContext ctx, [Option("[REQUEST_TV_TITLE_OPTION_NAME]", "[REQUEST_TV_TITLE_OPTION_DESCRIPTION]")] string tvShowTitle)
+                catch (System.Exception ex)
                 {
-                    try
-                    {
-                        var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
-                        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages));
-
-                        var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
-                        await workFlow.SearchTvShowAsync(tvShowTitle.Trim());
-                    }
-                    catch (System.Exception ex)
-                    {
-                        _logger.LogError(ex, "Error while sending help command: " + ex.Message);
-                    }
+                    _logger.LogError(ex, "Error while sending help command: " + ex.Message);
                 }
+            }
 
-                [SlashCommand("[REQUEST_TV_TVDB_NAME]", "[REQUEST_TV_TVDB_DESCRIPTION]")]
-                [RequireRoles(new ulong[] { [REQUIRED_TV_ROLE_IDS] })]
-                [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
-                public async Task ByTvdb(InteractionContext ctx, [Option("[REQUEST_TV_TVDB_OPTION_NAME]", "[REQUEST_TV_TVDB_OPTION_DESCRIPTION]")] long tvDbID)
+            [SlashCommand("[REQUEST_TV_TVDB_NAME]", "[REQUEST_TV_TVDB_DESCRIPTION]")]
+            [RequireRoles(new ulong[] { [REQUIRED_TV_ROLE_IDS] })]
+            [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
+            public async Task ByTvdb(InteractionContext ctx, [Option("[REQUEST_TV_TVDB_OPTION_NAME]", "[REQUEST_TV_TVDB_OPTION_DESCRIPTION]")] long tvDbID)
+            {
+                try
                 {
-                    try
-                    {
-                        var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
-                        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages));
+                    var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
 
-                        var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
-                        await workFlow.SearchTvShowAsync((int)tvDbID);
-                    }
-                    catch (System.Exception ex)
-                    {
-                        _logger.LogError(ex, "Error while sending help command: " + ex.Message);
-                    }
+                    var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
+                    await workFlow.SearchTvShowAsync((int)tvDbID);
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, "Error while sending help command: " + ex.Message);
                 }
             }
             [TV_COMMAND_END]

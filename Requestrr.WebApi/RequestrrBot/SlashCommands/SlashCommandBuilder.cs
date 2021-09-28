@@ -49,7 +49,10 @@ namespace Requestrr.WebApi.RequestrrBot
               .AddReferences(references)
               .AddSyntaxTrees(tree);
 
-            string path = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+            var dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            var tmpDirectory = dirInfo.EnumerateDirectories().Where(x => x.Name == "tmp").Single().FullName;
+
+            string path = Path.Combine(tmpDirectory, fileName);
 
             var compilationResult = compilation.Emit(path);
             if (compilationResult.Success)
@@ -62,11 +65,11 @@ namespace Requestrr.WebApi.RequestrrBot
                 foreach (Diagnostic codeIssue in compilationResult.Diagnostics)
                 {
                     string issue = $"ID: {codeIssue.Id}, Message: {codeIssue.GetMessage()}, Location: { codeIssue.Location.GetLineSpan()},Severity: { codeIssue.Severity}";
-                    logger.LogError("Failed to create SlashCommands: " + issue);
+                    logger.LogError("Failed to build SlashCommands assembly: " + issue);
                 }
             }
 
-            throw new Exception("Failed to create SlashCommands.");
+            throw new Exception("Failed to build SlashCommands assembly.");
         }
 
         private static string GetCode(DiscordSettings settings)
@@ -75,8 +78,6 @@ namespace Requestrr.WebApi.RequestrrBot
 
             code = code.Replace("[REQUEST_GROUP_NAME]", Language.Current.DiscordCommandRequestGroupName);
             code = code.Replace("[REQUEST_GROUP_DESCRIPTION]", Language.Current.DiscordCommandRequestGroupDescription);
-            code = code.Replace("[REQUEST_MOVIE_GROUP_NAME]", Language.Current.DiscordCommandMovieRequestGroupName);
-            code = code.Replace("[REQUEST_MOVIE_GROUP_DESCRIPTION]", Language.Current.DiscordCommandMovieRequestGroupDescription);
             code = code.Replace("[REQUEST_MOVIE_TITLE_NAME]", Language.Current.DiscordCommandMovieRequestTitleName);
             code = code.Replace("[REQUEST_MOVIE_TITLE_DESCRIPTION]", Language.Current.DiscordCommandMovieRequestTitleDescription);
             code = code.Replace("[REQUEST_MOVIE_TITLE_OPTION_NAME]", Language.Current.DiscordCommandMovieRequestTitleOptionName);
@@ -85,12 +86,10 @@ namespace Requestrr.WebApi.RequestrrBot
             code = code.Replace("[REQUEST_MOVIE_TMDB_DESCRIPTION]", Language.Current.DiscordCommandMovieRequestTmbdDescription);
             code = code.Replace("[REQUEST_MOVIE_TMDB_OPTION_NAME]", Language.Current.DiscordCommandMovieRequestTmbdOptionName);
             code = code.Replace("[REQUEST_MOVIE_TMDB_OPTION_DESCRIPTION]", Language.Current.DiscordCommandMovieRequestTmbdOptionDescription);
-            code = code.Replace("[REQUEST_TV_GROUP_NAME]", Language.Current.DiscordCommandTvRequestGroupName);
-            code = code.Replace("[REQUEST_TV_GROUP_DESCRIPTION]", Language.Current.DiscordCommandTvRequestGroupDescription);
             code = code.Replace("[REQUEST_TV_TITLE_NAME]", Language.Current.DiscordCommandTvRequestTitleName);
             code = code.Replace("[REQUEST_TV_TITLE_DESCRIPTION]", Language.Current.DiscordCommandTvRequestTitleDescription);
-            code = code.Replace("[REQUEST_TV_TITLE_OPTION_NAME]", Language.Current.DiscordCommandTvRequestTvdbOptionName);
-            code = code.Replace("[REQUEST_TV_TITLE_OPTION_DESCRIPTION]", Language.Current.DiscordCommandTvRequestTvdbOptionDescription);
+            code = code.Replace("[REQUEST_TV_TITLE_OPTION_NAME]", Language.Current.DiscordCommandTvRequestTitleOptionName);
+            code = code.Replace("[REQUEST_TV_TITLE_OPTION_DESCRIPTION]", Language.Current.DiscordCommandTvRequestTitleOptionDescription);
             code = code.Replace("[REQUEST_TV_TVDB_NAME]", Language.Current.DiscordCommandTvRequestTvdbName);
             code = code.Replace("[REQUEST_TV_TVDB_DESCRIPTION]", Language.Current.DiscordCommandTvRequestTvdbDescription);
             code = code.Replace("[REQUEST_TV_TVDB_OPTION_NAME]", Language.Current.DiscordCommandTvRequestTvdbOptionName);
@@ -149,7 +148,9 @@ namespace Requestrr.WebApi.RequestrrBot
         {
             try
             {
-                var filesToDelete = Directory.GetFiles(Directory.GetCurrentDirectory(), $"*.dll");
+                var dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+                var tmpDirectory = dirInfo.EnumerateDirectories().Where(x => x.Name == "tmp").Single().FullName;
+                var filesToDelete = Directory.GetFiles(tmpDirectory, $"*.dll");
 
                 foreach (var dllToDelete in filesToDelete.Where(x => x.Contains(SlashCommandBuilder.DLLFileName, StringComparison.OrdinalIgnoreCase)))
                 {

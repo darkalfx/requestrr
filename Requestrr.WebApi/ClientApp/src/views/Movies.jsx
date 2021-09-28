@@ -247,6 +247,7 @@ class Movies extends React.Component {
                         </>
                         : null
                     }
+                    <hr className="my-4" />
                     <div className="pl-lg-4">
                       <Row>
                         <Col>

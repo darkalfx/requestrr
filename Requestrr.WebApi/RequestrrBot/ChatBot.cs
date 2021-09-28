@@ -159,29 +159,33 @@ namespace Requestrr.WebApi.RequestrrBot
                 {
                     if (_client.Guilds.Any())
                     {
-                        await _client.UpdateStatusAsync(new DiscordActivity(newSettings.StatusMessage, ActivityType.Playing));
-                        
+                        await ApplyBotConfigurationAsync(newSettings);
+
                         var prop = _slashCommands.GetType().GetProperty("_updateList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                         prop.SetValue(_slashCommands, new List<KeyValuePair<ulong?, Type>>());
-                        
+
                         var slashCommandType = SlashCommandBuilder.Build(_logger, newSettings);
 
                         if (newSettings.EnableRequestsThroughDirectMessages)
                         {
-                            _slashCommands.RegisterCommands(slashCommandType);
+                            try { _slashCommands.RegisterCommands(slashCommandType); }
+                            catch (System.Exception ex) { _logger.LogError(ex, "Error while registering global slash commands: " + ex.Message); }
 
                             foreach (var guildId in _client.Guilds.Keys)
                             {
-                                _slashCommands.RegisterCommands<EmptySlashCommands>(guildId);
+                                try { _slashCommands.RegisterCommands<EmptySlashCommands>(guildId); }
+                                catch (System.Exception ex) { _logger.LogError(ex, $"Error while emptying guild-specific slash commands for guid {guildId}: " + ex.Message); }
                             }
                         }
                         else
                         {
-                            _slashCommands.RegisterCommands<EmptySlashCommands>();
+                            try { _slashCommands.RegisterCommands<EmptySlashCommands>(); }
+                            catch (System.Exception ex) { _logger.LogError(ex, "Error while emptying global slash commands: " + ex.Message); }
 
                             foreach (var guildId in _client.Guilds.Keys)
                             {
-                                _slashCommands.RegisterCommands(slashCommandType, guildId);
+                                try { _slashCommands.RegisterCommands(slashCommandType, guildId); }
+                                catch (System.Exception ex) { _logger.LogError(ex, $"Error while registering guild-specific slash commands for guid {guildId}: " + ex.Message); }
                             }
                         }
 
@@ -195,14 +199,21 @@ namespace Requestrr.WebApi.RequestrrBot
             }
         }
 
-        private async Task ApplyBotConfigurationAsync(DiscordSettings discordSettings)
-        {
-            await _client.UpdateStatusAsync(new DiscordActivity(discordSettings.StatusMessage, ActivityType.Playing));
-        }
-
         private async Task Connected(DiscordClient client, ReadyEventArgs args)
         {
             await ApplyBotConfigurationAsync(_currentSettings);
+        }
+
+        private async Task ApplyBotConfigurationAsync(DiscordSettings discordSettings)
+        {
+            try
+            {
+                await _client.UpdateStatusAsync(new DiscordActivity(discordSettings.StatusMessage, ActivityType.Playing));
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "Error update the bot's status: " + ex.Message);
+            }
 
             try
             {

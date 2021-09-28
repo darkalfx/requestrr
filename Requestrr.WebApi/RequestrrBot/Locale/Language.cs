@@ -12,8 +12,8 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         public static string BotUsername = "[BotUsername]";
         public static string MovieTMDB = "[MovieTMDB]";
         public static string CommandPrefix = "[CommandPrefix]";
-        public static string TvShowCommand = "[TvShowCommand]";
-        public static string MovieCommand = "[MovieCommand]";
+        public static string TvShowCommandTvDb = "[TvShowCommandTvDb]";
+        public static string MovieCommandTmDb = "[MovieCommandTmDb]";
         public static string MovieCommandTitle = "[MovieCommandTitle]";
         public static string TvShowCommandTitle = "[TvShowCommandTitle]";
     }
@@ -42,17 +42,14 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         [JsonProperty("Discord.Command.UnknownPrecondition")]
         public string DiscordCommandUnknownPrecondition { get; set; }
 
+        [JsonProperty("Discord.Command.Sending")]
+        public string DiscordCommandSending { get; set; }
+
         [JsonProperty("Discord.Command.Request.Group.Name")]
         public string DiscordCommandRequestGroupName { get; set; }
 
         [JsonProperty("Discord.Command.Request.Group.Description")]
         public string DiscordCommandRequestGroupDescription { get; set; }
-
-        [JsonProperty("Discord.Command.Movie.Request.Group.Name")]
-        public string DiscordCommandMovieRequestGroupName { get; set; }
-
-        [JsonProperty("Discord.Command.Movie.Request.Group.Description")]
-        public string DiscordCommandMovieRequestGroupDescription { get; set; }
 
         [JsonProperty("Discord.Command.Movie.Request.Title.Name")]
         public string DiscordCommandMovieRequestTitleName { get; set; }
@@ -77,12 +74,6 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
 
         [JsonProperty("Discord.Command.Movie.Request.Tmbd.Option.Description")]
         public string DiscordCommandMovieRequestTmbdOptionDescription { get; set; }
-
-        [JsonProperty("Discord.Command.Tv.Request.Group.Name")]
-        public string DiscordCommandTvRequestGroupName { get; set; }
-
-        [JsonProperty("Discord.Command.Tv.Request.Group.Description")]
-        public string DiscordCommandTvRequestGroupDescription { get; set; }
 
         [JsonProperty("Discord.Command.Tv.Request.Title.Name")]
         public string DiscordCommandTvRequestTitleName { get; set; }
@@ -159,8 +150,17 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         [JsonProperty("Discord.Command.Movie.Request.Success")]
         public string DiscordCommandMovieRequestSuccess { get; set; }
 
+        [JsonProperty("Discord.Command.RequestButtonDenied")]
+        public string DiscordCommandRequestButtonDenied { get; set; }
+
+        [JsonProperty("Discord.Command.RequestButtonSuccess")]
+        public string DiscordCommandRequestButtonSuccess { get; set; }
+
         [JsonProperty("Discord.Command.NotifyMe")]
         public string DiscordCommandNotifyMe { get; set; }
+
+        [JsonProperty("Discord.Command.NotifyMeSuccess")]
+        public string DiscordCommandNotifyMeSuccess { get; set; }
 
         [JsonProperty("Discord.Command.RequestButton")]
         public string DiscordCommandRequestButton { get; set; }

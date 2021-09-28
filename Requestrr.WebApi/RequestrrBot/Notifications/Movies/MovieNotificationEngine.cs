@@ -66,7 +66,7 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
                          _logger.LogError(ex, "An error occurred while retrieving all movie notification: " + ex.Message);
                      }
 
-                     await Task.Delay(TimeSpan.FromMinutes(5), _tokenSource.Token);
+                     await Task.Delay(TimeSpan.FromMinutes(1), _tokenSource.Token);
                  }
              }, _tokenSource.Token);
         }
