@@ -201,7 +201,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
 
             if (tvShow.IsMultiSeasons())
             {
-                if (_settings.Restrictions == TvShowsRestrictions.AllSeasons || tvShow.Seasons.Length <= 25)
+                if (_settings.Restrictions == TvShowsRestrictions.AllSeasons || tvShow.Seasons.Length <= 24)
                 {
                     tvShow.Seasons = tvShow.Seasons.Prepend(new AllTvSeasons
                     {
