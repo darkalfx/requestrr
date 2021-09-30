@@ -46,11 +46,8 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             }
         }
 
-        public async Task AddNotificationAsync(string userId, int theTvDbId, string seasonData)
+        public async Task AddNotificationAsync(string userId, int theTvDbId, string seasonType, int seasonNumber)
         {
-            var seasonType = seasonData.Split("|").First();
-            var seasonNumber = int.Parse(seasonData.Split("|").Last());
-
             TvSeason selectedSeason;
 
             var tvShow = await _tvShowSearcher.GetTvShowDetailsAsync(theTvDbId);

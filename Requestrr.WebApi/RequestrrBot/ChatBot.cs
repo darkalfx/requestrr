@@ -127,13 +127,17 @@ namespace Requestrr.WebApi.RequestrrBot
                         _slashCommands.SlashCommandErrored -= SlashCommandErrorHandler;
                     }
 
-                    _client = new DiscordClient(new DiscordConfiguration()
+                    var config = new DiscordConfiguration()
                     {
                         Token = newSettings.BotToken,
                         TokenType = TokenType.Bot,
                         AutoReconnect = true,
-                        MinimumLogLevel = LogLevel.Warning
-                    });
+                        MinimumLogLevel = LogLevel.Warning,
+                        Intents = DiscordIntents.All,
+                        ReconnectIndefinitely = true
+                    };
+
+                    _client = new DiscordClient(config);
 
                     _slashCommands = _client.UseSlashCommands(new SlashCommandsConfiguration
                     {
@@ -259,6 +263,7 @@ namespace Requestrr.WebApi.RequestrrBot
             try
             {
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
+
                 var authorId = ulong.Parse(e.Id.Split("/").Skip(1).First());
 
                 if (e.User.Id == authorId)
@@ -281,10 +286,11 @@ namespace Requestrr.WebApi.RequestrrBot
                         var splitValues = e.Id.Split("/").Skip(1).ToArray();
                         var userId = splitValues[0];
                         var tvDbId = int.Parse(splitValues[1]);
-                        var seasonData = splitValues[02];
+                        var seasonType = splitValues[2];
+                        var seasonNumber = splitValues[3];
 
                         await CreateTvShowNotificationWorkflow(e)
-                            .AddNotificationAsync(userId, tvDbId, seasonData);
+                            .AddNotificationAsync(userId, tvDbId, seasonType, int.Parse(seasonNumber));
                     }
                 }
             }

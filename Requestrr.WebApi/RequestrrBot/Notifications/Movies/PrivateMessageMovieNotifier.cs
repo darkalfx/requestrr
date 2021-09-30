@@ -28,39 +28,43 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
         {
             var userNotified = new HashSet<string>();
 
-            foreach (var userId in userIds)
+            if (_discordClient.Guilds.Any())
             {
-                if (token.IsCancellationRequested)
-                    return userNotified;
-
-                try
+                foreach (var userId in userIds)
                 {
-                    DiscordMember user = null;
+                    if (token.IsCancellationRequested)
+                        return userNotified;
 
-                    foreach (var guild in _discordClient.Guilds.Values)
+                    try
                     {
-                        try
+                        DiscordMember user = null;
+
+                        foreach (var guild in _discordClient.Guilds.Values)
                         {
-                             user = await guild.GetMemberAsync(ulong.Parse(userId));
-                             break;
+                            try
+                            {
+                                user = await guild.GetMemberAsync(ulong.Parse(userId));
+                                break;
+                            }
+                            catch { }
                         }
-                        catch{}
-                    }
 
-                    if (user != null)
-                    {
-                        var channel = await user.CreateDmChannelAsync();
-                        await channel.SendMessageAsync(Language.Current.DiscordNotificationMovieDM.ReplaceTokens(movie), await DiscordMovieUserInterface.GenerateMovieDetailsAsync(movie));
+                        if (user != null)
+                        {
+                            var channel = await user.CreateDmChannelAsync();
+                            await channel.SendMessageAsync(Language.Current.DiscordNotificationMovieDM.ReplaceTokens(movie), await DiscordMovieUserInterface.GenerateMovieDetailsAsync(movie));
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Removing movie notification for user with ID {userId} as it could not be found in any of the guilds.");
+                        }
+
                         userNotified.Add(userId);
                     }
-                    else if (!token.IsCancellationRequested)
+                    catch (System.Exception ex)
                     {
-                        _logger.LogWarning($"An error occurred while sending a movie notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
+                        _logger.LogError(ex, "An error occurred while sending a private message movie notification to a specific user: " + ex.Message);
                     }
-                }
-                catch (System.Exception ex)
-                {
-                    _logger.LogError(ex, "An error occurred while sending a movie notification to a specific user: " + ex.Message);
                 }
             }
 

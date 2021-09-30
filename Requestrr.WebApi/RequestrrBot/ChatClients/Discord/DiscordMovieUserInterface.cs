@@ -71,7 +71,10 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             var requestButton = new DiscordButtonComponent(ButtonStyle.Primary, $"MRC/{_interactionContext.User.Id}/{movie.TheMovieDbId}", Language.Current.DiscordCommandRequestButton);
 
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(requestButton).WithContent(message));
+            var previousMovieSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
+            var movieSelector = new DiscordSelectComponent(previousMovieSelector.CustomId, movie.Title, previousMovieSelector.Options);
+
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(movieSelector).AddComponents(requestButton).WithContent(message));
         }
 
         public static async Task<DiscordEmbed> GenerateMovieDetailsAsync(Movie movie, IMovieSearcher movieSearcher = null)
@@ -125,44 +128,68 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public async Task WarnMovieAlreadyAvailableAsync(Movie movie)
         {
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).WithContent(Language.Current.DiscordCommandMovieAlreadyAvailable));
+            var previousMovieSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
+            var movieSelector = new DiscordSelectComponent(previousMovieSelector.CustomId, movie.Title, previousMovieSelector.Options);
+            var requestButton = new DiscordButtonComponent(ButtonStyle.Primary, $"MMM/{_interactionContext.User.Id}/{movie.TheMovieDbId}", Language.Current.DiscordCommandAvailableButton, true);
+
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(movieSelector).AddComponents(requestButton).WithContent(Language.Current.DiscordCommandMovieAlreadyAvailable));
         }
 
         public async Task DisplayRequestSuccessAsync(Movie movie)
         {
+            var previousMovieSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
+            var movieSelector = new DiscordSelectComponent(previousMovieSelector.CustomId, movie.Title, previousMovieSelector.Options);
+
             var successButton = new DiscordButtonComponent(ButtonStyle.Success, $"0/1/0", Language.Current.DiscordCommandRequestButtonSuccess);
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(successButton).WithContent(Language.Current.DiscordCommandMovieRequestSuccess.ReplaceTokens(movie)));
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(movieSelector).AddComponents(successButton).WithContent(Language.Current.DiscordCommandMovieRequestSuccess.ReplaceTokens(movie)));
         }
 
         public async Task AskForNotificationRequestAsync(Movie movie)
         {
             var message = Language.Current.DiscordCommandMovieNotificationRequest;
 
-            var requestButton = new DiscordButtonComponent(ButtonStyle.Primary, $"MNR/{_interactionContext.User.Id}/{movie.TheMovieDbId}", Language.Current.DiscordCommandNotifyMe, false, new DiscordComponentEmoji(DiscordEmoji.FromUnicode("🔔")));
+            var notifyButtons = new DiscordButtonComponent(ButtonStyle.Primary, $"MNR/{_interactionContext.User.Id}/{movie.TheMovieDbId}", Language.Current.DiscordCommandNotifyMe, false, new DiscordComponentEmoji(DiscordEmoji.FromUnicode("🔔")));
 
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(requestButton).WithContent(message));
+            var previousMovieSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
+            var movieSelector = new DiscordSelectComponent(previousMovieSelector.CustomId, movie.Title, previousMovieSelector.Options);
+
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(movieSelector).AddComponents(notifyButtons).WithContent(message));
         }
 
         public async Task DisplayNotificationSuccessAsync(Movie movie)
         {
+            var previousMovieSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
+            var movieSelector = new DiscordSelectComponent(previousMovieSelector.CustomId, movie.Title, previousMovieSelector.Options);
+
             var successButton = new DiscordButtonComponent(ButtonStyle.Success, $"0/1/0", Language.Current.DiscordCommandNotifyMeSuccess);
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(successButton).WithContent(Language.Current.DiscordCommandMovieNotificationSuccess.ReplaceTokens(movie)));
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(movieSelector).AddComponents(successButton).WithContent(Language.Current.DiscordCommandMovieNotificationSuccess.ReplaceTokens(movie)));
         }
 
         public async Task DisplayRequestDeniedAsync(Movie movie)
         {
+            var previousMovieSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
+            var movieSelector = new DiscordSelectComponent(previousMovieSelector.CustomId, movie.Title, previousMovieSelector.Options);
+
             var deniedButton = new DiscordButtonComponent(ButtonStyle.Danger, $"0/1/0", Language.Current.DiscordCommandRequestButtonDenied);
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(deniedButton).WithContent(Language.Current.DiscordCommandMovieRequestDenied));
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(movieSelector).AddComponents(deniedButton).WithContent(Language.Current.DiscordCommandMovieRequestDenied));
         }
 
         public async Task WarnMovieUnavailableAndAlreadyHasNotificationAsync(Movie movie)
         {
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).WithContent(Language.Current.DiscordCommandMovieRequestAlreadyExistNotified));
+            var previousMovieSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
+            var movieSelector = new DiscordSelectComponent(previousMovieSelector.CustomId, movie.Title, previousMovieSelector.Options);
+            var requestButton = new DiscordButtonComponent(ButtonStyle.Primary, $"MMM/{_interactionContext.User.Id}/{movie.TheMovieDbId}", Language.Current.DiscordCommandRequestedButton, true);
+
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)).AddComponents(movieSelector).AddComponents(requestButton).WithContent(Language.Current.DiscordCommandMovieRequestAlreadyExistNotified));
         }
 
-        public Task WarnMovieAlreadyRequestedAsync()
+        public async Task WarnMovieAlreadyRequestedAsync(Movie movie)
         {
-            return _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.DiscordCommandMovieRequestAlreadyExist));
+            var previousMovieSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
+            var movieSelector = new DiscordSelectComponent(previousMovieSelector.CustomId, movie.Title, previousMovieSelector.Options);
+            var requestButton = new DiscordButtonComponent(ButtonStyle.Primary, $"MMM/{_interactionContext.User.Id}/{movie.TheMovieDbId}", Language.Current.DiscordCommandRequestedButton, true);
+
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddComponents(movieSelector).AddComponents(requestButton).WithContent(Language.Current.DiscordCommandMovieRequestAlreadyExist));
         }
     }
 }

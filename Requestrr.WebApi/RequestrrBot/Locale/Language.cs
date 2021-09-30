@@ -162,6 +162,12 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         [JsonProperty("Discord.Command.NotifyMeSuccess")]
         public string DiscordCommandNotifyMeSuccess { get; set; }
 
+        [JsonProperty("Discord.Command.RequestedButton")]
+        public string DiscordCommandRequestedButton { get; set; }
+
+        [JsonProperty("Discord.Command.AvailableButton")]
+        public string DiscordCommandAvailableButton { get; set; }
+
         [JsonProperty("Discord.Command.RequestButton")]
         public string DiscordCommandRequestButton { get; set; }
 

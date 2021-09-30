@@ -27,7 +27,14 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows.SeasonsRequestWorkflows
 
         public async Task HandleSelectionAsync(TvShow tvShow, AllTvSeasons selectedSeason)
         {
-            await _userInterface.DisplayTvShowDetailsForSeasonAsync(tvShow, selectedSeason);
+            if(tvShow.AllSeasonsFullyRequested())
+            {
+                await _userInterface.WarnAlreadySeasonAlreadyRequestedAsync(tvShow, new FutureTvSeasons());
+            }
+            else
+            {
+                await _userInterface.DisplayTvShowDetailsForSeasonAsync(tvShow, selectedSeason);
+            }
         }
 
         public async Task RequestAsync(TvShow tvShow, AllTvSeasons selectedSeason)

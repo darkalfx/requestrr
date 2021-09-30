@@ -56,7 +56,9 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                 var discord = new DiscordClient(new DiscordConfiguration
                 {
                     Token = model.BotToken,
-                    TokenType = TokenType.Bot
+                    TokenType = TokenType.Bot,
+                    Intents = DiscordIntents.All,
+                    AutoReconnect = false
                 });
 
                 await discord.ConnectAsync();
@@ -67,7 +69,7 @@ namespace Requestrr.WebApi.Controllers.ChatClients
             }
             catch (System.Exception)
             {
-                return BadRequest($"Invalid bot token");
+                return BadRequest($"Invalid bot token or missing bot presence intents.");
             }
         }
 

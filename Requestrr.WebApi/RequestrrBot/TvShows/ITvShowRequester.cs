@@ -9,6 +9,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
 
     public class TvShowRequestResult
     {
+        public TvShow TvShow { get; set; }
         public bool WasDenied { get; set; }
     }
 }

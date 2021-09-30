@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using Microsoft.Extensions.Logging;
@@ -67,7 +68,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             }
             else if (settings.NotificationMode == NotificationMode.Channels)
             {
-                tvShowNotifier = new ChannelTvShowNotifier(client, _settingsProvider, settings.NotificationChannels, logger);
+                tvShowNotifier = new ChannelTvShowNotifier(client, _settingsProvider, settings.NotificationChannels.Select(x => ulong.Parse(x)).ToArray(), logger);
             }
             else
             {

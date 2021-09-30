@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
+using DSharpPlus.Entities;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
@@ -31,34 +32,47 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
         {
             var userNotified = new HashSet<string>();
 
-            foreach (var userId in userIds)
+            if (_discordClient.Guilds.Any())
             {
-                if (token.IsCancellationRequested)
-                    return userNotified;
-
-                try
+                foreach (var userId in userIds)
                 {
-                    var user = _discordClient.Guilds.Values.Where(x => x.Members.ContainsKey(ulong.Parse(userId))).FirstOrDefault().Members[ulong.Parse(userId)];
+                    if (token.IsCancellationRequested)
+                        return userNotified;
 
-                    if (user != null)
+                    try
                     {
-                        var channel = await user.CreateDmChannelAsync();
+                        DiscordMember user = null;
 
-                        if(_discordSettingsProvider.Provide().TvShowDownloadClient == DownloadClient.Overseerr)
-                            await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMSeason.ReplaceTokens(tvShow, seasonNumber), DiscordTvShowUserInterface.GenerateTvShowDetailsAsync(tvShow));
+                        foreach (var guild in _discordClient.Guilds.Values)
+                        {
+                            try
+                            {
+                                user = await guild.GetMemberAsync(ulong.Parse(userId));
+                                break;
+                            }
+                            catch { }
+                        }
+
+                        if (user != null)
+                        {
+                            var channel = await user.CreateDmChannelAsync();
+
+                            if (_discordSettingsProvider.Provide().TvShowDownloadClient == DownloadClient.Overseerr)
+                                await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMSeason.ReplaceTokens(tvShow, seasonNumber), DiscordTvShowUserInterface.GenerateTvShowDetailsAsync(tvShow));
+                            else
+                                await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMFirstEpisode.ReplaceTokens(tvShow, seasonNumber), DiscordTvShowUserInterface.GenerateTvShowDetailsAsync(tvShow));
+                        }
                         else
-                            await channel.SendMessageAsync(Language.Current.DiscordNotificationTvDMFirstEpisode.ReplaceTokens(tvShow, seasonNumber), DiscordTvShowUserInterface.GenerateTvShowDetailsAsync(tvShow));
+                        {
+                            _logger.LogWarning($"Removing tv show notification for user with ID {userId} as it could not be found in any of the guilds.");
+                        }
 
                         userNotified.Add(userId);
                     }
-                    else if (!token.IsCancellationRequested)
+                    catch (System.Exception ex)
                     {
-                        _logger.LogWarning($"An error occurred while sending a show notification to a specific user, could not find user with ID {userId}. {System.Environment.NewLine} Make sure [Presence Intent] and [Server Members Intent] are enabled in the bots configuration.");
+                        _logger.LogError(ex, "An error occurred while sending a tv show notification to a specific user: " + ex.Message);
                     }
-                }
-                catch (System.Exception ex)
-                {
-                    _logger.LogError(ex, "An error occurred while sending a tv show notification to a specific user: " + ex.Message);
                 }
             }
 

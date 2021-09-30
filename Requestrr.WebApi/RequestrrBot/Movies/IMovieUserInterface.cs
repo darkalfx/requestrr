@@ -13,7 +13,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         Task DisplayRequestDeniedAsync(Movie movie);
         Task DisplayRequestSuccessAsync(Movie movie);
         Task WarnMovieUnavailableAndAlreadyHasNotificationAsync(Movie movie);
-        Task WarnMovieAlreadyRequestedAsync();
+        Task WarnMovieAlreadyRequestedAsync(Movie movie);
         Task DisplayNotificationSuccessAsync(Movie movie);
         Task AskForNotificationRequestAsync(Movie movie);
     }

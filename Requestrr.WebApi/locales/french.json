@@ -31,6 +31,8 @@
     "Discord.Command.RequestButtonSuccess": "Demande envoyée avec succès",
     "Discord.Command.NotifyMe": "Notifiez-moi",
     "Discord.Command.NotifyMeSuccess": "Vous serez notifié(e)",
+    "Discord.Command.RequestedButton": "Demandé",
+    "Discord.Command.AvailableButton": "Disponible",
     "Discord.Notification.Tv.Channel.Season": "Le téléchargement de la **saison [SeasonNumber]** de **[TvShowTitle]** est terminé !",
     "Discord.Notification.Tv.ChannelFirstEpisode": "Le téléchargement du premier épisode de la **saison [SeasonNumber]** de **[TvShowTitle]** est terminé !",
     "Discord.Notification.Tv.DM.Season": "Le téléchargement de la **saison [SeasonNumber]** de **[TvShowTitle]** que vous avez demandé est terminé !",

@@ -18,7 +18,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         public Task NotifyForExistingRequestAsync(string userId, Movie movie)
         {
-            return _userInterface.WarnMovieAlreadyRequestedAsync();
+            return _userInterface.WarnMovieAlreadyRequestedAsync(movie);
         }
 
         public Task AddNotificationAsync(string userId, int theMovieDbId)
