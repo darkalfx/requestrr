@@ -135,6 +135,15 @@ namespace Requestrr.WebApi
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
+
+            if (settingsJson.Version.ToString().Equals("1.14.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "1.15.0";
+
+                ((JObject)settingsJson).Add("DisableAuthentication", false);
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
         }
     }
 }

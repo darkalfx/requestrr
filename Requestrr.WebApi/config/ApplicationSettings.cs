@@ -4,5 +4,6 @@ namespace Requestrr.WebApi.config
     {
         public int Port { get; set; }
         public string BaseUrl { get; set; }
+        public bool DisableAuthentication { get; set; }
     }
 }

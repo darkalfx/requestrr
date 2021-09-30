@@ -509,15 +509,6 @@ class ChatClients extends React.Component {
                         this.state.notificationMode !== "Disabled"
                           ? <>
                             <Row>
-                              <Col lg="6">
-                                {
-                                  <Alert className="text-center" color="warning">
-                                    <strong>In order for notifications to work, make sure to enable the [Presence Intent] and [Server Members Intent] settings for the bot in the Discord Developper Portal</strong>
-                                  </Alert>
-                                }
-                              </Col>
-                            </Row>
-                            <Row>
                               <Col md="12">
                                 <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
                                   <Input

@@ -52,6 +52,7 @@ class Settings extends React.Component {
       isPortValid: false,
       baseUrl: "",
       isBaseUrlValid: false,
+      disableAuthentication: false,
     };
 
     this.onSaving = this.onSaving.bind(this);
@@ -65,7 +66,8 @@ class Settings extends React.Component {
         this.setState({
           isLoading: false,
           port: this.props.settings.port,
-          baseUrl: this.props.settings.baseUrl
+          baseUrl: this.props.settings.baseUrl,
+          disableAuthentication: this.props.settings.disableAuthentication,
         });
       });
   }
@@ -90,7 +92,8 @@ class Settings extends React.Component {
         if (this.state.isPortValid && this.state.isBaseUrlValid) {
           this.props.saveSettings({
             'port': this.state.port,
-            'baseUrl' : this.state.baseUrl
+            'baseUrl': this.state.baseUrl,
+            'disableAuthentication': this.state.disableAuthentication
           })
             .then(data => {
               this.setState({ isSaving: false });
@@ -173,14 +176,33 @@ class Settings extends React.Component {
                         </Col>
                         <Col lg="6">
                           <ValidatedTextbox
-                              name="Base Url"
-                              placeholder="Enter base url"
-                              alertClassName="mt-3 mb-0"
-                              errorMessage="Base urls must start with /"
-                              value={this.state.baseUrl}
-                              validation={this.validatedBaseUrl}
-                              onChange={newBaseUrl => this.setState({ baseUrl: newBaseUrl })}
-                              onValidate={isValid => this.setState({ isBaseUrlValid: isValid })} />
+                            name="Base Url"
+                            placeholder="Enter base url"
+                            alertClassName="mt-3 mb-0"
+                            errorMessage="Base urls must start with /"
+                            value={this.state.baseUrl}
+                            validation={this.validatedBaseUrl}
+                            onChange={newBaseUrl => this.setState({ baseUrl: newBaseUrl })}
+                            onValidate={isValid => this.setState({ isBaseUrlValid: isValid })} />
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col md="12">
+                          <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                            <Input
+                              className="custom-control-input"
+                              id="disableAuthentication"
+                              type="checkbox"
+                              onChange={e => { this.setState({ disableAuthentication: !this.state.disableAuthentication }); }}
+                              checked={this.state.disableAuthentication}
+                            />
+                            <label
+                              className="custom-control-label"
+                              htmlFor="disableAuthentication"
+                            >
+                              <span className="text-muted">Disable web portal authentication</span>
+                            </label>
+                          </FormGroup>
                         </Col>
                       </Row>
                       <Row>

@@ -18,6 +18,7 @@ using Requestrr.WebApi.RequestrrBot.TvShows;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Requestrr.WebApi
 {
@@ -64,21 +65,29 @@ namespace Requestrr.WebApi
             var applicationSettings = Configuration;
             services.Configure<ApplicationSettings>(applicationSettings);
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            if (applicationSettings.Get<ApplicationSettings>().DisableAuthentication)
+            {
+                services.AddAuthentication("Disabled")
+                    .AddScheme<AuthenticationSchemeOptions, DisabledAuthenticationHandler>("Disabled", options => { });
+            }
+            else
+            {
+                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer(options =>
                     {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ClockSkew = TimeSpan.Zero,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = "Requestrr",
-                        ValidAudience = "Requestrr",
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.GetValue<string>("PrivateKey"))),
-                    };
-                });
+                        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidateAudience = true,
+                            ValidateLifetime = true,
+                            ClockSkew = TimeSpan.Zero,
+                            ValidateIssuerSigningKey = true,
+                            ValidIssuer = "Requestrr",
+                            ValidAudience = "Requestrr",
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.GetValue<string>("PrivateKey"))),
+                        };
+                    });
+            }
 
             services.AddSingleton<OmbiClient, OmbiClient>();
             services.AddSingleton<RadarrClient, RadarrClient>();
@@ -111,9 +120,9 @@ namespace Requestrr.WebApi
             {
                 FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "ClientApp/build")),
                 RequestPath = !string.IsNullOrWhiteSpace(Program.BaseUrl) ? Program.BaseUrl : string.Empty
-            });;
+            }); ;
 
-            if(!string.IsNullOrWhiteSpace(Program.BaseUrl))
+            if (!string.IsNullOrWhiteSpace(Program.BaseUrl))
             {
                 app.UsePathBase(Program.BaseUrl);
             }

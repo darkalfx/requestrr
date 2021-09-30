@@ -23,7 +23,8 @@ namespace Requestrr.WebApi.Controllers.Configuration
             return Ok(new ApplicationSettingsModel
             {
                 Port = _applicationSettings.Port,
-                BaseUrl = _applicationSettings.BaseUrl
+                BaseUrl = _applicationSettings.BaseUrl,
+                DisableAuthentication = _applicationSettings.DisableAuthentication
             });
         }
 
@@ -40,6 +41,7 @@ namespace Requestrr.WebApi.Controllers.Configuration
 
             _applicationSettings.Port = model.Port;
             _applicationSettings.BaseUrl = model.BaseUrl;
+            _applicationSettings.DisableAuthentication = model.DisableAuthentication;
 
             ApplicationSettingsRepository.Update(_applicationSettings);
 

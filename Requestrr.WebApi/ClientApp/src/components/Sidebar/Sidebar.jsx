@@ -17,9 +17,11 @@
 */
 /*eslint-disable*/
 import React from "react";
+import { connect } from 'react-redux';
 import { NavLink as NavLinkRRD, Link } from "react-router-dom";
 // nodejs library to set properties for components
 import { PropTypes } from "prop-types";
+import { getSettings } from "../../store/actions/SettingsActions"
 
 // reactstrap components
 import {
@@ -56,12 +58,25 @@ var ps;
 
 class Sidebar extends React.Component {
   state = {
-    collapseOpen: false
+    collapseOpen: false,
+    disableAuthentication: false,
+    isLoading: true,
   };
   constructor(props) {
     super(props);
     this.activeRoute.bind(this);
   }
+
+  componentDidMount() {
+    this.props.getSettings()
+      .then(data => {
+        this.setState({
+          isLoading: false,
+          disableAuthentication: this.props.settings.disableAuthentication,
+        });
+      });
+  }
+
   // verifies if routeName is the one active (in browser input)
   activeRoute(routeName) {
     return this.props.location.pathname.indexOf(routeName) > -1 ? "active" : "";
@@ -82,17 +97,24 @@ class Sidebar extends React.Component {
   createLinks = routes => {
     return routes.filter(r => r.layout != "/auth").map((prop, key) => {
       return (
-        <NavItem key={key}>
-          <NavLink
-            to={prop.layout + prop.path}
-            tag={NavLinkRRD}
-            onClick={this.closeCollapse}
-            activeClassName="active">
-            <i className={prop.icon} />
-            {prop.name}
-          </NavLink>
-        </NavItem>
-      );
+        <>
+          {
+            !this.state.disableAuthentication || (this.state.disableAuthentication && prop.supportsAnonymousUser)
+              ? <>
+                <NavItem key={key}>
+                  <NavLink
+                    to={prop.layout + prop.path}
+                    tag={NavLinkRRD}
+                    onClick={this.closeCollapse}
+                    activeClassName="active">
+                    <i className={prop.icon} />
+                    {prop.name}
+                  </NavLink>
+                </NavItem>
+              </>
+              : null
+          }
+        </>);
     });
   };
   render() {
@@ -110,8 +132,8 @@ class Sidebar extends React.Component {
       };
     }
     return (
-      <Navbar
-        className="navbar-vertical fixed-left navbar-light bg-white"
+      <Navbar 
+        className={this.state.isLoading ? " navbar-vertical fixed-left navbar-light bg-white fade" : "navbar-vertical fixed-left navbar-light bg-white fade show"}
         expand="md"
         id="sidenav-main"
       >
@@ -147,10 +169,10 @@ class Sidebar extends React.Component {
                         <img alt={logo.imgAlt} src={logo.imgSrc} />
                       </Link>
                     ) : (
-                        <a href={logo.outterLink}>
-                          <img alt={logo.imgAlt} src={logo.imgSrc} />
-                        </a>
-                      )}
+                      <a href={logo.outterLink}>
+                        <img alt={logo.imgAlt} src={logo.imgSrc} />
+                      </a>
+                    )}
                   </Col>
                 ) : null}
                 <Col className="collapse-close" xs="6">
@@ -212,4 +234,14 @@ Sidebar.propTypes = {
   })
 };
 
-export default Sidebar;
+const mapPropsToState = state => {
+  return {
+    settings: state.settings
+  }
+};
+
+const mapPropsToAction = {
+  getSettings: getSettings,
+};
+
+export default connect(mapPropsToState, mapPropsToAction)(Sidebar);

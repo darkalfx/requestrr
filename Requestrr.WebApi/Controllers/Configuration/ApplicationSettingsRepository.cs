@@ -11,6 +11,7 @@ namespace Requestrr.WebApi.Controllers.Configuration
             {
                 settings.Port = applicationSettings.Port;
                 settings.BaseUrl = applicationSettings.BaseUrl;
+                settings.DisableAuthentication = applicationSettings.DisableAuthentication;
             });
         }
     }

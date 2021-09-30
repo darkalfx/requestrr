@@ -8,5 +8,8 @@ namespace Requestrr.WebApi.Controllers.Configuration
         public int Port { get; set; }
 
         public string BaseUrl { get; set; }
+
+        [Required]
+        public bool DisableAuthentication { get; set; }
     }
 }

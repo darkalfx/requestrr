@@ -30,56 +30,64 @@ var routes = [
     name: "Chat clients",
     icon: "fas big fa-comments text-purple",
     component: ChatClients,
-    layout: "/admin"
+    layout: "/admin",
+    supportsAnonymousUser: true
   },
   {
     path: "/movies",
     name: "Movies",
     icon: "fas big fa-film text-orange",
     component: Movies,
-    layout: "/admin"
+    layout: "/admin",
+    supportsAnonymousUser: true
   },
   {
     path: "/tvshows",
     name: "TV Shows",
     icon: "fas fa-tv text-blue",
     component: TvShows,
-    layout: "/admin"
+    layout: "/admin",
+    supportsAnonymousUser: true
   },
   {
     path: "/account",
     name: "Account",
     icon: "fas big fa-user-shield text-green",
     component: Account,
-    layout: "/admin"
+    layout: "/admin",
+    supportsAnonymousUser: false
   },
   {
     path: "/settings",
     name: "Settings",
     icon: "fas big fa-tools text-gray",
     component: Settings,
-    layout: "/admin"
+    layout: "/admin",
+    supportsAnonymousUser: true
   },
   {
     path: "/login",
     name: "Login",
     icon: "ni ni-user-run text-info",
     component: Login,
-    layout: "/auth"
+    layout: "/auth",
+    supportsAnonymousUser: true
   },
   {
     path: "/register",
     name: "Register",
     icon: "ni ni-single-02 text-orange",
     component: Register,
-    layout: "/auth"
+    layout: "/auth",
+    supportsAnonymousUser: true
   },
   {
     path: "/logout",
     name: "Logout",
     icon: "fas big fa-sign-out-alt text-info",
     component: Logout,
-    layout: "/admin"
+    layout: "/admin",
+    supportsAnonymousUser: false
   },
 ];
 export default routes;

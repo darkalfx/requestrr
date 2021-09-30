@@ -191,7 +191,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 throw new System.Exception("An error occurred while searching for movies from Overseerr: " + ex.Message);
             }
         }
-        
+
         public async Task<Movie> SearchMovieAsync(int theMovieDbId)
         {
             try
@@ -430,7 +430,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                     || jsonMedia.MediaInfo?.Status == MediaStatus.PARTIALLY_AVAILABLE
                     || jsonMedia.MediaInfo?.Status == MediaStatus.AVAILABLE,
                 Quality = string.Empty,
-                WebsiteUrl = jsonMedia.MediaInfo?.TvdbId != null ? $"https://www.thetvdb.com/?id={jsonMedia.MediaInfo?.TvdbId}&tab=series" : null,
+                WebsiteUrl = jsonMedia.TvdbId != null && jsonMedia.TvdbId.ToString() != "0" ? $"https://www.thetvdb.com/?id={jsonMedia.TvdbId}&tab=series" : null,
                 PlexUrl = jsonMedia.MediaInfo?.PlexUrl,
                 Overview = jsonMedia.Overview,
                 HasEnded = !jsonMedia.InProduction,
@@ -562,6 +562,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             public string Name { get; set; }
         }
 
+        public class JSONExternalIds
+        {
+            [JsonProperty("tvdbId")]
+            public object TvdbId { get; set; }
+        }
 
         public class JSONTvSeason
         {
@@ -725,6 +730,14 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 }
             }
 
+            public object TvdbId
+            {
+                get
+                {
+                    return MediaInfo?.TvdbId != null ? MediaInfo.TvdbId : ExternalIds?.TvdbId != null ? ExternalIds.TvdbId : 0;
+                }
+            }
+
             [JsonProperty("overview")]
             public string Overview { get; set; }
 
@@ -748,6 +761,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
 
             [JsonProperty("mediaInfo")]
             public MediaInfo MediaInfo { get; set; }
+
+            [JsonProperty("externalIds")]
+            public JSONExternalIds ExternalIds { get; set; }
 
             [JsonProperty("networks")]
             public List<JSONNetwork> Networks { get; set; }

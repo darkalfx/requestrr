@@ -54,7 +54,7 @@
       "SearchNewRequests": true,
       "MonitorNewRequests": true,
       "UseSSL": false,
-      "Version": "2"
+      "Version": "3"
     },
     "Sonarr": {
       "Hostname": "",
@@ -89,5 +89,6 @@
   },
   "Port": 4545,
   "BaseUrl": "",
-  "Version": "1.14.0"
+  "DisableAuthentication" : false,
+  "Version": "1.15.0"
 }
