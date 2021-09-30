@@ -58,11 +58,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             var options = tvSeasons.Select(x => new DiscordSelectComponentOption(GetFormattedSeasonName(tvShow, x), $"{tvShow.TheTvDbId.ToString()}/{x.SeasonNumber.ToString()}")).ToList();
             var seasonSelector = new DiscordSelectComponent($"TSS/{_interactionContext.User.Id}", Language.Current.DiscordCommandTvRequestHelpSeasonsDropdown, options);
 
-            var previousTvSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
-            var tvSelector = new DiscordSelectComponent(previousTvSelector.CustomId, tvShow.Title, previousTvSelector.Options);
-
-            var builder = new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(tvSelector).AddComponents(seasonSelector).WithContent(Language.Current.DiscordCommandTvRequestHelpSeasons);
-
+            var builder = (await AddPreviousDropdownsAsync(tvShow, new DiscordWebhookBuilder().AddEmbed(embed))).AddComponents(seasonSelector).WithContent(Language.Current.DiscordCommandTvRequestHelpSeasons);
             await _interactionContext.EditOriginalResponseAsync(builder);
         }
 
@@ -224,7 +220,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public async Task WarnNoTvShowFoundByTvDbIdAsync(int tvDbId)
         {
-            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.DiscordCommandTvNotFound.ReplaceTokens(LanguageTokens.TvShowTVDBID, tvDbId.ToString())));
+            await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.DiscordCommandTvNotFoundTVDBID.ReplaceTokens(LanguageTokens.TvShowTVDBID, tvDbId.ToString())));
         }
 
         public async Task WarnSeasonAlreadyAvailableAsync(TvShow tvShow, TvSeason selectedSeason)
@@ -265,28 +261,36 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         private async Task<DiscordWebhookBuilder> AddPreviousDropdownsAsync(TvShow tvShow, DiscordWebhookBuilder builder)
         {
-            var previousTvSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.First(x => x.Components.OfType<DiscordSelectComponent>().Any()).Components.Single();
-            var tvSelector = new DiscordSelectComponent(previousTvSelector.CustomId, tvShow.Title, previousTvSelector.Options);
+            var selectors = (await _interactionContext.GetOriginalResponseAsync()).Components.SelectMany(x => x.Components).OfType<DiscordSelectComponent>();
 
-            builder.AddComponents(tvSelector);
+            DiscordSelectComponent previousTvSelector = selectors.FirstOrDefault(x => x.CustomId.StartsWith("TRS", true, null));
 
-            var previousSeasonSelector = (DiscordSelectComponent)(await _interactionContext.GetOriginalResponseAsync()).Components.Skip(1).FirstOrDefault(x => x.Components.OfType<DiscordSelectComponent>().Any())?.Components?.Single();
-
-            if (!tvShow.AllSeasonsAvailable() && previousSeasonSelector != null && previousSeasonSelector.Options.Any(x => x.Value.Contains(tvShow.TheTvDbId.ToString(), StringComparison.OrdinalIgnoreCase)))
+            if (previousTvSelector != null)
             {
-                if (!_interactionContext.Data.CustomId.StartsWith("trs", StringComparison.OrdinalIgnoreCase))
+                var tvSelector = new DiscordSelectComponent(previousTvSelector.CustomId, GetFormatedTvShowTitle(tvShow), previousTvSelector.Options);
+                builder.AddComponents(tvSelector);
+            }
+
+            DiscordSelectComponent previousSeasonSelector = selectors.FirstOrDefault(x => x.CustomId.StartsWith("TSS", true, null));
+
+            if(previousSeasonSelector != null)
+            {
+                if (!tvShow.AllSeasonsAvailable() && previousSeasonSelector != null && previousSeasonSelector.Options.Any(x => x.Value.Contains(tvShow.TheTvDbId.ToString(), StringComparison.OrdinalIgnoreCase)))
                 {
-                    var lastSeasonSelected = _interactionContext.Data.Values.Any()
-                        ? _interactionContext.Data.Values.Last()
-                        : $"{tvShow.TheTvDbId}/{_interactionContext.Data.CustomId.Split("/").Last()}";
+                    if (!_interactionContext.Data.CustomId.StartsWith("TRS", true, null))
+                    {
+                        var lastSeasonSelected = _interactionContext.Data.Values.Any()
+                            ? _interactionContext.Data.Values.Last()
+                            : $"{tvShow.TheTvDbId}/{_interactionContext.Data.CustomId.Split("/").Last()}";
 
-                    var newOptions = tvShow.Seasons.Select(x => new DiscordSelectComponentOption(GetFormattedSeasonName(tvShow, x), $"{tvShow.TheTvDbId.ToString()}/{x.SeasonNumber.ToString()}")).ToDictionary(x => x.Value, x => x);
-                    var oldOptions = previousSeasonSelector.Options;
+                        var newOptions = tvShow.Seasons.Select(x => new DiscordSelectComponentOption(GetFormattedSeasonName(tvShow, x), $"{tvShow.TheTvDbId.ToString()}/{x.SeasonNumber.ToString()}")).ToDictionary(x => x.Value, x => x);
+                        var oldOptions = previousSeasonSelector.Options;
 
-                    var currentOptions = oldOptions.Select(x => new DiscordSelectComponentOption(newOptions.ContainsKey(x.Value) ? newOptions[x.Value].Label : x.Label, x.Value)).ToList();
+                        var currentOptions = oldOptions.Select(x => new DiscordSelectComponentOption(newOptions.ContainsKey(x.Value) ? newOptions[x.Value].Label : x.Label, x.Value)).ToList();
 
-                    var seasonSelector = new DiscordSelectComponent(previousSeasonSelector.CustomId, currentOptions.Single(x => x.Value == lastSeasonSelected).Label, currentOptions);
-                    builder.AddComponents(seasonSelector);
+                        var seasonSelector = new DiscordSelectComponent(previousSeasonSelector.CustomId, currentOptions.Single(x => x.Value == lastSeasonSelected).Label, currentOptions);
+                        builder.AddComponents(seasonSelector);
+                    }
                 }
             }
 
@@ -295,17 +299,27 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         private string GetFormatedTvShowTitle(SearchedTvShow tvShow)
         {
-            var releaseYear = !string.IsNullOrWhiteSpace(tvShow.FirstAired) && tvShow.FirstAired.Length >= 4 ? tvShow.FirstAired.Substring(0, 4) : null;
+            return GetFormatedTvShowTitle(tvShow.Title, tvShow.FirstAired);
+        }
+
+        private string GetFormatedTvShowTitle(TvShow tvShow)
+        {
+            return GetFormatedTvShowTitle(tvShow.Title, tvShow.FirstAired);
+        }
+
+        private string GetFormatedTvShowTitle(string title, string firstAired)
+        {
+            var releaseYear = !string.IsNullOrWhiteSpace(firstAired) && firstAired.Length >= 4 ? firstAired.Substring(0, 4) : null;
 
             if (releaseYear != null)
             {
-                if (!tvShow.Title.Contains(releaseYear, StringComparison.InvariantCultureIgnoreCase))
+                if (!title.Contains(releaseYear, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return $"{tvShow.Title} ({releaseYear})";
+                    return $"{title} ({releaseYear})";
                 }
             }
 
-            return tvShow.Title;
+            return title;
         }
 
         private string GetFormattedSeasonName(TvShow tvShow, TvSeason season)

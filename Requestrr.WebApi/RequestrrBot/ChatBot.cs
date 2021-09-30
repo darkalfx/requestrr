@@ -296,8 +296,8 @@ namespace Requestrr.WebApi.RequestrrBot
             }
             catch (System.Exception ex)
             {
-                await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.Error));
                 _logger.LogError(ex, "Error while handling interaction: " + ex.Message);
+                await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.Error));
             }
         }
 

@@ -53,7 +53,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogError(ex, "Error while sending help command: " + ex.Message);
+                    _logger.LogError(ex, $"Error while searching movies with title {movieTitle} : " + ex.Message);
                 }
             }
 
@@ -72,7 +72,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogError(ex, "Error while sending help command: " + ex.Message);
+                    _logger.LogError(ex, $"Error while searching movies by TmDb Id {theMovieDbId} : " + ex.Message);
                 }
             }
             [MOVIE_COMMAND_END]
@@ -93,7 +93,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogError(ex, "Error while sending help command: " + ex.Message);
+                    _logger.LogError(ex, $"Error while searching tv shows with title {tvShowTitle} : " + ex.Message);
                 }
             }
 
@@ -112,7 +112,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogError(ex, "Error while sending help command: " + ex.Message);
+                    _logger.LogError(ex, $"Error while searching tv shows with tvdb id {tvDbID} : " + ex.Message);
                 }
             }
             [TV_COMMAND_END]
