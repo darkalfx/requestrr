@@ -201,11 +201,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
 
             if (tvShow.IsMultiSeasons())
             {
-                if (tvShow.Seasons.Length > 25 && _settings.Restrictions != TvShowsRestrictions.AllSeasons)
-                {
-                    tvShow.Seasons = tvShow.Seasons.TakeLast(25).ToArray();
-                }
-                else
+                if (_settings.Restrictions == TvShowsRestrictions.AllSeasons || tvShow.Seasons.Length <= 25)
                 {
                     tvShow.Seasons = tvShow.Seasons.Prepend(new AllTvSeasons
                     {
@@ -213,6 +209,10 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
                         IsAvailable = false,
                         IsRequested = RequestedState.None,
                     }).ToArray();
+                }
+                else
+                {
+                    tvShow.Seasons = tvShow.Seasons.TakeLast(25).ToArray();
                 }
             }
 
