@@ -424,8 +424,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                                 {
                                     name = "SeasonSearch",
                                     seasonNumber = s.SeasonNumber,
-                                    seriesId = sonarrSeries.DownloadClientId
+                                    seriesId = tvShow.DownloadClientId
                                 }));
+
+                                await response.ThrowIfNotSuccessfulAsync("SonarrSeasonSearchCommand failed", x => x.error);
                             }
                             else
                             {
