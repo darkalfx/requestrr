@@ -351,6 +351,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 catch (System.Exception ex)
                 {
                     _logger.LogError(ex, $"An error while sending search command for movie \"{movie.Title}\" to Radarr: " + ex.Message);
+                    throw;
                 }
             }
         }

@@ -412,13 +412,24 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
                 await Task.WhenAll(seasons.Select(async s =>
                 {
+                    try
                     {
-                        try
+                        if (episodes[s.SeasonNumber].Any())
                         {
-                            if (episodes[s.SeasonNumber].Any())
-                            {
-                                var undownloadedEpisodes = episodes[s.SeasonNumber].Where(x => !x.hasFile).Select(x => x.id).ToArray();
+                            var undownloadedEpisodes = episodes[s.SeasonNumber].Where(x => !x.hasFile).Select(x => x.id).ToArray();
 
+                            if (undownloadedEpisodes.Length == episodes[s.SeasonNumber].Count())
+                            {
+                                response = await HttpPostAsync($"{BaseURL}/command", JsonConvert.SerializeObject(new
+                                {
+                                    name = "SeasonSearch",
+                                    seasonNumber = s.SeasonNumber,
+                                    seriesId = sonarrSeries.DownloadClientId
+                                }));
+                            }
+                            else
+                            {
+                                await response.ThrowIfNotSuccessfulAsync("SonarrSearchEpisodeCommand failed", x => x.error);
                                 response = await HttpPostAsync($"{BaseURL}/command", JsonConvert.SerializeObject(new
                                 {
                                     name = "EpisodeSearch",
@@ -428,10 +439,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                                 await response.ThrowIfNotSuccessfulAsync("SonarrSearchEpisodeCommand failed", x => x.error);
                             }
                         }
-                        catch (System.Exception ex)
-                        {
-                            _logger.LogError(ex.Message);
-                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        _logger.LogError(ex.Message);
+                        throw;
                     }
                 }));
             }
