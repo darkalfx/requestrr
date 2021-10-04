@@ -45,7 +45,7 @@ You can also choose to run the container as a different user. See [docker run](h
 
 Then simply access the web portal at http://youraddress:4545/ to create your admin account, then you can configure everything through the web portal.
 
-Once you have configured the bot and invited it to your Discord server, simply type **!help** to see all available commands.
+Once you have configured the bot and invited it to your Discord server, simply type **/help** to see all available commands.
 
 Build Instructions
 ==================
