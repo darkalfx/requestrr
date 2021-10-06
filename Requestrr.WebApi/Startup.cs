@@ -19,6 +19,11 @@ using Microsoft.Extensions.FileProviders;
 using System.IO;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
 using Microsoft.AspNetCore.Authentication;
+using Requestrr.WebApi.Controllers.Configuration;
+using Requestrr.WebApi.Controllers.DownloadClients;
+using Requestrr.WebApi.Controllers.ChatClients;
+using Requestrr.WebApi.Controllers.Authentication;
+using Requestrr.WebApi.RequestrrBot.Movies;
 
 namespace Requestrr.WebApi
 {
@@ -45,27 +50,9 @@ namespace Requestrr.WebApi
             });
 
             var authenticationSettings = Configuration.GetSection("Authentication");
-            services.Configure<AuthenticationSettings>(authenticationSettings);
+            var applicationSettings = Configuration.Get<ApplicationSettings>();
 
-            var botClientSettings = Configuration.GetSection("BotClient");
-            services.Configure<BotClientSettings>(botClientSettings);
-
-            var chatClientsSettings = Configuration.GetSection("ChatClients");
-            services.Configure<ChatClientsSettings>(chatClientsSettings);
-
-            var downloadClientSettings = Configuration.GetSection("DownloadClients");
-            services.Configure<DownloadClientsSettings>(downloadClientSettings);
-
-            var moviesSettings = Configuration.GetSection("Movies");
-            services.Configure<MoviesSettings>(moviesSettings);
-
-            var tvShowsSettings = Configuration.GetSection("TvShows");
-            services.Configure<TvShowsSettings>(tvShowsSettings);
-
-            var applicationSettings = Configuration;
-            services.Configure<ApplicationSettings>(applicationSettings);
-
-            if (applicationSettings.Get<ApplicationSettings>().DisableAuthentication)
+            if (applicationSettings.DisableAuthentication)
             {
                 services.AddAuthentication("Disabled")
                     .AddScheme<AuthenticationSchemeOptions, DisabledAuthenticationHandler>("Disabled", options => { });
@@ -93,8 +80,14 @@ namespace Requestrr.WebApi
             services.AddSingleton<RadarrClient, RadarrClient>();
             services.AddSingleton<DiscordSettingsProvider>();
             services.AddSingleton<TvShowsSettingsProvider>();
+            services.AddSingleton<MoviesSettingsProvider>();
             services.AddSingleton<OmbiSettingsProvider>();
             services.AddSingleton<OverseerrSettingsProvider>();
+            services.AddSingleton<BotClientSettingsProvider>();
+            services.AddSingleton<ChatClientsSettingsProvider>();
+            services.AddSingleton<DownloadClientsSettingsProvider>();
+            services.AddSingleton<ApplicationSettingsProvider>();
+            services.AddSingleton<AuthenticationSettingsProvider>();
             services.AddSingleton<RadarrSettingsProvider>();
             services.AddSingleton<SonarrSettingsProvider>();
             services.AddSingleton<RequestrrBot.ChatBot>();

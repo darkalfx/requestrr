@@ -19,9 +19,9 @@ namespace Requestrr.WebApi.Controllers.Authentication
     {
         private readonly AuthenticationSettings _authenticationSettings;
 
-        public AuthenticationController(IOptionsSnapshot<AuthenticationSettings> authenticationSettingsAccessor)
+        public AuthenticationController(AuthenticationSettingsProvider authenticationSettingsProvider)
         {
-            _authenticationSettings = authenticationSettingsAccessor.Value;
+            _authenticationSettings = authenticationSettingsProvider.Provide();
         }
 
         [HttpGet("validate")]

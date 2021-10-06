@@ -49,7 +49,6 @@ namespace Requestrr.WebApi.RequestrrBot
         private HashSet<ulong> _currentGuilds = new HashSet<ulong>();
         private Language _previousLanguage = Language.Current;
 
-
         public ChatBot(IServiceProvider serviceProvider, ILogger<ChatBot> logger, DiscordSettingsProvider discordSettingsProvider)
         {
             _logger = logger;

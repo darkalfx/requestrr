@@ -12,7 +12,8 @@
                 DefaultApiUserID = settings.DownloadClients.Overseerr.DefaultApiUserID,
                 Hostname = settings.DownloadClients.Overseerr.Hostname,
                 Port = settings.DownloadClients.Overseerr.Port,
-                UseSSL = (bool)settings.DownloadClients.Overseerr.UseSSL
+                UseSSL = (bool)settings.DownloadClients.Overseerr.UseSSL,
+                Version = settings.DownloadClients.Overseerr.Version,
             };
         }
     }

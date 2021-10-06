@@ -1,15 +1,14 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Requestrr.WebApi.config;
 using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
 using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
 using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.Movies;
 using RadarrSettingsCategory = Requestrr.WebApi.Controllers.DownloadClients.Radarr.RadarrSettingsCategory;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
@@ -25,11 +24,11 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
 
         public MovieDownloadClientController(
             IHttpClientFactory httpClientFactory,
-            IOptionsSnapshot<MoviesSettings> moviesSettingsAccessor,
-            IOptionsSnapshot<DownloadClientsSettings> botClientsSettingsAccessor)
+            MoviesSettingsProvider moviesSettingsProvider,
+            DownloadClientsSettingsProvider downloadClientsSettingsProvider)
         {
-            _moviesSettings = moviesSettingsAccessor.Value;
-            _downloadClientsSettings = botClientsSettingsAccessor.Value;
+            _moviesSettings = moviesSettingsProvider.Provide();
+            _downloadClientsSettings = downloadClientsSettingsProvider.Provide();
             _httpClientFactory = httpClientFactory;
         }
 

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.config;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
+using Requestrr.WebApi.RequestrrBot.Movies;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
 {

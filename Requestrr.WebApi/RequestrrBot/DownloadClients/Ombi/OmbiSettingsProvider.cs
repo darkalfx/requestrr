@@ -13,7 +13,8 @@
                 Hostname = settings.DownloadClients.Ombi.Hostname,
                 BaseUrl = settings.DownloadClients.Ombi.BaseUrl,
                 Port = settings.DownloadClients.Ombi.Port,
-                UseSSL = (bool)settings.DownloadClients.Ombi.UseSSL
+                UseSSL = (bool)settings.DownloadClients.Ombi.UseSSL,
+                Version = settings.DownloadClients.Ombi.Version,
             };
         }
     }

@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Requestrr.WebApi.config;
 
 namespace Requestrr.WebApi.Controllers.Configuration
@@ -12,9 +11,9 @@ namespace Requestrr.WebApi.Controllers.Configuration
     {
         private readonly ApplicationSettings _applicationSettings;
 
-        public ApplicationSettingsController(IOptionsSnapshot<ApplicationSettings> applicationSettingsAccessor)
+        public ApplicationSettingsController(ApplicationSettingsProvider applicationSettingsProvider)
         {
-            _applicationSettings = applicationSettingsAccessor.Value;
+            _applicationSettings = applicationSettingsProvider.Provide();
         }
 
         [HttpGet()]

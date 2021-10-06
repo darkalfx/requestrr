@@ -318,7 +318,7 @@ class Radarr extends React.Component {
             </Col>
           </Row>
         </div>
-        <RadarrCategoryList isSubmitted={this.props.isSubmitted} apiVersion={this.state.apiVersion} canConnect={this.state.isHostnameValid && this.state.isPortValid && this.state.isApiKeyValid} />
+        <RadarrCategoryList isSubmitted={this.props.isSubmitted} isSaving={this.props.isSaving} apiVersion={this.state.apiVersion} canConnect={this.state.isHostnameValid && this.state.isPortValid && this.state.isApiKeyValid} />
         <div>
           <h6 className="heading-small text-muted mt-4">
             Radarr Requests Permissions Settings

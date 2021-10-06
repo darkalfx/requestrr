@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Requestrr.WebApi.config;
 using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
 using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
@@ -25,11 +24,11 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
 
         public TvShowsDownloadClientController(
             IHttpClientFactory httpClientFactory,
-            IOptionsSnapshot<TvShowsSettings> tvShowsSettingsAccessor,
-            IOptionsSnapshot<DownloadClientsSettings> botClientsSettingsAccessor)
+            TvShowsSettingsProvider tvShowsSettingsProvider,
+            DownloadClientsSettingsProvider downloadClientsSettingsProvider)
         {
-            _tvShowsSettings = tvShowsSettingsAccessor.Value;
-            _downloadClientsSettings = botClientsSettingsAccessor.Value;
+            _tvShowsSettings = tvShowsSettingsProvider.Provide();
+            _downloadClientsSettings = downloadClientsSettingsProvider.Provide();
             _httpClientFactory = httpClientFactory;
         }
 

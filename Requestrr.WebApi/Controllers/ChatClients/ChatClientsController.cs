@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Requestrr.WebApi.config;
 
 namespace Requestrr.WebApi.Controllers.ChatClients
@@ -19,11 +18,11 @@ namespace Requestrr.WebApi.Controllers.ChatClients
         private readonly BotClientSettings _botClientsSettings;
 
         public ChatClientsController(
-            IOptionsSnapshot<ChatClientsSettings> chatClientsSettingsAccessor,
-            IOptionsSnapshot<BotClientSettings> botClientsSettingsAccessor)
+            ChatClientsSettingsProvider chatClientsSettingsProvider,
+            BotClientSettingsProvider botClientSettingsProvider)
         {
-            _chatClientsSettings = chatClientsSettingsAccessor.Value;
-            _botClientsSettings = botClientsSettingsAccessor.Value;
+            _chatClientsSettings = chatClientsSettingsProvider.Provide();
+            _botClientsSettings = botClientSettingsProvider.Provide();
         }
 
         [HttpGet()]

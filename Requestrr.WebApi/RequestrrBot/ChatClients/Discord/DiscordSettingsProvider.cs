@@ -1,5 +1,11 @@
 ﻿using System;
+using System.Linq;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
+using Requestrr.WebApi.RequestrrBot.Extensions;
 
 namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 {
@@ -35,18 +41,34 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             if (settings.Movies.Client == DownloadClient.Radarr)
             {
-                hash.Add((string)settings.DownloadClients.Radarr.Hostname);
-                hash.Add((int)settings.DownloadClients.Radarr.Port);
-                hash.Add((string)settings.DownloadClients.Radarr.ApiKey);
-                hash.Add((bool)settings.DownloadClients.Radarr.UseSSL);
-                hash.Add((string)settings.DownloadClients.Radarr.Version);
+                var clientSettings = new RadarrSettingsProvider().Provide();
+
+                hash.Add(clientSettings.Categories.Select(x => x.Name).GetSequenceHashCode());
+                hash.Add(clientSettings.Hostname);
+                hash.Add(clientSettings.Port);
+                hash.Add(clientSettings.ApiKey);
+                hash.Add(clientSettings.UseSSL);
+                hash.Add(clientSettings.Version);
             }
             else if (settings.Movies.Client == DownloadClient.Ombi)
             {
-                hash.Add((string)settings.DownloadClients.Ombi.ApiKey);
-                hash.Add((string)settings.DownloadClients.Ombi.Hostname);
-                hash.Add((int)settings.DownloadClients.Ombi.Port);
-                hash.Add((bool)settings.DownloadClients.Ombi.UseSSL);
+                var clientSettings = new OmbiSettingsProvider().Provide();
+
+                hash.Add(clientSettings.ApiKey);
+                hash.Add(clientSettings.Hostname);
+                hash.Add(clientSettings.Port);
+                hash.Add(clientSettings.UseSSL);
+                hash.Add(clientSettings.Version);
+            }
+            else if (settings.Movies.Client == DownloadClient.Overseerr)
+            {
+                var clientSettings = new OverseerrSettingsProvider().Provide();
+
+                hash.Add(clientSettings.ApiKey);
+                hash.Add(clientSettings.Hostname);
+                hash.Add(clientSettings.Port);
+                hash.Add(clientSettings.UseSSL);
+                hash.Add(clientSettings.Version);
             }
             else
             {
@@ -62,18 +84,34 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
             if (settings.TvShows.Client == DownloadClient.Sonarr)
             {
-                hash.Add((string)settings.DownloadClients.Sonarr.Hostname);
-                hash.Add((int)settings.DownloadClients.Sonarr.Port);
-                hash.Add((string)settings.DownloadClients.Sonarr.ApiKey);
-                hash.Add((bool)settings.DownloadClients.Sonarr.UseSSL);
-                hash.Add((string)settings.DownloadClients.Sonarr.Version);
+                var clientSettings = new SonarrSettingsProvider().Provide();
+
+                hash.Add(clientSettings.Categories.Select(x => x.Name).GetSequenceHashCode());
+                hash.Add(clientSettings.Hostname);
+                hash.Add(clientSettings.Port);
+                hash.Add(clientSettings.ApiKey);
+                hash.Add(clientSettings.UseSSL);
+                hash.Add(clientSettings.Version);
             }
             else if (settings.TvShows.Client == DownloadClient.Ombi)
             {
-                hash.Add((string)settings.DownloadClients.Ombi.ApiKey);
-                hash.Add((string)settings.DownloadClients.Ombi.Hostname);
-                hash.Add((int)settings.DownloadClients.Ombi.Port);
-                hash.Add((bool)settings.DownloadClients.Ombi.UseSSL);
+                var clientSettings = new OmbiSettingsProvider().Provide();
+
+                hash.Add(clientSettings.ApiKey);
+                hash.Add(clientSettings.Hostname);
+                hash.Add(clientSettings.Port);
+                hash.Add(clientSettings.UseSSL);
+                hash.Add(clientSettings.Version);
+            }
+            else if (settings.TvShows.Client == DownloadClient.Overseerr)
+            {
+                var clientSettings = new OverseerrSettingsProvider().Provide();
+
+                hash.Add(clientSettings.ApiKey);
+                hash.Add(clientSettings.Hostname);
+                hash.Add(clientSettings.Port);
+                hash.Add(clientSettings.UseSSL);
+                hash.Add(clientSettings.Version);
             }
             else
             {
