@@ -125,6 +125,10 @@ namespace Requestrr.WebApi.RequestrrBot
                     categoryCommandTemplate = categoryCommandTemplate.Replace("[MOVIE_COMMAND_START]", string.Empty);
                     categoryCommandTemplate = categoryCommandTemplate.Replace("[MOVIE_COMMAND_END]", string.Empty);
 
+                    var tmdbStartIndex = categoryCommandTemplate.IndexOf("[TMDB_COMMAND_START]");
+                    var tmdbEndIndex = categoryCommandTemplate.IndexOf("[TMDB_COMMAND_END]") + "[TMDB_COMMAND_END]".Length;
+                    categoryCommandTemplate = categoryCommandTemplate.Replace(categoryCommandTemplate.Substring(tmdbStartIndex, tmdbEndIndex - tmdbStartIndex), string.Empty);
+
                     var sb = new StringBuilder();
 
                     foreach (var category in radarrSettings.Categories)
@@ -145,6 +149,8 @@ namespace Requestrr.WebApi.RequestrrBot
                     code = code.Replace("[REQUEST_MOVIE_TMDB_NAME]", Language.Current.DiscordCommandMovieRequestTmbdName);
                     code = code.Replace("[MOVIE_COMMAND_START]", string.Empty);
                     code = code.Replace("[MOVIE_COMMAND_END]", string.Empty);
+                    code = code.Replace("[TMDB_COMMAND_START]", string.Empty);
+                    code = code.Replace("[TMDB_COMMAND_END]", string.Empty);
                     code = code.Replace("[CATEGORY_ID]", "99999");
                 }
 
@@ -162,6 +168,10 @@ namespace Requestrr.WebApi.RequestrrBot
                     var categoryCommandTemplate = code.Substring(beginIndex, endIndex - beginIndex);
                     categoryCommandTemplate = categoryCommandTemplate.Replace("[TV_COMMAND_START]", string.Empty);
                     categoryCommandTemplate = categoryCommandTemplate.Replace("[TV_COMMAND_END]", string.Empty);
+
+                    var tvdbStartIndex = categoryCommandTemplate.IndexOf("[TVDB_COMMAND_START]");
+                    var tvdbEndIndex = categoryCommandTemplate.IndexOf("[TVDB_COMMAND_END]") + "[TVDB_COMMAND_END]".Length;
+                    categoryCommandTemplate = categoryCommandTemplate.Replace(categoryCommandTemplate.Substring(tvdbStartIndex, tvdbEndIndex - tvdbStartIndex), string.Empty);
 
                     var sb = new StringBuilder();
 
@@ -183,6 +193,8 @@ namespace Requestrr.WebApi.RequestrrBot
                     code = code.Replace("[REQUEST_TV_TVDB_NAME]", Language.Current.DiscordCommandTvRequestTvdbName);
                     code = code.Replace("[TV_COMMAND_START]", string.Empty);
                     code = code.Replace("[TV_COMMAND_END]", string.Empty);
+                    code = code.Replace("[TVDB_COMMAND_START]", string.Empty);
+                    code = code.Replace("[TVDB_COMMAND_END]", string.Empty);
                     code = code.Replace("[CATEGORY_ID]", "99999");
                 }
 

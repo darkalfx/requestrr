@@ -57,6 +57,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
             }
 
+            [TMDB_COMMAND_START]
             [SlashCommand("[REQUEST_MOVIE_TMDB_NAME]", "[REQUEST_MOVIE_TMDB_DESCRIPTION]")]
             [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
             [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
@@ -75,6 +76,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     _logger.LogError(ex, $"Error while searching movies by TmDb Id {theMovieDbId} : " + ex.Message);
                 }
             }
+            [TMDB_COMMAND_END]
             [MOVIE_COMMAND_END]
 
             [TV_COMMAND_START]
@@ -97,6 +99,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
             }
 
+            [TVDB_COMMAND_START]
             [SlashCommand("[REQUEST_TV_TVDB_NAME]", "[REQUEST_TV_TVDB_DESCRIPTION]")]
             [RequireRoles(new ulong[] { [REQUIRED_TV_ROLE_IDS] })]
             [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
@@ -115,6 +118,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     _logger.LogError(ex, $"Error while searching tv shows with tvdb id {tvDbID} : " + ex.Message);
                 }
             }
+            [TVDB_COMMAND_END]
             [TV_COMMAND_END]
         }
         [REQUEST_COMMAND_END]
