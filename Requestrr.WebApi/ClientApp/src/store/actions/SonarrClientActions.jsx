@@ -329,7 +329,7 @@ export function loadSonarrTags(forceReload) {
                 })
                 .then(data => data.json())
                 .then(data => {
-                    dispatch(setSonarrTags(data));
+                    dispatch(setSonarrTags({ ok: true, data: data }));
 
                     return {
                         ok: true,
@@ -337,7 +337,7 @@ export function loadSonarrTags(forceReload) {
                     }
                 })
                 .catch(err => {
-                    dispatch(setSonarrTags([]));
+                    dispatch(setSonarrTags({ ok: false, data: [] }));
                     return { ok: false };
                 })
         }

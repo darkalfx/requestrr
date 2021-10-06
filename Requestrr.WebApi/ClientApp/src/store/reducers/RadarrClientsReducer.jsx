@@ -76,8 +76,8 @@ export default function RadarrClientsReducer(state = {}, action) {
 
     newRadarr.isLoadingTags = false;
     newRadarr.hasLoadedTags = true;
-    newRadarr.areTagsValid = action.payload.length > 0;
-    newRadarr.tags = action.payload;
+    newRadarr.areTagsValid = action.payload.ok;
+    newRadarr.tags = action.payload.data;
 
     newState.radarr = newRadarr;
 

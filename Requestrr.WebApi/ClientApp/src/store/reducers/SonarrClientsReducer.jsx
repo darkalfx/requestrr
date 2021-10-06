@@ -78,8 +78,8 @@ export default function SonarrClientsReducer(state = {}, action) {
 
     newSonarr.isLoadingTags = false;
     newSonarr.hasLoadedTags = true;
-    newSonarr.areTagsValid = action.payload.length > 0;
-    newSonarr.tags = action.payload;
+    newSonarr.areTagsValid = action.payload.ok;
+    newSonarr.tags = action.payload.data;
 
     newState.sonarr = newSonarr;
 

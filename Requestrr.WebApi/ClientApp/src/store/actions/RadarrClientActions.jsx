@@ -311,7 +311,7 @@ export function loadRadarrTags(forceReload) {
                 })
                 .then(data => data.json())
                 .then(data => {
-                    dispatch(setRadarrTags(data));
+                    dispatch(setRadarrTags({ ok: true, data: data }));
 
                     return {
                         ok: true,
@@ -319,7 +319,7 @@ export function loadRadarrTags(forceReload) {
                     }
                 })
                 .catch(err => {
-                    dispatch(setRadarrTags([]));
+                    dispatch(setRadarrTags({ ok: false, data: [] }));
                     return { ok: false };
                 })
         }
