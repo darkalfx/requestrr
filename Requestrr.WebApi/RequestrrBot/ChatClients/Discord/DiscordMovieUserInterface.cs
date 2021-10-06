@@ -23,10 +23,10 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             _movieSearcher = movieSearcher;
         }
 
-        public async Task ShowMovieSelection(IReadOnlyList<Movie> movies)
+        public async Task ShowMovieSelection(MovieRequest request, IReadOnlyList<Movie> movies)
         {
-            var options = movies.Take(15).Select(x => new DiscordSelectComponentOption(GetFormatedMovieTitle(x), x.TheMovieDbId)).ToList();
-            var select = new DiscordSelectComponent($"MRS/{_interactionContext.User.Id}", Language.Current.DiscordCommandMovieRequestHelpDropdown, options);
+            var options = movies.Take(15).Select(x => new DiscordSelectComponentOption(GetFormatedMovieTitle(x), $"{request.CategoryId}/{x.TheMovieDbId}")).ToList();
+            var select = new DiscordSelectComponent($"MRS/{_interactionContext.User.Id}/{request.CategoryId}", Language.Current.DiscordCommandMovieRequestHelpDropdown, options);
 
             await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddComponents(select).WithContent(Language.Current.DiscordCommandMovieRequestHelp));
         }
@@ -53,7 +53,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.DiscordCommandMovieNotFoundTMDB.ReplaceTokens(LanguageTokens.MovieTMDB, theMovieDbIdTextValue)));
         }
 
-        public async Task DisplayMovieDetailsAsync(Movie movie)
+        public async Task DisplayMovieDetailsAsync(MovieRequest request, Movie movie)
         {
             var message = Language.Current.DiscordCommandMovieRequestConfirm;
 
@@ -69,7 +69,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 }
             }
 
-            var requestButton = new DiscordButtonComponent(ButtonStyle.Primary, $"MRC/{_interactionContext.User.Id}/{movie.TheMovieDbId}", Language.Current.DiscordCommandRequestButton);
+            var requestButton = new DiscordButtonComponent(ButtonStyle.Primary, $"MRC/{_interactionContext.User.Id}/{request.CategoryId}/{movie.TheMovieDbId}", Language.Current.DiscordCommandRequestButton);
 
             var builder = (await AddPreviousDropdownsAsync(movie, new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)))).AddComponents(requestButton).WithContent(message);
             await _interactionContext.EditOriginalResponseAsync(builder);

@@ -22,7 +22,7 @@
     "Discord.Command.Ping.Request.Description": "Pong",
     "Discord.Command.Help.Request.Name": "Aide",
     "Discord.Command.Help.Request.Description": "Obtenir de l'aide sur le bot",
-    "Discord.Command.MissingRoles": "Vous n'avez pas le rôle requis pour demander des films, veuillez demander au propriétaire du serveur.",
+    "Discord.Command.MissingRoles": "Vous n'avez pas les rôles requis pour effectuer cette demande, veuillez demander au propriétaire du serveur.",
     "Discord.Command.NotAvailableInChannel": "Cette commande n'est pas disponible dans cette chaîne.",
     "Discord.Command.UnknownPrecondition": "Une condition préalable inconnue vous empêche d'exécuter cette commande.",
     "Discord.Command.Sending": "Chargement.....",

@@ -38,11 +38,12 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             _sonarrDownloadClient = radarrDownloadClient;
         }
 
-        public TvShowRequestingWorkflow CreateRequestingWorkflow(DiscordInteraction interaction)
+        public TvShowRequestingWorkflow CreateRequestingWorkflow(DiscordInteraction interaction, int categoryId)
         {
             var settings = _settingsProvider.Provide();
 
             return new TvShowRequestingWorkflow(new TvShowUserRequester(interaction.User.Id.ToString(), interaction.User.Username),
+                                                categoryId,
                                                 GetTvShowClient<ITvShowSearcher>(settings),
                                                 GetTvShowClient<ITvShowRequester>(settings),
                                                 new DiscordTvShowUserInterface(interaction),

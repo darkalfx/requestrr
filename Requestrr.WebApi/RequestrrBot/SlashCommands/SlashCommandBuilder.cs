@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
@@ -12,6 +13,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.Locale;
 
 namespace Requestrr.WebApi.RequestrrBot
@@ -20,9 +23,9 @@ namespace Requestrr.WebApi.RequestrrBot
     {
         public static string DLLFileName = "slashcommandsbuilder";
 
-        public static Type Build(ILogger logger, DiscordSettings settings)
+        public static Type Build(ILogger logger, DiscordSettings settings, RadarrSettingsProvider radarrSettingsProvider, SonarrSettingsProvider sonarrSettingsProvider)
         {
-            string code = GetCode(settings);
+            string code = GetCode(settings, radarrSettingsProvider.Provide(), sonarrSettingsProvider.Provide());
             var tree = SyntaxFactory.ParseSyntaxTree(code);
             string fileName = $"{DLLFileName}-{Guid.NewGuid()}.dll";
 
@@ -72,25 +75,21 @@ namespace Requestrr.WebApi.RequestrrBot
             throw new Exception("Failed to build SlashCommands assembly.");
         }
 
-        private static string GetCode(DiscordSettings settings)
+        private static string GetCode(DiscordSettings settings, RadarrSettings radarrSettings, SonarrSettings sonarrSettings)
         {
             var code = File.ReadAllText("SlashCommands.txt");
 
             code = code.Replace("[REQUEST_GROUP_NAME]", Language.Current.DiscordCommandRequestGroupName);
             code = code.Replace("[REQUEST_GROUP_DESCRIPTION]", Language.Current.DiscordCommandRequestGroupDescription);
-            code = code.Replace("[REQUEST_MOVIE_TITLE_NAME]", Language.Current.DiscordCommandMovieRequestTitleName);
             code = code.Replace("[REQUEST_MOVIE_TITLE_DESCRIPTION]", Language.Current.DiscordCommandMovieRequestTitleDescription);
             code = code.Replace("[REQUEST_MOVIE_TITLE_OPTION_NAME]", Language.Current.DiscordCommandMovieRequestTitleOptionName);
             code = code.Replace("[REQUEST_MOVIE_TITLE_OPTION_DESCRIPTION]", Language.Current.DiscordCommandMovieRequestTitleOptionDescription);
-            code = code.Replace("[REQUEST_MOVIE_TMDB_NAME]", Language.Current.DiscordCommandMovieRequestTmbdName);
             code = code.Replace("[REQUEST_MOVIE_TMDB_DESCRIPTION]", Language.Current.DiscordCommandMovieRequestTmbdDescription);
             code = code.Replace("[REQUEST_MOVIE_TMDB_OPTION_NAME]", Language.Current.DiscordCommandMovieRequestTmbdOptionName);
             code = code.Replace("[REQUEST_MOVIE_TMDB_OPTION_DESCRIPTION]", Language.Current.DiscordCommandMovieRequestTmbdOptionDescription);
-            code = code.Replace("[REQUEST_TV_TITLE_NAME]", Language.Current.DiscordCommandTvRequestTitleName);
             code = code.Replace("[REQUEST_TV_TITLE_DESCRIPTION]", Language.Current.DiscordCommandTvRequestTitleDescription);
             code = code.Replace("[REQUEST_TV_TITLE_OPTION_NAME]", Language.Current.DiscordCommandTvRequestTitleOptionName);
             code = code.Replace("[REQUEST_TV_TITLE_OPTION_DESCRIPTION]", Language.Current.DiscordCommandTvRequestTitleOptionDescription);
-            code = code.Replace("[REQUEST_TV_TVDB_NAME]", Language.Current.DiscordCommandTvRequestTvdbName);
             code = code.Replace("[REQUEST_TV_TVDB_DESCRIPTION]", Language.Current.DiscordCommandTvRequestTvdbDescription);
             code = code.Replace("[REQUEST_TV_TVDB_OPTION_NAME]", Language.Current.DiscordCommandTvRequestTvdbOptionName);
             code = code.Replace("[REQUEST_TV_TVDB_OPTION_DESCRIPTION]", Language.Current.DiscordCommandTvRequestTvdbOptionDescription);
@@ -118,10 +117,35 @@ namespace Requestrr.WebApi.RequestrrBot
 
                     code = code.Replace(code.Substring(beginIndex, endIndex - beginIndex), string.Empty);
                 }
+                else if (settings.MovieDownloadClient == DownloadClient.Radarr)
+                {
+                    var beginIndex = code.IndexOf("[MOVIE_COMMAND_START]");
+                    var endIndex = code.IndexOf("[MOVIE_COMMAND_END]") + "[MOVIE_COMMAND_END]".Length;
+                    var categoryCommandTemplate = code.Substring(beginIndex, endIndex - beginIndex);
+                    categoryCommandTemplate = categoryCommandTemplate.Replace("[MOVIE_COMMAND_START]", string.Empty);
+                    categoryCommandTemplate = categoryCommandTemplate.Replace("[MOVIE_COMMAND_END]", string.Empty);
+
+                    var sb = new StringBuilder();
+
+                    foreach (var category in radarrSettings.Categories)
+                    {
+                        var currentTemplate = categoryCommandTemplate;
+                        currentTemplate = currentTemplate.Replace("[CATEGORY_ID]", category.Id.ToString());
+                        currentTemplate = currentTemplate.Replace("[REQUEST_MOVIE_TITLE_NAME]", category.Name);
+                        currentTemplate = currentTemplate.Replace("[REQUEST_MOVIE_TMDB_NAME]", $"{category.Name}-tmdb");
+
+                        sb.Append(currentTemplate);
+                    }
+
+                    code = code.Replace(code.Substring(beginIndex, endIndex - beginIndex), sb.ToString());
+                }
                 else
                 {
+                    code = code.Replace("[REQUEST_MOVIE_TITLE_NAME]", Language.Current.DiscordCommandMovieRequestTitleName);
+                    code = code.Replace("[REQUEST_MOVIE_TMDB_NAME]", Language.Current.DiscordCommandMovieRequestTmbdName);
                     code = code.Replace("[MOVIE_COMMAND_START]", string.Empty);
                     code = code.Replace("[MOVIE_COMMAND_END]", string.Empty);
+                    code = code.Replace("[CATEGORY_ID]", "99999");
                 }
 
                 if (settings.TvShowDownloadClient == DownloadClient.Disabled)
@@ -131,10 +155,35 @@ namespace Requestrr.WebApi.RequestrrBot
 
                     code = code.Replace(code.Substring(beginIndex, endIndex - beginIndex), string.Empty);
                 }
+                else if (settings.TvShowDownloadClient == DownloadClient.Sonarr)
+                {
+                    var beginIndex = code.IndexOf("[TV_COMMAND_START]");
+                    var endIndex = code.IndexOf("[TV_COMMAND_END]") + "[TV_COMMAND_END]".Length;
+                    var categoryCommandTemplate = code.Substring(beginIndex, endIndex - beginIndex);
+                    categoryCommandTemplate = categoryCommandTemplate.Replace("[TV_COMMAND_START]", string.Empty);
+                    categoryCommandTemplate = categoryCommandTemplate.Replace("[TV_COMMAND_END]", string.Empty);
+
+                    var sb = new StringBuilder();
+
+                    foreach (var category in sonarrSettings.Categories)
+                    {
+                        var currentTemplate = categoryCommandTemplate;
+                        currentTemplate = currentTemplate.Replace("[CATEGORY_ID]", category.Id.ToString());
+                        currentTemplate = currentTemplate.Replace("[REQUEST_TV_TITLE_NAME]", category.Name);
+                        currentTemplate = currentTemplate.Replace("[REQUEST_TV_TVDB_NAME]", $"{category.Name}-tvdb");
+
+                        sb.Append(currentTemplate);
+                    }
+
+                    code = code.Replace(code.Substring(beginIndex, endIndex - beginIndex), sb.ToString());
+                }
                 else
                 {
+                    code = code.Replace("[REQUEST_TV_TITLE_NAME]", Language.Current.DiscordCommandTvRequestTitleName);
+                    code = code.Replace("[REQUEST_TV_TVDB_NAME]", Language.Current.DiscordCommandTvRequestTvdbName);
                     code = code.Replace("[TV_COMMAND_START]", string.Empty);
                     code = code.Replace("[TV_COMMAND_END]", string.Empty);
+                    code = code.Replace("[CATEGORY_ID]", "99999");
                 }
 
                 code = code.Replace("[REQUEST_COMMAND_START]", string.Empty);

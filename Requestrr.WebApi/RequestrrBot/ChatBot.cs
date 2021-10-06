@@ -168,7 +168,7 @@ namespace Requestrr.WebApi.RequestrrBot
                         var prop = _slashCommands.GetType().GetProperty("_updateList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                         prop.SetValue(_slashCommands, new List<KeyValuePair<ulong?, Type>>());
 
-                        var slashCommandType = SlashCommandBuilder.Build(_logger, newSettings);
+                        var slashCommandType = SlashCommandBuilder.Build(_logger, newSettings, _serviceProvider.Get<RadarrSettingsProvider>(), _serviceProvider.Get<SonarrSettingsProvider>());
 
                         if (newSettings.EnableRequestsThroughDirectMessages)
                         {
@@ -328,13 +328,15 @@ namespace Requestrr.WebApi.RequestrrBot
             {
                 if (e.Values != null && e.Values.Any())
                 {
-                    await CreateMovieRequestWorkFlow(e)
-                        .HandleMovieSelectionAsync(int.Parse(e.Values.Single()));
+                    await CreateMovieRequestWorkFlow(e, int.Parse(e.Values.Single().Split("/").First()))
+                        .HandleMovieSelectionAsync(int.Parse(e.Values.Single().Split("/").Last()));
                 }
             }
             else if (e.Id.ToLower().StartsWith("mrc"))
             {
-                await CreateMovieRequestWorkFlow(e)
+                var categoryId = int.Parse(e.Id.Split("/").Skip(2).First());
+
+                await CreateMovieRequestWorkFlow(e, categoryId)
                     .RequestMovieAsync(int.Parse(e.Id.Split("/").Last()));
             }
         }
@@ -345,8 +347,8 @@ namespace Requestrr.WebApi.RequestrrBot
             {
                 if (e.Values != null && e.Values.Any())
                 {
-                    await CreateTvShowRequestWorkFlow(e)
-                        .HandleTvShowSelectionAsync(int.Parse(e.Values.Single()));
+                    await CreateTvShowRequestWorkFlow(e, int.Parse(e.Values.Single().Split("/").First()))
+                        .HandleTvShowSelectionAsync(int.Parse(e.Values.Single().Split("/").Last()));
                 }
             }
             else if (e.Id.ToLower().StartsWith("tss"))
@@ -354,28 +356,30 @@ namespace Requestrr.WebApi.RequestrrBot
                 if (e.Values != null && e.Values.Any())
                 {
                     var splitValues = e.Values.Single().Split("/");
-                    var tvDbId = int.Parse(splitValues.First());
-                    var seasonNumber = int.Parse(splitValues.Last());
+                    var categoryId = int.Parse(splitValues[0]);
+                    var tvDbId = int.Parse(splitValues[1]);
+                    var seasonNumber = int.Parse(splitValues[2]);
 
-                    await CreateTvShowRequestWorkFlow(e)
+                    await CreateTvShowRequestWorkFlow(e, categoryId)
                         .HandleSeasonSelectionAsync(tvDbId, seasonNumber);
                 }
             }
             else if (e.Id.ToLower().StartsWith("trc"))
             {
-                var splitValues = e.Id.Split("/").Skip(2);
-                var tvDbId = int.Parse(splitValues.First());
-                var seasonNumber = int.Parse(splitValues.Last());
+                var splitValues = e.Id.Split("/").Skip(2).ToArray();
+                var categoryId = int.Parse(splitValues[0]);
+                var tvDbId = int.Parse(splitValues[1]);
+                var seasonNumber = int.Parse(splitValues[2]);
 
-                await CreateTvShowRequestWorkFlow(e)
+                await CreateTvShowRequestWorkFlow(e, categoryId)
                     .RequestSeasonSelectionAsync(tvDbId, seasonNumber);
             }
         }
 
-        private MovieRequestingWorkflow CreateMovieRequestWorkFlow(ComponentInteractionCreateEventArgs e)
+        private MovieRequestingWorkflow CreateMovieRequestWorkFlow(ComponentInteractionCreateEventArgs e, int categoryId)
         {
             return _movieWorkflowFactory
-                .CreateRequestingWorkflow(e.Interaction);
+                .CreateRequestingWorkflow(e.Interaction, categoryId);
         }
 
         private IMovieNotificationWorkflow CreateMovieNotificationWorkflow(ComponentInteractionCreateEventArgs e)
@@ -384,10 +388,10 @@ namespace Requestrr.WebApi.RequestrrBot
                 .CreateNotificationWorkflow(e.Interaction);
         }
 
-        private TvShowRequestingWorkflow CreateTvShowRequestWorkFlow(ComponentInteractionCreateEventArgs e)
+        private TvShowRequestingWorkflow CreateTvShowRequestWorkFlow(ComponentInteractionCreateEventArgs e, int categoryId)
         {
             return _tvShowWorkflowFactory
-                .CreateRequestingWorkflow(e.Interaction);
+                .CreateRequestingWorkflow(e.Interaction, categoryId);
         }
 
         private ITvShowNotificationWorkflow CreateTvShowNotificationWorkflow(ComponentInteractionCreateEventArgs e)

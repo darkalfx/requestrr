@@ -6,15 +6,15 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
 {
     public interface ITvShowUserInterface
     {
-        Task ShowTvShowSelection(IReadOnlyList<SearchedTvShow> searchedTvShows);
+        Task ShowTvShowSelection(TvShowRequest request, IReadOnlyList<SearchedTvShow> searchedTvShows);
         Task WarnNoTvShowFoundAsync(string tvShowName);
         Task WarnNoTvShowFoundByTvDbIdAsync(int tvDbId);
         Task WarnShowCannotBeRequestedAsync(TvShow tvShow);
         Task WarnShowHasEndedAsync(TvShow tvShow);
         Task WarnAlreadySeasonAlreadyRequestedAsync(TvShow tvShow, TvSeason tvSeason);
         Task WarnSeasonAlreadyAvailableAsync(TvShow tvShow, TvSeason selectedSeason);
-        Task DisplayTvShowDetailsForSeasonAsync(TvShow tvShow, TvSeason tvSeasons);
-        Task DisplayMultiSeasonSelectionAsync(TvShow tvShow, TvSeason[] tvSeasons);
+        Task DisplayTvShowDetailsForSeasonAsync(TvShowRequest request, TvShow tvShow, TvSeason tvSeasons);
+        Task DisplayMultiSeasonSelectionAsync(TvShowRequest request, TvShow tvShow, TvSeason[] tvSeasons);
         Task DisplayRequestDeniedForSeasonAsync(TvShow tvShow, TvSeason selectedSeason);
         Task DisplayRequestSuccessForSeasonAsync(TvShow tvShow, TvSeason selectedSeason);
         Task WarnAlreadyNotifiedForSeasonsAsync(TvShow tvShow, TvSeason selectedSeason);

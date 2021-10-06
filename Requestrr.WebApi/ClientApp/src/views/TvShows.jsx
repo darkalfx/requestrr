@@ -20,12 +20,12 @@ import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { getSettings } from "../store/actions/TvShowsClientsActions"
 import { saveDisabledClient } from "../store/actions/TvShowsClientsActions"
-import { saveSonarrClient } from "../store/actions/TvShowsClientsActions"
+import { saveSonarrClient } from "../store/actions/SonarrClientActions"
 import { saveOmbiClient } from "../store/actions/TvShowsClientsActions"
 import { saveOverseerrClient } from "../store/actions/TvShowsClientsActions"
 import ValidatedTextbox from "../components/Inputs/ValidatedTextbox"
 import Dropdown from "../components/Inputs/Dropdown"
-import Sonarr from "../components/DownloadClients/Sonarr"
+import Sonarr from "../components/DownloadClients/Sonarr/Sonarr"
 import Ombi from "../components/DownloadClients/Ombi"
 import Overseerr from "../components/DownloadClients/Overseerr"
 
@@ -101,75 +101,77 @@ class TvShows extends React.Component {
 
   onSaving = e => {
     e.preventDefault();
-    this.setState({ isSubmitted: true });
+    this.setState({ isSubmitted: true },
+      () => {
+        if (!this.state.isSaving) {
+          if ((this.state.client === "Disabled"
+            || (this.state.client === "Sonarr"
+              && this.state.isSonarrValid)
+            || (this.state.client === "Ombi"
+              && this.state.isOmbiValid)
+            || (this.state.client === "Overseerr"
+              && this.state.isOverseerrValid)
+          )) {
+            this.setState({ isSaving: true });
 
-    if (!this.state.isSaving) {
-      if ((this.state.client === "Disabled"
-        || (this.state.client === "Sonarr"
-          && this.state.isSonarrValid)
-        || (this.state.client === "Ombi"
-          && this.state.isOmbiValid)
-        || (this.state.client === "Overseerr"
-          && this.state.isOverseerrValid)
-      )) {
-        this.setState({ isSaving: true });
+            let saveAction = null;
 
-        let saveAction = null;
+            if (this.state.client === "Disabled") {
+              saveAction = this.props.saveDisabledClient();
+            }
+            else if (this.state.client === "Ombi") {
+              saveAction = this.props.saveOmbiClient({
+                ombi: this.state.ombi,
+                restrictions: this.state.restrictions
+              });
+            }
+            else if (this.state.client === "Overseerr") {
+              saveAction = this.props.saveOverseerrClient({
+                overseerr: this.state.overseerr,
+                restrictions: this.state.restrictions
+              });
+            }
+            else if (this.state.client === "Sonarr") {
+              saveAction = this.props.saveSonarrClient({
+                sonarr: this.state.sonarr,
+                restrictions: this.state.restrictions
+              });
+            }
 
-        if (this.state.client === "Disabled") {
-          saveAction = this.props.saveDisabledClient();
-        }
-        else if (this.state.client === "Ombi") {
-          saveAction = this.props.saveOmbiClient({
-            ombi: this.state.ombi,
-            restrictions: this.state.restrictions
-          });
-        }
-        else if (this.state.client === "Overseerr") {
-          saveAction = this.props.saveOverseerrClient({
-            overseerr: this.state.overseerr,
-            restrictions: this.state.restrictions
-          });
-        }
-        else if (this.state.client === "Sonarr") {
-          saveAction = this.props.saveSonarrClient({
-            sonarr: this.state.sonarr,
-            restrictions: this.state.restrictions
-          });
-        }
+            saveAction.then(data => {
+              this.setState({ isSaving: false, isSubmitted: false, });
 
-        saveAction.then(data => {
-          this.setState({ isSaving: false });
+              if (data.ok) {
+                this.setState({
+                  savingAttempted: true,
+                  savingError: "",
+                  savingSuccess: true
+                });
+              }
+              else {
+                var error = "An unknown error occurred while saving.";
 
-          if (data.ok) {
-            this.setState({
-              savingAttempted: true,
-              savingError: "",
-              savingSuccess: true
+                if (typeof (data.error) === "string")
+                  error = data.error;
+
+                this.setState({
+                  savingAttempted: true,
+                  savingError: error,
+                  savingSuccess: false
+                });
+              }
             });
           }
           else {
-            var error = "An unknown error occurred while saving.";
-
-            if (typeof (data.error) === "string")
-              error = data.error;
-
             this.setState({
               savingAttempted: true,
-              savingError: error,
-              savingSuccess: false
+              savingError: "Some fields are invalid, please fix them before saving.",
+              savingSuccess: false,
+              isSubmitted: false,
             });
           }
-        });
-      }
-      else {
-        this.setState({
-          savingAttempted: true,
-          savingError: "Some fields are invalid, please fix them before saving.",
-          savingSuccess: false
-        });
-      }
-    }
+        }
+      });
   }
 
   render() {
@@ -211,6 +213,19 @@ class TvShows extends React.Component {
                             items={[{ name: "Disabled", value: "Disabled" }, { name: "Sonarr", value: "Sonarr" }, { name: "Overseerr", value: "Overseerr" }, { name: "Ombi", value: "Ombi" }]}
                             onChange={newClient => { this.setState({ client: newClient }, this.onClientChange) }} />
                         </Col>
+                        {
+                          this.state.client !== "Disabled"
+                            ? <>
+                              <Col lg="6">
+                                <Dropdown
+                                  name="Season Restrictions"
+                                  value={this.state.restrictions}
+                                  items={[{ name: "No restrictions", value: "None" }, { name: "Force all seasons", value: "AllSeasons" }, { name: "Force single season", value: "SingleSeason" }]}
+                                  onChange={newRestrictions => { this.setState({ restrictions: newRestrictions }) }} />
+                              </Col>
+                            </>
+                            : null
+                        }
                       </Row>
                       <Row>
                         <Col lg="6">
@@ -245,33 +260,14 @@ class TvShows extends React.Component {
                           {
                             this.state.client === "Sonarr"
                               ? <>
-                                <Sonarr settings={this.state.sonarr} onChange={newSonarr => this.setState({ sonarr: newSonarr })} onValidate={isSonarrValid => this.setState({ isSonarrValid: isSonarrValid })} isSubmitted={this.state.isSubmitted} />
+                                <Sonarr onChange={newSonarr => this.setState({ sonarr: newSonarr })} onValidate={isSonarrValid => this.setState({ isSonarrValid: isSonarrValid })} isSubmitted={this.state.isSubmitted} isSaving={this.state.isSaving} />
                               </>
                               : null
                           }
-                          <hr className="my-4" />
-                          <h6 className="heading-small text-muted mb-4">
-                            Chat Command Options
-                          </h6>
                         </>
                         : null
                     }
                     <div className="pl-lg-4">
-                      {
-                        this.state.client !== "Disabled"
-                          ? <>
-                            <Row>
-                              <Col lg="4">
-                                <Dropdown
-                                  name="Restrictions"
-                                  value={this.state.restrictions}
-                                  items={[{ name: "No restrictions", value: "None" }, { name: "Force all seasons", value: "AllSeasons" }, { name: "Force single season", value: "SingleSeason" }]}
-                                  onChange={newRestrictions => { this.setState({ restrictions: newRestrictions }) }} />
-                              </Col>
-                            </Row>
-                          </>
-                          : null
-                      }
                       <Row>
                         <Col>
                           <FormGroup className="mt-4">

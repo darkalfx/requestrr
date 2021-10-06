@@ -1,10 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Linq;
+using Newtonsoft.Json.Linq;
 using Requestrr.WebApi.config;
 using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
 using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
 using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
@@ -47,15 +50,15 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 settings.DownloadClients.Radarr.ApiKey = radarrSettings.ApiKey;
                 settings.DownloadClients.Radarr.BaseUrl = radarrSettings.BaseUrl;
 
-                settings.DownloadClients.Radarr.MovieProfileId = radarrSettings.MovieProfile;
-                settings.DownloadClients.Radarr.MovieRootFolder = radarrSettings.MoviePath;
-                settings.DownloadClients.Radarr.MovieMinimumAvailability = radarrSettings.MovieMinAvailability;
-                settings.DownloadClients.Radarr.MovieTags = JToken.FromObject(radarrSettings.MovieTags);
-
-                settings.DownloadClients.Radarr.AnimeProfileId = radarrSettings.AnimeProfile;
-                settings.DownloadClients.Radarr.AnimeRootFolder = radarrSettings.AnimePath;
-                settings.DownloadClients.Radarr.AnimeMinimumAvailability = radarrSettings.AnimeMinAvailability;
-                settings.DownloadClients.Radarr.AnimeTags = JToken.FromObject(radarrSettings.AnimeTags);
+                settings.DownloadClients.Radarr.Categories = JToken.FromObject(radarrSettings.Categories.Select(x => new RadarrCategory
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    MinimumAvailability = x.MinimumAvailability,
+                    ProfileId = x.ProfileId,
+                    RootFolder = x.RootFolder,
+                    Tags = x.Tags
+                }).ToArray());
 
                 settings.DownloadClients.Radarr.SearchNewRequests = radarrSettings.SearchNewRequests;
                 settings.DownloadClients.Radarr.MonitorNewRequests = radarrSettings.MonitorNewRequests;
@@ -108,17 +111,17 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                 settings.DownloadClients.Sonarr.ApiKey = sonarrSettings.ApiKey;
                 settings.DownloadClients.Sonarr.BaseUrl = sonarrSettings.BaseUrl;
 
-                settings.DownloadClients.Sonarr.TvRootFolder = sonarrSettings.TvPath;
-                settings.DownloadClients.Sonarr.TvProfileId = sonarrSettings.TvProfile;
-                settings.DownloadClients.Sonarr.TvTags = JToken.FromObject(sonarrSettings.TvTags);
-                settings.DownloadClients.Sonarr.TvLanguageId = sonarrSettings.TvLanguage;
-                settings.DownloadClients.Sonarr.TvUseSeasonFolders = sonarrSettings.TvUseSeasonFolders;
-
-                settings.DownloadClients.Sonarr.AnimeRootFolder = sonarrSettings.AnimePath;
-                settings.DownloadClients.Sonarr.AnimeProfileId = sonarrSettings.AnimeProfile;
-                settings.DownloadClients.Sonarr.AnimeTags = JToken.FromObject(sonarrSettings.AnimeTags);
-                settings.DownloadClients.Sonarr.AnimeLanguageId = sonarrSettings.AnimeLanguage;
-                settings.DownloadClients.Sonarr.AnimeUseSeasonFolders = sonarrSettings.AnimeUseSeasonFolders;
+                settings.DownloadClients.Sonarr.Categories = JToken.FromObject(sonarrSettings.Categories.Select(x => new SonarrCategory
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    ProfileId = x.ProfileId,
+                    RootFolder = x.RootFolder,
+                    Tags = x.Tags,
+                    LanguageId = x.LanguageId,
+                    UseSeasonFolders = x.UseSeasonFolders,
+                    SeriesType = x.SeriesType
+                }).ToArray());
 
                 settings.DownloadClients.Sonarr.SearchNewRequests = sonarrSettings.SearchNewRequests;
                 settings.DownloadClients.Sonarr.MonitorNewRequests = sonarrSettings.MonitorNewRequests;

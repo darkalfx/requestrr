@@ -2,7 +2,6 @@ export const GET_SETTINGS = "movieClients:get_settings";
 export const SET_DISABLED_CLIENT = "movieClients:set_disabled_client";
 export const SET_OMBI_CLIENT = "movieClients:set_ombi_client";
 export const SET_OVERSEERR_CLIENT = "movieClients:set_overseerr_client";
-export const SET_RADARR_CLIENT = "movieClients:set_radarr_client";
 
 export function setSettings(settings) {
     return {
@@ -27,13 +26,6 @@ export function setOmbiClient(settings) {
 export function setOverseerrClient(settings) {
     return {
         type: SET_OVERSEERR_CLIENT,
-        payload: settings
-    };
-};
-
-export function setRadarrClient(settings) {
-    return {
-        type: SET_RADARR_CLIENT,
         payload: settings
     };
 };
@@ -119,151 +111,6 @@ export function testOverseerrSettings(settings) {
     };
 };
 
-export function loadRadarrRootPaths(settings) {
-    return (dispatch, getState) => {
-        const state = getState();
-
-        return fetch("../api/movies/radarr/rootpath", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${state.user.token}`
-            },
-            body: JSON.stringify({
-                "Hostname": settings.hostname,
-                'BaseUrl': settings.baseUrl,
-                "Port": Number(settings.port),
-                "ApiKey": settings.apiKey,
-                "UseSSL": settings.useSSL,
-                "Version": settings.version,
-            })
-        })
-            .then(data => {
-                if (data.status !== 200) {
-                    throw new Error("Bad request.");
-                }
-
-                return data;
-            })
-            .then(data => data.json())
-            .then(data => {
-                return {
-                    ok: true,
-                    paths: data
-                }
-            })
-            .catch(err => { return { ok: false } })
-    };
-};
-
-export function loadRadarrProfiles(settings) {
-    return (dispatch, getState) => {
-        const state = getState();
-
-        return fetch("../api/movies/radarr/profile", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${state.user.token}`
-            },
-            body: JSON.stringify({
-                "Hostname": settings.hostname,
-                'BaseUrl': settings.baseUrl,
-                "Port": Number(settings.port),
-                "ApiKey": settings.apiKey,
-                "UseSSL": settings.useSSL,
-                "Version": settings.version,
-            })
-        })
-            .then(data => {
-                if (data.status !== 200) {
-                    throw new Error("Bad request.");
-                }
-
-                return data;
-            })
-            .then(data => data.json())
-            .then(data => {
-                return {
-                    ok: true,
-                    profiles: data
-                }
-            })
-            .catch(err => { return { ok: false } })
-    };
-};
-
-export function loadRadarrTags(settings) {
-    return (dispatch, getState) => {
-        const state = getState();
-
-        return fetch("../api/movies/radarr/tag", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${state.user.token}`
-            },
-            body: JSON.stringify({
-                "Hostname": settings.hostname,
-                'BaseUrl': settings.baseUrl,
-                "Port": Number(settings.port),
-                "ApiKey": settings.apiKey,
-                "UseSSL": settings.useSSL,
-                "Version": settings.version,
-            })
-        })
-            .then(data => {
-                if (data.status !== 200) {
-                    throw new Error("Bad request.");
-                }
-
-                return data;
-            })
-            .then(data => data.json())
-            .then(data => {
-                return {
-                    ok: true,
-                    tags: data
-                }
-            })
-            .catch(err => { return { ok: false } })
-    };
-};
-
-export function testRadarrSettings(settings) {
-    return (dispatch, getState) => {
-        const state = getState();
-
-        return fetch("../api/movies/radarr/test", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${state.user.token}`
-            },
-            body: JSON.stringify({
-                "Hostname": settings.hostname,
-                'BaseUrl': settings.baseUrl,
-                "Port": Number(settings.port),
-                "ApiKey": settings.apiKey,
-                "UseSSL": settings.useSSL,
-                "Version": settings.version,
-            })
-        })
-            .then(data => data.json())
-            .then(data => {
-                if (data.ok) {
-                    return { ok: true };
-                }
-
-                return { ok: false, error: data }
-            });
-    };
-};
-
 export function saveDisabledClient() {
     return (dispatch, getState) => {
         const state = getState();
@@ -280,67 +127,6 @@ export function saveDisabledClient() {
             .then(data => {
                 if (data.ok) {
                     dispatch(setDisabledClient());
-                    return { ok: true };
-                }
-
-                return { ok: false, error: data }
-            });
-    }
-};
-
-export function saveRadarrClient(saveModel) {
-    return (dispatch, getState) => {
-        const state = getState();
-
-        return fetch("../api/movies/radarr", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${state.user.token}`
-            },
-            body: JSON.stringify({
-                'Hostname': saveModel.radarr.hostname,
-                'BaseUrl': saveModel.radarr.baseUrl,
-                'Port': Number(saveModel.radarr.port),
-                'ApiKey': saveModel.radarr.apiKey,
-                'UseSSL': saveModel.radarr.useSSL,
-                'MoviePath': saveModel.radarr.moviePath,
-                'MovieProfile': saveModel.radarr.movieProfile,
-                'MovieMinAvailability': saveModel.radarr.movieMinAvailability,
-                'MovieTags': saveModel.radarr.movieTags,
-                'AnimePath': saveModel.radarr.animePath,
-                'AnimeProfile': saveModel.radarr.animeProfile,
-                'AnimeMinAvailability': saveModel.radarr.animeMinAvailability,
-                'AnimeTags': saveModel.radarr.animeTags,
-                "Version": saveModel.radarr.version,
-                'SearchNewRequests': saveModel.radarr.searchNewRequests,
-                'MonitorNewRequests': saveModel.radarr.monitorNewRequests
-            })
-        })
-            .then(data => data.json())
-            .then(data => {
-                if (data.ok) {
-                    dispatch(setRadarrClient({
-                        radarr: {
-                            hostname: saveModel.radarr.hostname,
-                            baseUrl: saveModel.radarr.baseUrl,
-                            port: saveModel.radarr.port,
-                            apiKey: saveModel.radarr.apiKey,
-                            useSSL: saveModel.radarr.useSSL,
-                            moviePath: saveModel.radarr.moviePath,
-                            movieProfile: saveModel.radarr.movieProfile,
-                            movieMinAvailability: saveModel.radarr.movieMinAvailability,
-                            movieTags: saveModel.radarr.movieTags,
-                            animePath: saveModel.radarr.animePath,
-                            animeProfile: saveModel.radarr.animeProfile,
-                            animeMinAvailability: saveModel.radarr.animeMinAvailability,
-                            animeTags: saveModel.radarr.animeTags,
-                            searchNewRequests: saveModel.radarr.searchNewRequests,
-                            monitorNewRequests: saveModel.radarr.monitorNewRequests,
-                            version: saveModel.radarr.version
-                        },
-                    }));
                     return { ok: true };
                 }
 

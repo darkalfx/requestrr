@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +10,7 @@ using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.TvShows;
+using SonarrSettingsCategory = Requestrr.WebApi.Controllers.DownloadClients.Sonarr.SonarrSettingsCategory;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
 {
@@ -44,16 +45,17 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                     BaseUrl = _downloadClientsSettings.Sonarr.BaseUrl,
                     Port = _downloadClientsSettings.Sonarr.Port,
                     ApiKey = _downloadClientsSettings.Sonarr.ApiKey,
-                    TvPath = _downloadClientsSettings.Sonarr.TvRootFolder,
-                    TvProfile = _downloadClientsSettings.Sonarr.TvProfileId,
-                    TvTags = _downloadClientsSettings.Sonarr.TvTags ?? Array.Empty<int>(),
-                    TvLanguage = _downloadClientsSettings.Sonarr.TvLanguageId,
-                    TvUseSeasonFolders = _downloadClientsSettings.Sonarr.TvUseSeasonFolders,
-                    AnimePath = _downloadClientsSettings.Sonarr.AnimeRootFolder,
-                    AnimeProfile = _downloadClientsSettings.Sonarr.AnimeProfileId,
-                    AnimeTags = _downloadClientsSettings.Sonarr.AnimeTags ?? Array.Empty<int>(),
-                    AnimeLanguage = _downloadClientsSettings.Sonarr.AnimeLanguageId,
-                    AnimeUseSeasonFolders = _downloadClientsSettings.Sonarr.AnimeUseSeasonFolders,
+                    Categories = _downloadClientsSettings.Sonarr.Categories.Select(x => new SonarrSettingsCategory
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        LanguageId = x.LanguageId,
+                        ProfileId = x.ProfileId,
+                        RootFolder = x.RootFolder,
+                        Tags = x.Tags,
+                        UseSeasonFolders = x.UseSeasonFolders,
+                        SeriesType = x.SeriesType,
+                    }).ToArray(),
                     UseSSL = _downloadClientsSettings.Sonarr.UseSSL,
                     SearchNewRequests = _downloadClientsSettings.Sonarr.SearchNewRequests,
                     MonitorNewRequests = _downloadClientsSettings.Sonarr.MonitorNewRequests,

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +30,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
         }
 
         [HttpPost("test")]
-        public async Task<IActionResult> TestSonarrSettings([FromBody]TestSonarrSettingsModel model)
+        public async Task<IActionResult> TestSonarrSettings([FromBody] TestSonarrSettingsModel model)
         {
             try
             {
@@ -43,7 +45,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
         }
 
         [HttpPost("rootpath")]
-        public async Task<IActionResult> GetSonarrRootPaths([FromBody]TestSonarrSettingsModel model)
+        public async Task<IActionResult> GetSonarrRootPaths([FromBody] TestSonarrSettingsModel model)
         {
             try
             {
@@ -62,7 +64,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
         }
 
         [HttpPost("profile")]
-        public async Task<IActionResult> GetSonarrProfiles([FromBody]TestSonarrSettingsModel model)
+        public async Task<IActionResult> GetSonarrProfiles([FromBody] TestSonarrSettingsModel model)
         {
             try
             {
@@ -81,7 +83,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
         }
 
         [HttpPost("language")]
-        public async Task<IActionResult> GetSonarrLanguages([FromBody]TestSonarrSettingsModel model)
+        public async Task<IActionResult> GetSonarrLanguages([FromBody] TestSonarrSettingsModel model)
         {
             try
             {
@@ -100,7 +102,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
         }
 
         [HttpPost("tag")]
-        public async Task<IActionResult> GetSonarrTags([FromBody]TestSonarrSettingsModel model)
+        public async Task<IActionResult> GetSonarrTags([FromBody] TestSonarrSettingsModel model)
         {
             try
             {
@@ -119,7 +121,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
         }
 
         [HttpPost()]
-        public async Task<IActionResult> SaveAsync([FromBody]SaveSonarrSettingsModel model)
+        public async Task<IActionResult> SaveAsync([FromBody] SaveSonarrSettingsModel model)
         {
             var tvShowsSettings = new TvShowsSettings
             {
@@ -127,22 +129,44 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Sonarr
                 Restrictions = model.Restrictions
             };
 
+            if (!model.Categories.Any())
+            {
+                return BadRequest($"At least one category is required.");
+            }
+
+            if (model.Categories.Any(x => string.IsNullOrWhiteSpace(x.Name)))
+            {
+                return BadRequest($"A category name is required.");
+            }
+
+            foreach (var category in model.Categories)
+            {
+                category.Name = category.Name.Trim();
+                category.Tags = category.Tags;
+            }
+
+            if (new HashSet<string>(model.Categories.Select(x => x.Name.ToLower())).Count != model.Categories.Length)
+            {
+                return BadRequest($"All categories must have different names.");
+            }
+
+            if (new HashSet<int>(model.Categories.Select(x => x.Id)).Count != model.Categories.Length)
+            {
+                return BadRequest($"All categories must have different ids.");
+            }
+
+            if (model.Categories.Any(x => !Regex.IsMatch(x.Name, @"^[\w-]{1,32}$")))
+            {
+                return BadRequest($"Invalid categorie names, make sure they only contain alphanumeric characters, dashes and underscores. (No spaces, etc)");
+            }
+
             var sonarrSetting = new SonarrSettingsModel
             {
                 Hostname = model.Hostname.Trim(),
                 Port = model.Port,
                 ApiKey = model.ApiKey.Trim(),
                 BaseUrl = model.BaseUrl.Trim(),
-                TvPath = model.TvPath,
-                TvProfile = model.TvProfile,
-                TvTags = model.TvTags ?? Array.Empty<int>(),
-                TvLanguage = model.TvLanguage,
-                TvUseSeasonFolders = model.TvUseSeasonFolders,
-                AnimePath = model.AnimePath,
-                AnimeProfile = model.AnimeProfile,
-                AnimeTags = model.AnimeTags ?? Array.Empty<int>(),
-                AnimeLanguage = model.AnimeLanguage,
-                AnimeUseSeasonFolders = model.AnimeUseSeasonFolders,
+                Categories = model.Categories,
                 SearchNewRequests = model.SearchNewRequests,
                 MonitorNewRequests = model.MonitorNewRequests,
                 UseSSL = model.UseSSL,

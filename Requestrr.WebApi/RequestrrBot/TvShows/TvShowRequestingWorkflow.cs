@@ -9,6 +9,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
     public class TvShowRequestingWorkflow
     {
         private readonly TvShowUserRequester _user;
+        private readonly int _categoryId;
         private readonly ITvShowSearcher _searcher;
         private readonly ITvShowRequester _requester;
         private readonly ITvShowUserInterface _userInterface;
@@ -17,6 +18,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
 
         public TvShowRequestingWorkflow(
             TvShowUserRequester user,
+            int categoryId,
             ITvShowSearcher searcher,
             ITvShowRequester requester,
             ITvShowUserInterface userInterface,
@@ -24,6 +26,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             TvShowsSettings settings)
         {
             _user = user;
+            _categoryId = categoryId;
             _searcher = searcher;
             _requester = requester;
             _userInterface = userInterface;
@@ -39,7 +42,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             {
                 if (searchedTvShows.Count > 1)
                 {
-                    await _userInterface.ShowTvShowSelection(searchedTvShows);
+                    await _userInterface.ShowTvShowSelection(new TvShowRequest(_user, _categoryId), searchedTvShows);
                 }
                 else if (searchedTvShows.Count == 1)
                 {
@@ -117,7 +120,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
                 }
                 else
                 {
-                    await _userInterface.DisplayMultiSeasonSelectionAsync(tvShow, GetAvailableTvShowSeasonsBasedOnRestrictions(tvShow));
+                    await _userInterface.DisplayMultiSeasonSelectionAsync(new TvShowRequest(_user, _categoryId), tvShow, GetAvailableTvShowSeasonsBasedOnRestrictions(tvShow));
                 }
             }
         }
@@ -155,16 +158,16 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             switch (selectedSeason)
             {
                 case FutureTvSeasons futureTvSeasons:
-                    await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                        .HandleSelectionAsync(tvShow, futureTvSeasons);
+                    await new FutureSeasonsRequestingWorkflow(_searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .HandleSelectionAsync(new TvShowRequest(_user, _categoryId), tvShow, futureTvSeasons);
                     break;
                 case AllTvSeasons allTvSeasons:
-                    await new AllSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                        .HandleSelectionAsync(tvShow, allTvSeasons);
+                    await new AllSeasonsRequestingWorkflow(_searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .HandleSelectionAsync(new TvShowRequest(_user, _categoryId), tvShow, allTvSeasons);
                     break;
                 case NormalTvSeason normalTvSeason:
-                    await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                        .HandleSelectionAsync(tvShow, normalTvSeason);
+                    await new NormalTvSeasonRequestingWorkflow(_searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .HandleSelectionAsync(new TvShowRequest(_user, _categoryId), tvShow, normalTvSeason);
                     break;
                 default:
                     throw new Exception($"Could not handle season of type \"{selectedSeason.GetType().Name}\"");
@@ -179,16 +182,16 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             switch (selectedSeason)
             {
                 case FutureTvSeasons futureTvSeasons:
-                    await new FutureSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                        .RequestAsync(tvShow, futureTvSeasons);
+                    await new FutureSeasonsRequestingWorkflow(_searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .RequestAsync(new TvShowRequest(_user, _categoryId), tvShow, futureTvSeasons);
                     break;
                 case AllTvSeasons allTvSeasons:
-                    await new AllSeasonsRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                        .RequestAsync(tvShow, allTvSeasons);
+                    await new AllSeasonsRequestingWorkflow(_searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .RequestAsync(new TvShowRequest(_user, _categoryId), tvShow, allTvSeasons);
                     break;
                 case NormalTvSeason normalTvSeason:
-                    await new NormalTvSeasonRequestingWorkflow(_user, _searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
-                        .RequestAsync(tvShow, normalTvSeason);
+                    await new NormalTvSeasonRequestingWorkflow(_searcher, _requester, _userInterface, _tvShowNotificationWorkflow)
+                        .RequestAsync(new TvShowRequest(_user, _categoryId), tvShow, normalTvSeason);
                     break;
                 default:
                     throw new Exception($"Could not handle season of type \"{selectedSeason.GetType().Name}\"");

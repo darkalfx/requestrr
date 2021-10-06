@@ -22,7 +22,7 @@
     "Discord.Command.Ping.Request.Description": "Pong",
     "Discord.Command.Help.Request.Name": "Help",
     "Discord.Command.Help.Request.Description": "Get the bot's help message",
-    "Discord.Command.MissingRoles": "You do not have the required role to request movies, please ask the server owner.",
+    "Discord.Command.MissingRoles": "You do not have the required role to use this command, please ask the server owner to give you permission.",
     "Discord.Command.NotAvailableInChannel": "This command is not available in this channel.",
     "Discord.Command.UnknownPrecondition": "An unknown precondition prevents you from executing this command.",
     "Discord.Command.Sending": "Sending.....",

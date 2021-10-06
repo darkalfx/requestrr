@@ -4,6 +4,11 @@
 //
 // Custom styles for additional flex alignment options.
 
+.flex-inline
+{
+  display: inline-flex;
+}
+
 @each $breakpoint in map-keys($grid-breakpoints) {
   @include media-breakpoint-up($breakpoint) {
     $infix: breakpoint-infix($breakpoint, $grid-breakpoints);

@@ -1,4 +1,6 @@
-﻿namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
+﻿using System;
+
+namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 {
     public class SonarrSettings
     {
@@ -6,19 +8,22 @@
         public int Port { get; set; }
         public string ApiKey { get; set; }
         public string BaseUrl { get; set; }
-        public int TvProfileId { get; set; }
-        public string TvRootFolder { get; set; }
-        public int TvLanguageId { get; set; }
-        public int[] TvTags { get; set; }
-        public bool TvUseSeasonFolders { get; set; }
-        public int AnimeProfileId { get; set; }
-        public string AnimeRootFolder { get; set; }
-        public int AnimeLanguageId { get; set; }
-        public int[] AnimeTags { get; set; }
-        public bool AnimeUseSeasonFolders { get; set; }
+        public SonarrCategory[] Categories { get; set; } = Array.Empty<SonarrCategory>();
         public bool SearchNewRequests { get; set; }
         public bool MonitorNewRequests { get; set; }
         public bool UseSSL { get; set; }
         public string Version { get; set; }
+    }
+
+    public class SonarrCategory
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int ProfileId { get; set; }
+        public string RootFolder { get; set; }
+        public int[] Tags { get; set; } = Array.Empty<int>();
+        public int LanguageId { get; set; }
+        public bool UseSeasonFolders { get; set; } = true;
+        public string SeriesType { get; set; }
     }
 }

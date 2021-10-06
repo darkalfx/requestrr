@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
 using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
 using Requestrr.WebApi.Controllers.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using RadarrSettingsCategory = Requestrr.WebApi.Controllers.DownloadClients.Radarr.RadarrSettingsCategory;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients
 {
@@ -43,14 +45,15 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                     BaseUrl = _downloadClientsSettings.Radarr.BaseUrl,
                     Port = _downloadClientsSettings.Radarr.Port,
                     ApiKey = _downloadClientsSettings.Radarr.ApiKey,
-                    MoviePath = _downloadClientsSettings.Radarr.MovieRootFolder,
-                    MovieProfile = _downloadClientsSettings.Radarr.MovieProfileId,
-                    MovieMinAvailability = _downloadClientsSettings.Radarr.MovieMinimumAvailability,
-                    MovieTags = _downloadClientsSettings.Radarr.MovieTags ?? Array.Empty<int>(),
-                    AnimePath = _downloadClientsSettings.Radarr.AnimeRootFolder,
-                    AnimeProfile = _downloadClientsSettings.Radarr.AnimeProfileId,
-                    AnimeMinAvailability = _downloadClientsSettings.Radarr.AnimeMinimumAvailability,
-                    AnimeTags = _downloadClientsSettings.Radarr.AnimeTags ?? Array.Empty<int>(),
+                    Categories = _downloadClientsSettings.Radarr.Categories.Select(x => new RadarrSettingsCategory
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        MinimumAvailability = x.MinimumAvailability,
+                        ProfileId = x.ProfileId,
+                        RootFolder = x.RootFolder,
+                        Tags = x.Tags
+                    }).ToArray(),
                     UseSSL = _downloadClientsSettings.Radarr.UseSSL,
                     SearchNewRequests = _downloadClientsSettings.Radarr.SearchNewRequests,
                     MonitorNewRequests = _downloadClientsSettings.Radarr.MonitorNewRequests,

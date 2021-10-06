@@ -229,17 +229,17 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while searching available movies with Radarr");
         }
 
-        public async Task<MovieRequestResult> RequestMovieAsync(MovieUserRequester requester, Movie movie)
+        public async Task<MovieRequestResult> RequestMovieAsync(MovieRequest request, Movie movie)
         {
             try
             {
                 if (string.IsNullOrEmpty(movie.DownloadClientId))
                 {
-                    await CreateMovieInRadarr(movie);
+                    await CreateMovieInRadarr(request, movie);
                 }
                 else
                 {
-                    await UpdateExistingMovie(movie);
+                    await UpdateExistingMovie(request, movie);
                 }
 
                 return new MovieRequestResult();
@@ -252,22 +252,18 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while requesting a movie from Radarr");
         }
 
-        private async Task CreateMovieInRadarr(Movie movie)
+        private async Task CreateMovieInRadarr(MovieRequest request, Movie movie)
         {
-            var isAnime = false;
+            RadarrCategory category = null;
 
             try
             {
-                var movieDbResponse = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
-                await movieDbResponse.ThrowIfNotSuccessfulAsync("TheMovieDbFindMovie failed", x => x.status_message);
-                var jsonResponse = await movieDbResponse.Content.ReadAsStringAsync();
-                var theMovieDbMovie = JsonConvert.DeserializeObject<TheMovieDbMovie>(jsonResponse);
-
-                isAnime = theMovieDbMovie.IsAnime;
+                category = RadarrSettings.Categories.Single(x => x.Id == request.CategoryId);
             }
-            catch (System.Exception ex)
+            catch
             {
-                _logger.LogError(ex, $"An error occurred while requesting movie: " + ex.Message);
+                _logger.LogError($"An error occurred while requesting movie \"{movie.Title}\" from Radarr, could not find category with id {request.CategoryId}");
+                throw new System.Exception($"An error occurred while requesting movie \"{movie.Title}\" from Radarr, could not find category with id {request.CategoryId}");
             }
 
             var jsonMovie = await SearchMovieByMovieDbId(int.Parse(movie.TheMovieDbId));
@@ -275,14 +271,14 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             var response = await HttpPostAsync($"{BaseURL}/movie", JsonConvert.SerializeObject(new
             {
                 title = jsonMovie.title,
-                qualityProfileId = isAnime ? RadarrSettings.AnimeProfileId : RadarrSettings.MovieProfileId,
+                qualityProfileId = category.ProfileId,
                 titleSlug = jsonMovie.titleSlug,
                 monitored = RadarrSettings.MonitorNewRequests,
                 images = new string[0],
                 tmdbId = int.Parse(movie.TheMovieDbId),
                 year = jsonMovie.year,
-                rootFolderPath = isAnime ? RadarrSettings.AnimeRootFolder : RadarrSettings.MovieRootFolder,
-                minimumAvailability = isAnime ? RadarrSettings.AnimeMinimumAvailability : RadarrSettings.MovieMinimumAvailability,
+                rootFolderPath = category.RootFolder,
+                minimumAvailability = category.MinimumAvailability,
                 addOptions = new
                 {
                     ignoreEpisodesWithFiles = false,
@@ -294,9 +290,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             await response.ThrowIfNotSuccessfulAsync("RadarrMovieCreation failed", x => x.error);
         }
 
-        private async Task UpdateExistingMovie(Movie movie)
+        private async Task UpdateExistingMovie(MovieRequest request, Movie movie)
         {
-            var isAnime = false;
+            RadarrCategory category = null;
+
             var radarrMovieId = int.Parse(movie.DownloadClientId);
             var response = await HttpGetAsync($"{BaseURL}/movie/{radarrMovieId}");
 
@@ -304,7 +301,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    await CreateMovieInRadarr(movie);
+                    await CreateMovieInRadarr(request, movie);
                     return;
                 }
 
@@ -316,20 +313,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
             try
             {
-                var movieDbResponse = await TheMovieDb.GetMovieFromTheMovieDbAsync(_httpClientFactory.CreateClient(), movie.TheMovieDbId);
-                await movieDbResponse.ThrowIfNotSuccessfulAsync("TheMovieDbFindMovie failed", x => x.status_message);
-                var movieDbJsonResponse = await movieDbResponse.Content.ReadAsStringAsync();
-                var theMovieDbMovie = JsonConvert.DeserializeObject<TheMovieDbMovie>(movieDbJsonResponse);
-
-                isAnime = theMovieDbMovie.IsAnime;
+                category = RadarrSettings.Categories.Single(x => x.Id == request.CategoryId);
             }
-            catch (System.Exception ex)
+            catch
             {
-                _logger.LogError(ex, $"An error occurred while requesting movie: " + ex.Message);
+                _logger.LogError($"An error occurred while requesting movie \"{movie.Title}\" from Radarr, could not find category with id {request.CategoryId}");
+                throw new System.Exception($"An error occurred while requesting movie \"{movie.Title}\" from Radarr, could not find category with id {request.CategoryId}");
             }
 
-            radarrMovie.profileId = isAnime ? RadarrSettings.AnimeProfileId : RadarrSettings.MovieProfileId;
-            radarrMovie.minimumAvailability = isAnime ? RadarrSettings.AnimeMinimumAvailability : RadarrSettings.MovieMinimumAvailability;
+            radarrMovie.profileId = category.ProfileId;
+            radarrMovie.minimumAvailability = category.MinimumAvailability;
             radarrMovie.monitored = RadarrSettings.MonitorNewRequests;
 
             response = await HttpPutAsync($"{BaseURL}/movie/{radarrMovieId}", JsonConvert.SerializeObject(radarrMovie));

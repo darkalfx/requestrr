@@ -357,7 +357,7 @@ class ChatClients extends React.Component {
                               className="form-control-label"
                               htmlFor="input-client-id"
                             >
-                              Client Id
+                              Application Id
                             </label>
                             <Input
                               value={this.state.clientId} onChange={this.onClientIdChange}

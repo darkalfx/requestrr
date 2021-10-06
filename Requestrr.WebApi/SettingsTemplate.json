@@ -43,14 +43,16 @@
       "Port": 7878,
       "ApiKey": "",
       "BaseUrl": "",
-      "MovieProfileId": "1",
-      "MovieRootFolder": "",
-      "MovieMinimumAvailability": "",
-      "MovieTags": [],
-      "AnimeProfileId": "1",
-      "AnimeRootFolder": "",
-      "AnimeMinimumAvailability": "",
-      "AnimeTags": [],
+      "Categories": [
+        {
+          "Id": 0,
+          "Name": "movie",
+          "ProfileId": "1",
+          "RootFolder": "",
+          "MinimumAvailability": "announced",
+          "Tags": []
+        }
+      ],
       "SearchNewRequests": true,
       "MonitorNewRequests": true,
       "UseSSL": false,
@@ -61,16 +63,18 @@
       "Port": 8989,
       "ApiKey": "",
       "BaseUrl": "",
-      "TvProfileId": "1",
-      "TvRootFolder": "",
-      "TvTags": [],
-      "TvLanguageId": "1",
-      "TvUseSeasonFolders": true,
-      "AnimeProfileId": "1",
-      "AnimeRootFolder": "",
-      "AnimeTags": [],
-      "AnimeLanguageId": "1",
-      "AnimeUseSeasonFolders": true,
+      "Categories": [
+        {
+          "Id": 0,
+          "Name": "tv",
+          "ProfileId": "1",
+          "RootFolder": "",
+          "Tags": [],
+          "LanguageId": "1",
+          "UseSeasonFolders": true,
+          "SeriesType": "standard"
+        }
+      ],
       "SearchNewRequests": true,
       "MonitorNewRequests": true,
       "UseSSL": false,
@@ -89,6 +93,6 @@
   },
   "Port": 4545,
   "BaseUrl": "",
-  "DisableAuthentication" : false,
-  "Version": "1.15.0"
+  "DisableAuthentication": false,
+  "Version": "2.0.0"
 }

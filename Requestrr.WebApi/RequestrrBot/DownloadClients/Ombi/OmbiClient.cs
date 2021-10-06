@@ -93,7 +93,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             }
         }
 
-        public async Task<MovieRequestResult> RequestMovieAsync(MovieUserRequester requester, Movie movie)
+        public async Task<MovieRequestResult> RequestMovieAsync(MovieRequest request, Movie movie)
         {
             var retryCount = 0;
 
@@ -101,7 +101,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             {
                 try
                 {
-                    var ombiUser = await FindLinkedOmbiUserAsync(requester.UserId, requester.Username);
+                    var ombiUser = await FindLinkedOmbiUserAsync(request.User.UserId, request.User.Username);
 
                     if (ombiUser.CanRequestMovies && ombiUser.MoviesQuotaRemaining > 0)
                     {
@@ -248,7 +248,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             throw new System.Exception("An error occurred while searching for availables movies from Ombi");
         }
 
-        public async Task<TvShowRequestResult> RequestTvShowAsync(TvShowUserRequester requester, TvShow tvShow, TvSeason season)
+        public async Task<TvShowRequestResult> RequestTvShowAsync(TvShowRequest request, TvShow tvShow, TvSeason season)
         {
             var retryCount = 0;
 
@@ -256,7 +256,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             {
                 try
                 {
-                    var ombiUser = await FindLinkedOmbiUserAsync(requester.UserId, requester.Username);
+                    var ombiUser = await FindLinkedOmbiUserAsync(request.User.UserId, request.User.Username);
 
                     var jsonTvShow = await FindTvShowByTheTvDbIdAsync(tvShow.TheTvDbId.ToString());
 

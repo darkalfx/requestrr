@@ -87,9 +87,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             return CreateInstance<IMovieSearcher>().SearchAvailableMoviesAsync(theMovieDbIds, token);
         }
 
-        public Task<MovieRequestResult> RequestMovieAsync(MovieUserRequester requester, Movie movie)
+        public Task<MovieRequestResult> RequestMovieAsync(MovieRequest request, Movie movie)
         {
-            return CreateInstance<IMovieRequester>().RequestMovieAsync(requester, movie);
+            return CreateInstance<IMovieRequester>().RequestMovieAsync(request, movie);
         }
 
         private T CreateInstance<T>() where T : class

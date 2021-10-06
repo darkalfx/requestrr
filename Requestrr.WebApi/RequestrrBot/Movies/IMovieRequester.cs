@@ -4,7 +4,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 {
     public interface IMovieRequester
     {
-        Task<MovieRequestResult> RequestMovieAsync(MovieUserRequester requester, Movie movie);
+        Task<MovieRequestResult> RequestMovieAsync(MovieRequest request, Movie movie);
     }
 
     public class MovieRequestResult

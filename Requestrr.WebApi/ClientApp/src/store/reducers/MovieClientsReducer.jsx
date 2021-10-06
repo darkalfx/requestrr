@@ -2,7 +2,6 @@ import { GET_SETTINGS } from "../actions/MovieClientsActions"
 import { SET_DISABLED_CLIENT } from "../actions/MovieClientsActions"
 import { SET_OMBI_CLIENT } from "../actions/MovieClientsActions"
 import { SET_OVERSEERR_CLIENT } from "../actions/MovieClientsActions"
-import { SET_RADARR_CLIENT } from "../actions/MovieClientsActions"
 
 export default function MovieClientsReducer(state = {}, action) {
   if (action.type === GET_SETTINGS) {
@@ -32,17 +31,22 @@ export default function MovieClientsReducer(state = {}, action) {
         port: action.payload.radarr.port,
         apiKey: action.payload.radarr.apiKey,
         useSSL: action.payload.radarr.useSSL,
-        moviePath: action.payload.radarr.moviePath,
-        movieProfile: action.payload.radarr.movieProfile,
-        movieMinAvailability: action.payload.radarr.movieMinAvailability,
-        movieTags: action.payload.radarr.movieTags,
-        animePath: action.payload.radarr.animePath,
-        animeProfile: action.payload.radarr.animeProfile,
-        animeMinAvailability: action.payload.radarr.animeMinAvailability,
-        animeTags: action.payload.radarr.animeTags,
+        categories: action.payload.radarr.categories,
         searchNewRequests: action.payload.radarr.searchNewRequests,
         monitorNewRequests: action.payload.radarr.monitorNewRequests,
         version: action.payload.radarr.version,
+        isLoadingPaths: false,
+        hasLoadedPaths: false,
+        arePathsValid: false,
+        paths: [],
+        isLoadingProfiles: false,
+        hasLoadedProfiles: false,
+        areProfilesValid: false,
+        profiles: [],
+        isLoadingTags: false,
+        hasLoadedTags: false,
+        areTagsValid: false,
+        tags: [],
       },
     }
   }
@@ -50,13 +54,6 @@ export default function MovieClientsReducer(state = {}, action) {
     return {
       ...state,
       client: "Disabled"
-    }
-  }
-  else if (action.type === SET_RADARR_CLIENT) {
-    return {
-      ...state,
-      radarr: action.payload.radarr,
-      client: "Radarr"
     }
   }
   else if (action.type === SET_OMBI_CLIENT) {

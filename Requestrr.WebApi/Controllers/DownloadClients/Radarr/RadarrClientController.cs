@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +31,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
         }
 
         [HttpPost("test")]
-        public async Task<IActionResult> TestRadarrSettings([FromBody]TestRadarrSettingsModel model)
+        public async Task<IActionResult> TestRadarrSettings([FromBody] TestRadarrSettingsModel model)
         {
             try
             {
@@ -43,7 +46,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
         }
 
         [HttpPost("rootpath")]
-        public async Task<IActionResult> GetRadarrRootPaths([FromBody]TestRadarrSettingsModel model)
+        public async Task<IActionResult> GetRadarrRootPaths([FromBody] TestRadarrSettingsModel model)
         {
             try
             {
@@ -62,7 +65,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
         }
 
         [HttpPost("profile")]
-        public async Task<IActionResult> GetRadarrProfiles([FromBody]TestRadarrSettingsModel model)
+        public async Task<IActionResult> GetRadarrProfiles([FromBody] TestRadarrSettingsModel model)
         {
             try
             {
@@ -81,7 +84,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
         }
 
         [HttpPost("tag")]
-        public async Task<IActionResult> GetRadarrTags([FromBody]TestRadarrSettingsModel model)
+        public async Task<IActionResult> GetRadarrTags([FromBody] TestRadarrSettingsModel model)
         {
             try
             {
@@ -100,12 +103,43 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
         }
 
         [HttpPost()]
-        public async Task<IActionResult> SaveAsync([FromBody]RadarrSettingsModel model)
+        public async Task<IActionResult> SaveAsync([FromBody] RadarrSettingsModel model)
         {
             var movieSettings = new MoviesSettings
             {
                 Client = DownloadClient.Radarr
             };
+
+            if (!model.Categories.Any())
+            {
+                return BadRequest($"At least one category is required.");
+            }
+
+            if (model.Categories.Any(x => string.IsNullOrWhiteSpace(x.Name)))
+            {
+                return BadRequest($"A category name is required.");
+            }
+
+            foreach (var category in model.Categories)
+            {
+                category.Name = category.Name.Trim();
+                category.Tags = category.Tags;
+            }
+
+            if (new HashSet<string>(model.Categories.Select(x => x.Name.ToLower())).Count != model.Categories.Length)
+            {
+                return BadRequest($"All categories must have different names.");
+            }
+
+            if (new HashSet<int>(model.Categories.Select(x => x.Id)).Count != model.Categories.Length)
+            {
+                return BadRequest($"All categories must have different ids.");
+            }
+
+            if (model.Categories.Any(x => !Regex.IsMatch(x.Name, @"^[\w-]{1,32}$")))
+            {
+                return BadRequest($"Invalid categorie names, make sure they only contain alphanumeric characters, dashes and underscores. (No spaces, etc)");
+            }
 
             var radarrSetting = new RadarrSettingsModel
             {
@@ -113,14 +147,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
                 ApiKey = model.ApiKey.Trim(),
                 BaseUrl = model.BaseUrl.Trim(),
                 Port = model.Port,
-                MoviePath = model.MoviePath,
-                MovieProfile = model.MovieProfile,
-                MovieMinAvailability = model.MovieMinAvailability,
-                MovieTags = model.MovieTags ?? Array.Empty<int>(),
-                AnimePath = model.AnimePath,
-                AnimeProfile = model.AnimeProfile,
-                AnimeMinAvailability = model.AnimeMinAvailability,
-                AnimeTags = model.AnimeTags ?? Array.Empty<int>(),
+                Categories = model.Categories,
                 SearchNewRequests = model.SearchNewRequests,
                 MonitorNewRequests = model.MonitorNewRequests,
                 UseSSL = model.UseSSL,

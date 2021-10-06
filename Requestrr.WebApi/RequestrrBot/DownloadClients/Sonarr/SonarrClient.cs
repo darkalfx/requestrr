@@ -100,9 +100,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             return CreateInstance<ITvShowSearcher>().GetTvShowDetailsAsync(theTvDbIds, token);
         }
 
-        public Task<TvShowRequestResult> RequestTvShowAsync(TvShowUserRequester requester, TvShow tvShow, TvSeason season)
+        public Task<TvShowRequestResult> RequestTvShowAsync(TvShowRequest request, TvShow tvShow, TvSeason season)
         {
-            return CreateInstance<ITvShowRequester>().RequestTvShowAsync(requester, tvShow, season);
+            return CreateInstance<ITvShowRequester>().RequestTvShowAsync(request, tvShow, season);
         }
 
         private T CreateInstance<T>() where T : class

@@ -262,7 +262,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while searching available tv shows with Sonarr");
         }
 
-        public async Task<TvShowRequestResult> RequestTvShowAsync(TvShowUserRequester requester, TvShow tvShow, TvSeason season)
+        public async Task<TvShowRequestResult> RequestTvShowAsync(TvShowRequest request, TvShow tvShow, TvSeason season)
         {
             try
             {
@@ -274,11 +274,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
                 if (string.IsNullOrEmpty(tvShow.DownloadClientId))
                 {
-                    await CreateSonarrTvSeriesAsync(tvShow, requestedSeasons);
+                    await CreateSonarrTvSeriesAsync(request, tvShow, requestedSeasons);
                 }
                 else
                 {
-                    await UpdateSonarrTvSeriesAsync(tvShow, requestedSeasons);
+                    await UpdateSonarrTvSeriesAsync(request, tvShow, requestedSeasons);
                 }
 
                 return new TvShowRequestResult();
@@ -291,23 +291,18 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while requesting a tv show from Sonarr");
         }
 
-        private async Task CreateSonarrTvSeriesAsync(TvShow tvShow, IReadOnlyList<TvSeason> seasons)
+        private async Task CreateSonarrTvSeriesAsync(TvShowRequest request, TvShow tvShow, IReadOnlyList<TvSeason> seasons)
         {
-            bool isAnime = false;
+            SonarrCategory category = null;
 
             try
             {
-                var tzMazeResponse = await HttpGetAsync($"http://api.tvmaze.com/lookup/shows?thetvdb={tvShow.TheTvDbId}");
-                await tzMazeResponse.ThrowIfNotSuccessfulAsync("TvMazeLookup failed", x => x.message);
-
-                var tvMazeJsonResponse = await tzMazeResponse.Content.ReadAsStringAsync();
-                var tvMazeShow = JsonConvert.DeserializeObject<TvMazeTvShow>(tvMazeJsonResponse);
-
-                isAnime = tvMazeShow.isAnime;
+                category = SonarrSettings.Categories.Single(x => x.Id == request.CategoryId);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError($"An error occurred while requesting a tv show \"{tvShow.Title}\" from Sonarr, could not find category with id {request.CategoryId}");
+                throw new System.Exception($"An error occurred while requesting tv show \"{tvShow.Title}\" from Sonarr, could not find category with id {request.CategoryId}");
             }
 
             var response = await HttpGetAsync($"{BaseURL}/series/lookup?term=tvdb:{tvShow.TheTvDbId}");
@@ -316,23 +311,23 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var jsonTvShow = JsonConvert.DeserializeObject<IEnumerable<JSONTvShow>>(jsonResponse).First();
 
-            int[] tags = isAnime ? SonarrSettings.AnimeTags : SonarrSettings.TvTags;
+            int[] tags = category.Tags;
 
             response = await HttpPostAsync($"{BaseURL}/series", JsonConvert.SerializeObject(new
             {
                 title = jsonTvShow.title,
-                qualityProfileId = isAnime ? SonarrSettings.AnimeProfileId : SonarrSettings.TvProfileId,
-                profileId = isAnime ? SonarrSettings.AnimeProfileId : SonarrSettings.TvProfileId,
-                languageProfileId = isAnime ? SonarrSettings.AnimeLanguageId : SonarrSettings.TvLanguageId,
+                qualityProfileId = category.ProfileId,
+                profileId = category.ProfileId,
+                languageProfileId = category.LanguageId,
                 titleSlug = jsonTvShow.titleSlug,
                 monitored = SonarrSettings.MonitorNewRequests,
                 images = new string[0],
                 tvdbId = tvShow.TheTvDbId,
-                tags = tags,
-                seriesType = isAnime ? "anime" : "standard",
+                tags = JToken.FromObject(tags),
+                seriesType = category.SeriesType,
                 year = jsonTvShow.year,
-                seasonFolder = isAnime ? SonarrSettings.AnimeUseSeasonFolders : SonarrSettings.TvUseSeasonFolders,
-                rootFolderPath = isAnime ? SonarrSettings.AnimeRootFolder : SonarrSettings.TvRootFolder,
+                seasonFolder = category.UseSeasonFolders,
+                rootFolderPath = category.RootFolder,
                 seasons = jsonTvShow.seasons.Select(s => new
                 {
                     seasonNumber = s.seasonNumber,
@@ -347,7 +342,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             await response.ThrowIfNotSuccessfulAsync("SonarrSeriesCreation failed", x => x.error);
         }
 
-        private async Task UpdateSonarrTvSeriesAsync(TvShow tvShow, IReadOnlyList<TvSeason> seasons)
+        private async Task UpdateSonarrTvSeriesAsync(TvShowRequest request, TvShow tvShow, IReadOnlyList<TvSeason> seasons)
         {
             var response = await HttpGetAsync($"{BaseURL}/series/{tvShow.DownloadClientId}");
 
@@ -359,12 +354,12 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
                     if (sonarrTvShow != null && sonarrTvShow.id.HasValue)
                     {
-                        await UpdateSonarrTvSeriesAsync(tvShow, seasons);
+                        await UpdateSonarrTvSeriesAsync(request, tvShow, seasons);
                         return;
                     }
                     else
                     {
-                        await CreateSonarrTvSeriesAsync(tvShow, seasons);
+                        await CreateSonarrTvSeriesAsync(request, tvShow, seasons);
                         return;
                     }
                 }
@@ -373,15 +368,25 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
-
             dynamic sonarrSeries = JObject.Parse(jsonResponse);
-            var isAnime = sonarrSeries.seriesType.ToString().Equals("anime", StringComparison.InvariantCultureIgnoreCase);
 
-            sonarrSeries.tags = JToken.FromObject(isAnime ? SonarrSettings.AnimeTags : SonarrSettings.TvTags);
-            sonarrSeries.qualityProfileId = isAnime ? SonarrSettings.AnimeProfileId : SonarrSettings.TvProfileId;
-            sonarrSeries.languageProfileId = isAnime ? SonarrSettings.AnimeLanguageId : SonarrSettings.TvLanguageId;
+            SonarrCategory category = null;
+
+            try
+            {
+                category = SonarrSettings.Categories.Single(x => x.Id == request.CategoryId);
+            }
+            catch
+            {
+                _logger.LogError($"An error occurred while requesting a tv show \"{tvShow.Title}\" from Sonarr, could not find category with id {request.CategoryId}");
+                throw new System.Exception($"An error occurred while requesting tv show \"{tvShow.Title}\" from Sonarr, could not find category with id {request.CategoryId}");
+            }
+
+            sonarrSeries.tags = JToken.FromObject(category.Tags);
+            sonarrSeries.qualityProfileId = category.ProfileId;
+            sonarrSeries.languageProfileId = category.LanguageId;
             sonarrSeries.monitored = SonarrSettings.MonitorNewRequests;
-            sonarrSeries.seasonFolder = isAnime ? SonarrSettings.AnimeUseSeasonFolders : SonarrSettings.TvUseSeasonFolders;
+            sonarrSeries.seasonFolder = category.UseSeasonFolders;
 
             if (seasons.Any())
             {

@@ -97,24 +97,20 @@ class Sidebar extends React.Component {
   createLinks = routes => {
     return routes.filter(r => r.layout != "/auth").map((prop, key) => {
       return (
-        <>
-          {
-            !this.state.disableAuthentication || (this.state.disableAuthentication && prop.supportsAnonymousUser)
-              ? <>
-                <NavItem key={key}>
-                  <NavLink
-                    to={prop.layout + prop.path}
-                    tag={NavLinkRRD}
-                    onClick={this.closeCollapse}
-                    activeClassName="active">
-                    <i className={prop.icon} />
-                    {prop.name}
-                  </NavLink>
-                </NavItem>
-              </>
-              : null
-          }
-        </>);
+        !this.state.disableAuthentication || (this.state.disableAuthentication && prop.supportsAnonymousUser)
+          ?
+          <NavItem key={key}>
+            <NavLink
+              to={prop.layout + prop.path}
+              tag={NavLinkRRD}
+              onClick={this.closeCollapse}
+              activeClassName="active">
+              <i className={prop.icon} />
+              {prop.name}
+            </NavLink>
+          </NavItem>
+          : null
+      );
     });
   };
   render() {
@@ -132,7 +128,7 @@ class Sidebar extends React.Component {
       };
     }
     return (
-      <Navbar 
+      <Navbar
         className={this.state.isLoading ? " navbar-vertical fixed-left navbar-light bg-white fade" : "navbar-vertical fixed-left navbar-light bg-white fade show"}
         expand="md"
         id="sidenav-main"

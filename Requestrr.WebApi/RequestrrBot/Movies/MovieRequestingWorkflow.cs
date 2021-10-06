@@ -7,6 +7,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 {
     public class MovieRequestingWorkflow
     {
+        private readonly int _categoryId;
         private readonly MovieUserRequester _user;
         private readonly IMovieSearcher _searcher;
         private readonly IMovieRequester _requester;
@@ -15,11 +16,13 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         public MovieRequestingWorkflow(
             MovieUserRequester user,
+            int categoryId,
             IMovieSearcher searcher,
             IMovieRequester requester,
             IMovieUserInterface userInterface,
             IMovieNotificationWorkflow movieNotificationWorkflow)
         {
+            _categoryId = categoryId;
             _user = user;
             _searcher = searcher;
             _requester = requester;
@@ -35,7 +38,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
             {
                 if (movies.Count > 1)
                 {
-                    await _userInterface.ShowMovieSelection(movies);
+                    await _userInterface.ShowMovieSelection(new MovieRequest(_user, _categoryId), movies);
                 }
                 else if (movies.Count == 1)
                 {
@@ -82,7 +85,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         {
             if (CanBeRequested(movie))
             {
-                await _userInterface.DisplayMovieDetailsAsync(movie);
+                await _userInterface.DisplayMovieDetailsAsync(new MovieRequest(_user, _categoryId), movie);
             }
             else
             {
@@ -100,7 +103,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         public async Task RequestMovieAsync(int theMovieDbId)
         {
             var movie = await _searcher.SearchMovieAsync(theMovieDbId);
-            var result = await _requester.RequestMovieAsync(_user, movie);
+            var result = await _requester.RequestMovieAsync(new MovieRequest(_user, _categoryId), movie);
 
             if (result.WasDenied)
             {

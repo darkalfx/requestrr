@@ -212,11 +212,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
-        async Task<MovieRequestResult> IMovieRequester.RequestMovieAsync(MovieUserRequester requester, Movie movie)
+        async Task<MovieRequestResult> IMovieRequester.RequestMovieAsync(MovieRequest request, Movie movie)
         {
             try
             {
-                var overseerrUser = await FindLinkedOverseerUserAsync(requester.UserId, requester.Username);
+                var overseerrUser = await FindLinkedOverseerUserAsync(request.User.UserId, request.User.Username);
 
                 var response = await HttpPostAsync(overseerrUser, $"{BaseURL}request", JsonConvert.SerializeObject(new
                 {
@@ -290,7 +290,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
-        async Task<TvShowRequestResult> ITvShowRequester.RequestTvShowAsync(TvShowUserRequester requester, TvShow tvShow, TvSeason season)
+        async Task<TvShowRequestResult> ITvShowRequester.RequestTvShowAsync(TvShowRequest request, TvShow tvShow, TvSeason season)
         {
             try
             {
@@ -300,7 +300,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                         ? new HashSet<int>()
                         : new HashSet<int> { season.SeasonNumber };
 
-                var overseerrUser = await FindLinkedOverseerUserAsync(requester.UserId, requester.Username);
+                var overseerrUser = await FindLinkedOverseerUserAsync(request.User.UserId, request.User.Username);
 
                 var response = await HttpPostAsync(overseerrUser, $"{BaseURL}request", JsonConvert.SerializeObject(new
                 {

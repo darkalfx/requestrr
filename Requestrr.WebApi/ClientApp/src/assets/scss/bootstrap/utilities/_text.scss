@@ -10,6 +10,7 @@
 
 .text-justify  { text-align: justify !important; }
 .text-nowrap   { white-space: nowrap !important; }
+.text-wrap   { white-space: normal !important; }
 .text-truncate { @include text-truncate; }
 
 // Responsive alignment

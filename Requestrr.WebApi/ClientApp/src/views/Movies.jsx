@@ -20,12 +20,11 @@ import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { getSettings } from "../store/actions/MovieClientsActions"
 import { saveDisabledClient } from "../store/actions/MovieClientsActions"
-import { saveRadarrClient } from "../store/actions/MovieClientsActions"
+import { saveRadarrClient } from "../store/actions/RadarrClientActions"
 import { saveOmbiClient } from "../store/actions/MovieClientsActions"
 import { saveOverseerrClient } from "../store/actions/MovieClientsActions"
-import ValidatedTextbox from "../components/Inputs/ValidatedTextbox"
 import Dropdown from "../components/Inputs/Dropdown"
-import Radarr from "../components/DownloadClients/Radarr"
+import Radarr from "../components/DownloadClients/Radarr/Radarr"
 import Ombi from "../components/DownloadClients/Ombi"
 import Overseerr from "../components/DownloadClients/Overseerr"
 
@@ -99,72 +98,74 @@ class Movies extends React.Component {
 
   onSaving = e => {
     e.preventDefault();
-    this.setState({ isSubmitted: true });
+    this.setState({ isSubmitted: true },
+      () => {
+        if (!this.state.isSaving) {
+          if ((this.state.client === "Disabled"
+            || (this.state.client === "Radarr"
+              && this.state.isRadarrValid)
+            || (this.state.client === "Ombi"
+              && this.state.isOmbiValid)
+            || (this.state.client === "Overseerr"
+              && this.state.isOverseerrValid)
+          )) {
+            this.setState({ isSaving: true });
 
-    if (!this.state.isSaving) {
-      if ((this.state.client === "Disabled"
-        || (this.state.client === "Radarr"
-          && this.state.isRadarrValid)
-        || (this.state.client === "Ombi"
-          && this.state.isOmbiValid)
-        || (this.state.client === "Overseerr"
-          && this.state.isOverseerrValid)
-      )) {
-        this.setState({ isSaving: true });
+            let saveAction = null;
 
-        let saveAction = null;
+            if (this.state.client === "Disabled") {
+              saveAction = this.props.saveDisabledClient();
+            }
+            else if (this.state.client === "Ombi") {
+              saveAction = this.props.saveOmbiClient({
+                ombi: this.state.ombi,
+              });
+            }
+            else if (this.state.client === "Overseerr") {
+              saveAction = this.props.saveOverseerrClient({
+                overseerr: this.state.overseerr,
+              });
+            }
+            else if (this.state.client === "Radarr") {
+              saveAction = this.props.saveRadarrClient({
+                radarr: this.state.radarr,
+              });
+            }
 
-        if (this.state.client === "Disabled") {
-          saveAction = this.props.saveDisabledClient();
-        }
-        else if (this.state.client === "Ombi") {
-          saveAction = this.props.saveOmbiClient({
-            ombi: this.state.ombi,
-          });
-        }
-        else if (this.state.client === "Overseerr") {
-          saveAction = this.props.saveOverseerrClient({
-            overseerr: this.state.overseerr,
-          });
-        }
-        else if (this.state.client === "Radarr") {
-          saveAction = this.props.saveRadarrClient({
-            radarr: this.state.radarr,
-          });
-        }
+            saveAction.then(data => {
+              this.setState({ isSaving: false, isSubmitted: false, });
 
-        saveAction.then(data => {
-          this.setState({ isSaving: false });
+              if (data.ok) {
+                this.setState({
+                  savingAttempted: true,
+                  savingError: "",
+                  savingSuccess: true
+                });
+              }
+              else {
+                var error = "An unknown error occurred while saving.";
 
-          if (data.ok) {
-            this.setState({
-              savingAttempted: true,
-              savingError: "",
-              savingSuccess: true
+                if (typeof (data.error) === "string")
+                  error = data.error;
+
+                this.setState({
+                  savingAttempted: true,
+                  savingError: error,
+                  savingSuccess: false
+                });
+              }
             });
           }
           else {
-            var error = "An unknown error occurred while saving.";
-
-            if (typeof (data.error) === "string")
-              error = data.error;
-
             this.setState({
               savingAttempted: true,
-              savingError: error,
-              savingSuccess: false
+              savingError: "Some fields are invalid, please fix them before saving.",
+              savingSuccess: false,
+              isSubmitted: false,
             });
           }
-        });
-      }
-      else {
-        this.setState({
-          savingAttempted: true,
-          savingError: "Some fields are invalid, please fix them before saving.",
-          savingSuccess: false
-        });
-      }
-    }
+        }
+      });
   }
 
   render() {
@@ -240,14 +241,13 @@ class Movies extends React.Component {
                           {
                             this.state.client === "Radarr"
                               ? <>
-                                <Radarr settings={this.state.radarr} onChange={newRadarr => this.setState({ radarr: newRadarr })} onValidate={isRadarrValid => this.setState({ isRadarrValid: isRadarrValid })} isSubmitted={this.state.isSubmitted} />
+                                <Radarr onChange={newRadarr => this.setState({ radarr: newRadarr })} onValidate={isRadarrValid => this.setState({ isRadarrValid: isRadarrValid })} isSubmitted={this.state.isSubmitted} isSaving={this.state.isSaving} />
                               </>
                               : null
                           }
                         </>
                         : null
                     }
-                    <hr className="my-4" />
                     <div className="pl-lg-4">
                       <Row>
                         <Col>

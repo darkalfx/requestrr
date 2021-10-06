@@ -2,10 +2,12 @@ import React from "react";
 import Loader from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
-import { testOverseerrSettings } from "../../store/actions/MovieClientsActions"
-import ValidatedTextbox from "../Inputs/ValidatedTextbox"
-import Textbox from "../Inputs/Textbox"
-import Dropdown from "../Inputs/Dropdown"
+import { testRadarrSettings } from "../../../store/actions/RadarrClientActions"
+import { setRadarrConnectionSettings } from "../../../store/actions/RadarrClientActions"
+import ValidatedTextbox from "../../Inputs/ValidatedTextbox"
+import Textbox from "../../Inputs/Textbox"
+import Dropdown from "../../Inputs/Dropdown"
+import RadarrCategoryList from "./RadarrCategoryList"
 
 import {
   FormGroup,
@@ -14,7 +16,7 @@ import {
   Col
 } from "reactstrap";
 
-class Overseerr extends React.Component {
+class Radarr extends React.Component {
   constructor(props) {
     super(props);
 
@@ -29,24 +31,37 @@ class Overseerr extends React.Component {
       isPortValid: false,
       apiKey: "",
       isApiKeyValid: false,
-      defaultApiUserID: "",
-      isDefaultApiUserIDValid: true,
       useSSL: "",
       apiVersion: "",
+      baseUrl: "",
+      searchNewRequests: true,
+      monitorNewRequests: true,
     };
 
     this.onTestSettings = this.onTestSettings.bind(this);
     this.onUseSSLChanged = this.onUseSSLChanged.bind(this);
+    this.updateStateFromProps = this.updateStateFromProps.bind(this);
     this.onValueChange = this.onValueChange.bind(this);
     this.onValidate = this.onValidate.bind(this);
     this.updateStateFromProps = this.updateStateFromProps.bind(this);
     this.validateNonEmptyString = this.validateNonEmptyString.bind(this);
     this.validatePort = this.validatePort.bind(this);
-    this.validateDefaultUserId = this.validateDefaultUserId.bind(this);
+    this.validateCategoryName = this.validateCategoryName.bind(this);
   }
 
   componentDidMount() {
     this.updateStateFromProps(this.props);
+  }
+
+  componentDidUpdate(prevProps) {
+    var previousNames = prevProps.settings.categories.map(x => x.name);
+    var currentNames = this.props.settings.categories.map(x => x.name);
+
+    if (!(prevProps.settings.profiles.length == this.props.settings.profiles.length && prevProps.settings.profiles.reduce((a, b, i) => a && this.props.settings.profiles[i], true))
+      || !(prevProps.settings.paths.length == this.props.settings.paths.length && prevProps.settings.paths.reduce((a, b, i) => a && this.props.settings.paths[i], true))
+      || !(previousNames.length == currentNames.length && currentNames.every((value, index) => previousNames[index] == value))) {
+      this.onValueChange();
+    }
   }
 
   updateStateFromProps = props => {
@@ -62,11 +77,12 @@ class Overseerr extends React.Component {
       isPortValid: false,
       apiKey: props.settings.apiKey,
       isApiKeyValid: false,
-      defaultApiUserID: props.settings.defaultApiUserID,
-      isDefaultApiUserIDValid: true,
       useSSL: props.settings.useSSL,
       apiVersion: props.settings.version,
-    });
+      baseUrl: props.settings.baseUrl,
+      searchNewRequests: props.settings.searchNewRequests,
+      monitorNewRequests: props.settings.monitorNewRequests
+    }, this.onValueChange);
   }
 
   onUseSSLChanged = event => {
@@ -83,31 +99,24 @@ class Overseerr extends React.Component {
     return /^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/.test(value);
   }
 
-  validateDefaultUserId = value => {
-    return (!value || value.length === 0 || /^\s*$/.test(value)) || (/^[1-9]\d*$/).test(value);
-  }
-
   onTestSettings = e => {
     e.preventDefault();
 
     if (!this.state.isTestingSettings
       && this.state.isHostnameValid
       && this.state.isPortValid
-      && this.state.isDefaultApiUserIDValid
       && this.state.isApiKeyValid) {
       this.setState({ isTestingSettings: true });
 
       this.props.testSettings({
         hostname: this.state.hostname,
+        baseUrl: this.state.baseUrl,
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
-        defaultApiUserID: this.state.defaultApiUserID,
         version: this.state.apiVersion,
       })
         .then(data => {
-          this.setState({ isTestingSettings: false });
-
           if (data.ok) {
             this.setState({
               testSettingsRequested: true,
@@ -127,29 +136,60 @@ class Overseerr extends React.Component {
               testSettingsSuccess: false
             });
           }
+
+          this.setState({ isTestingSettings: false });
         });
     }
   }
 
   onValueChange() {
-    this.props.onChange({
-      client: this.state.client,
+    this.props.setConnectionSettings({
       hostname: this.state.hostname,
+      baseUrl: this.state.baseUrl,
       port: this.state.port,
       apiKey: this.state.apiKey,
-      defaultApiUserID: this.state.defaultApiUserID,
       useSSL: this.state.useSSL,
-      qualityProfile: this.state.qualityProfile,
-      path: this.state.path,
-      profile: this.state.profile,
       version: this.state.apiVersion,
+    });
+
+    this.props.onChange({
+      hostname: this.state.hostname,
+      baseUrl: this.state.baseUrl,
+      port: this.state.port,
+      apiKey: this.state.apiKey,
+      useSSL: this.state.useSSL,
+      version: this.state.apiVersion,
+      searchNewRequests: this.state.searchNewRequests,
+      monitorNewRequests: this.state.monitorNewRequests,
     });
 
     this.onValidate();
   }
 
   onValidate() {
-    this.props.onValidate(this.state.isApiKeyValid && this.state.isHostnameValid && this.state.isPortValid && this.state.isDefaultApiUserIDValid);
+    this.props.onValidate(this.state.isApiKeyValid
+      && this.state.isHostnameValid
+      && this.state.isPortValid
+      && this.props.settings.categories.every(x => this.validateCategoryName(x.name))
+      && this.props.settings.areProfilesValid
+      && this.props.settings.arePathsValid);
+  }
+
+  validateCategoryName(value) {
+    if (!/\S/.test(value)) {
+      return false;
+    }
+    else if (/^[\w-]{1,32}$/.test(value)) {
+      var names = this.props.settings.categories.map(x => x.name);
+
+      if (new Set(names).size !== names.length) {
+        return false;
+      }
+    }
+    else {
+      return false;
+    }
+    return true;
   }
 
   render() {
@@ -157,7 +197,7 @@ class Overseerr extends React.Component {
       <>
         <div>
           <h6 className="heading-small text-muted mb-4">
-            Overseerr Connection Settings
+            Radarr Connection Settings
           </h6>
         </div>
         <div className="pl-lg-4">
@@ -166,7 +206,7 @@ class Overseerr extends React.Component {
               <Dropdown
                 name="API"
                 value={this.state.apiVersion}
-                items={[{ name: "Version 1", value: "1" }]}
+                items={[{ name: "Version 2", value: "2" }, { name: "Version 3", value: "3" }]}
                 onChange={newApiVersion => this.setState({ apiVersion: newApiVersion }, this.onValueChange)} />
             </Col>
             <Col lg="6">
@@ -210,18 +250,14 @@ class Overseerr extends React.Component {
           </Row>
           <Row>
             <Col lg="6">
-              <ValidatedTextbox
-                name="Default Overseerr User ID for requests"
-                placeholder="Enter default user ID (Optional)"
-                alertClassName="mt-3 mb-0"
-                errorMessage="The user id must be a number."
-                isSubmitted={this.props.isSubmitted}
-                value={this.state.defaultApiUserID}
-                validation={this.validateDefaultUserId}
-                onChange={newDefaultApiUserID => this.setState({ defaultApiUserID: newDefaultApiUserID }, this.onValueChange)}
-                onValidate={isValid => this.setState({ isDefaultApiUserIDValid: isValid }, this.onValidate)} />
+              <Textbox
+                name="Base Url"
+                placeholder="Enter base url configured in Radarr, leave empty if none configured."
+                value={this.state.baseUrl}
+                onChange={newBaseUrl => this.setState({ baseUrl: newBaseUrl }, this.onValueChange)} />
             </Col>
-            <Col lg="6"></Col>
+            <Col lg="6">
+            </Col>
           </Row>
           <Row>
             <Col lg="6">
@@ -241,7 +277,6 @@ class Overseerr extends React.Component {
               </FormGroup>
             </Col>
             <Col lg="6">
-              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank">Click here to view how configure Overseerr permissions with the bot</a>
             </Col>
           </Row>
           <Row>
@@ -264,7 +299,7 @@ class Overseerr extends React.Component {
           <Row>
             <Col>
               <FormGroup className="text-right">
-                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid || !this.state.isDefaultApiUserIDValid} className="btn btn-icon btn-3 btn-default" type="button">
+                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid} className="btn btn-icon btn-3 btn-default" type="button">
                   <span className="btn-inner--icon">
                     {
                       this.state.isTestingSettings ? (
@@ -283,14 +318,60 @@ class Overseerr extends React.Component {
             </Col>
           </Row>
         </div>
-        <hr className="my-4" />
+        <RadarrCategoryList isSubmitted={this.props.isSubmitted} apiVersion={this.state.apiVersion} canConnect={this.state.isHostnameValid && this.state.isPortValid && this.state.isApiKeyValid} />
+        <div>
+          <h6 className="heading-small text-muted mt-4">
+            Radarr Requests Permissions Settings
+          </h6>
+        </div>
+        <div className="pl-lg-4">
+          <Row>
+            <Col lg="6">
+              <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                <Input
+                  className="custom-control-input"
+                  id="MonitorNewRequests"
+                  type="checkbox"
+                  onChange={e => { this.setState({ monitorNewRequests: !this.state.monitorNewRequests }, this.onValueChange); }}
+                  checked={this.state.monitorNewRequests}
+                />
+                <label
+                  className="custom-control-label"
+                  htmlFor="MonitorNewRequests">
+                  <span className="text-muted">Automatically monitor newly added movies</span>
+                </label>
+              </FormGroup>
+              <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                <Input
+                  className="custom-control-input"
+                  id="SearchNewRequests"
+                  type="checkbox"
+                  onChange={e => { this.setState({ searchNewRequests: !this.state.searchNewRequests }, this.onValueChange); }}
+                  checked={this.state.searchNewRequests}
+                />
+                <label
+                  className="custom-control-label"
+                  htmlFor="SearchNewRequests">
+                  <span className="text-muted">Automatically search for movie when request is made</span>
+                </label>
+              </FormGroup>
+            </Col>
+          </Row>
+        </div>
       </>
     );
   }
 }
 
-const mapPropsToAction = {
-  testSettings: testOverseerrSettings,
+const mapPropsToState = state => {
+  return {
+    settings: state.movies.radarr
+  }
 };
 
-export default connect(null, mapPropsToAction)(Overseerr);
+const mapPropsToAction = {
+  testSettings: testRadarrSettings,
+  setConnectionSettings: setRadarrConnectionSettings,
+};
+
+export default connect(mapPropsToState, mapPropsToAction)(Radarr);

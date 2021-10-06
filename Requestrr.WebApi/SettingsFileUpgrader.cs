@@ -4,6 +4,8 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 
 namespace Requestrr.WebApi
 {
@@ -141,6 +143,86 @@ namespace Requestrr.WebApi
                 settingsJson.Version = "1.15.0";
 
                 ((JObject)settingsJson).Add("DisableAuthentication", false);
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
+
+            if (settingsJson.Version.ToString().Equals("1.15.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "2.0.0";
+
+                var radarrCategories = new[]
+                {
+                    new RadarrCategory
+                    {
+                        Id = 0,
+                        Name = "movie",
+                        ProfileId = (int)((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("MovieProfileId"),
+                        RootFolder = (string)((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("MovieRootFolder"),
+                        MinimumAvailability = (string)((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("MovieMinimumAvailability"),
+                        Tags = ((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("MovieTags").ToObject<int[]>()
+                    },
+                    new RadarrCategory
+                    {
+                        Id = 1,
+                        Name = "movie-anime",
+                        ProfileId = (int)((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("AnimeProfileId"),
+                        RootFolder = (string)((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("AnimeRootFolder"),
+                        MinimumAvailability = (string)((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("AnimeMinimumAvailability"),
+                        Tags = ((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("AnimeTags").ToObject<int[]>()
+                    },
+                };
+
+                ((JObject)settingsJson["DownloadClients"]["Radarr"]).Remove("MovieProfileId");
+                ((JObject)settingsJson["DownloadClients"]["Radarr"]).Remove("MovieRootFolder");
+                ((JObject)settingsJson["DownloadClients"]["Radarr"]).Remove("MovieMinimumAvailability");
+                ((JObject)settingsJson["DownloadClients"]["Radarr"]).Remove("MovieTags");
+                ((JObject)settingsJson["DownloadClients"]["Radarr"]).Remove("AnimeProfileId");
+                ((JObject)settingsJson["DownloadClients"]["Radarr"]).Remove("AnimeRootFolder");
+                ((JObject)settingsJson["DownloadClients"]["Radarr"]).Remove("AnimeMinimumAvailability");
+                ((JObject)settingsJson["DownloadClients"]["Radarr"]).Remove("AnimeTags");
+
+                ((JObject)settingsJson["DownloadClients"]["Radarr"]).Add("Categories", JToken.FromObject(radarrCategories));
+
+                var sonarrCategories = new[]
+                {
+                    new SonarrCategory
+                    {
+                        Id = 0,
+                        Name = "tv",
+                        ProfileId = (int)((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("TvProfileId"),
+                        RootFolder = (string)((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("TvRootFolder"),
+                        Tags = ((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("TvTags").ToObject<int[]>(),
+                        LanguageId = (int)((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("TvLanguageId"),
+                        UseSeasonFolders = (bool)((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("TvUseSeasonFolders"),
+                        SeriesType = "standard",
+                    },
+                    new SonarrCategory
+                    {
+                        Id = 1,
+                        Name = "tv-anime",
+                        ProfileId = (int)((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("AnimeProfileId"),
+                        RootFolder = (string)((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("AnimeRootFolder"),
+                        Tags = ((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("AnimeTags").ToObject<int[]>(),
+                        LanguageId = (int)((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("AnimeLanguageId"),
+                        UseSeasonFolders = (bool)((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("AnimeUseSeasonFolders"),
+                        SeriesType = "anime",
+                    },
+                };
+
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("TvProfileId");
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("TvRootFolder");
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("TvTags");
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("TvLanguageId");
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("TvUseSeasonFolders");
+
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("AnimeProfileId");
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("AnimeRootFolder");
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("AnimeTags");
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("AnimeLanguageId");
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Remove("AnimeUseSeasonFolders");
+
+                ((JObject)settingsJson["DownloadClients"]["Sonarr"]).Add("Categories", JToken.FromObject(sonarrCategories));
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }

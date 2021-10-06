@@ -33,7 +33,7 @@ class ValidatedTextbox extends React.Component {
         () => this.triggerValueValidation());
     }
 
-    if (!this.props.isSubmitted && nextProps.isSubmitted) {
+    if (this.props.isSubmitted != nextProps.isSubmitted) {
       this.triggerValueValidation();
     }
   }

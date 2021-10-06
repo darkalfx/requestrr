@@ -36,11 +36,12 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
             _radarrDownloadClient = radarrDownloadClient;
         }
 
-        public MovieRequestingWorkflow CreateRequestingWorkflow(DiscordInteraction interaction)
+        public MovieRequestingWorkflow CreateRequestingWorkflow(DiscordInteraction interaction, int categoryId)
         {
             var settings = _settingsProvider.Provide();
 
-            return new MovieRequestingWorkflow(new MovieUserRequester(interaction.User.Id.ToString(), interaction.User.Username),
+            return new MovieRequestingWorkflow(new MovieUserRequester(interaction.User.Id.ToString(),  interaction.User.Username),
+                                                categoryId,
                                                 GetMovieClient<IMovieSearcher>(settings),
                                                 GetMovieClient<IMovieRequester>(settings),
                                                 new DiscordMovieUserInterface(interaction, GetMovieClient<IMovieSearcher>(settings)),

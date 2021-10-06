@@ -7,6 +7,15 @@
 //
 // Base class takes care of all the key behavioral aspects.
 
+.remove-control
+{
+  color: red;
+  font-size: 1.2rem;
+  margin-left: 10px;
+  cursor: pointer;
+  line-height: 1.5rem
+}
+
 .custom-control {
   position: relative;
   display: block;

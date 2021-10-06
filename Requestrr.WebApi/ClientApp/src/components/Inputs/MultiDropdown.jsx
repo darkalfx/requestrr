@@ -10,7 +10,7 @@ class MultiDropdown extends React.Component {
     super(props);
 
     this.state = {
-      selectedItems: [],
+      selectedItems: []
     };
 
     this.onSelectedItemsChange = this.onSelectedItemsChange.bind(this);
@@ -32,9 +32,11 @@ class MultiDropdown extends React.Component {
   };
 
   onSelectedItemsChange = selectedItems => {
-    this.setState({
-      selectedItems: selectedItems,
-    }, () => this.props.onChange(this.state.selectedItems));
+    if (!this.props.ignoreEmptyItems || this.props.items.length > 0) {
+      this.setState({
+        selectedItems: selectedItems,
+      }, () => this.props.onChange(this.state.selectedItems));
+    }
   }
 
   render() {
@@ -44,7 +46,6 @@ class MultiDropdown extends React.Component {
           className="form-control-label">
           {this.props.name}
         </label>
-
         <Select
           multi="true"
           placeholder=""

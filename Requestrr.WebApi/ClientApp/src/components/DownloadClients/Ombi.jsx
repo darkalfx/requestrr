@@ -279,6 +279,7 @@ class Ombi extends React.Component {
             </Col>
           </Row>
         </div>
+        <hr className="my-4" />
       </>
     );
   }

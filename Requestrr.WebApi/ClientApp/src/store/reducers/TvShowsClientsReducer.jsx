@@ -2,7 +2,6 @@ import { GET_SETTINGS } from "../actions/TvShowsClientsActions"
 import { SET_DISABLED_CLIENT } from "../actions/TvShowsClientsActions"
 import { SET_OMBI_CLIENT } from "../actions/TvShowsClientsActions"
 import { SET_OVERSEERR_CLIENT } from "../actions/TvShowsClientsActions"
-import { SET_SONARR_CLIENT } from "../actions/TvShowsClientsActions"
 
 export default function TvShowsClientsReducer(state = {}, action) {
   if (action.type === GET_SETTINGS) {
@@ -31,20 +30,27 @@ export default function TvShowsClientsReducer(state = {}, action) {
         baseUrl: action.payload.sonarr.baseUrl,
         port: action.payload.sonarr.port,
         apiKey: action.payload.sonarr.apiKey,
-        tvPath: action.payload.sonarr.tvPath,
-        tvProfile: action.payload.sonarr.tvProfile,
-        tvTags: action.payload.sonarr.tvTags,
-        tvLanguage: action.payload.sonarr.tvLanguage,
-        tvUseSeasonFolders: action.payload.sonarr.tvUseSeasonFolders,
-        animePath: action.payload.sonarr.animePath,
-        animeProfile: action.payload.sonarr.animeProfile,
-        animeTags: action.payload.sonarr.animeTags,
-        animeLanguage: action.payload.sonarr.animeLanguage,
-        animeUseSeasonFolders: action.payload.sonarr.animeUseSeasonFolders,
+        categories: action.payload.sonarr.categories,
         searchNewRequests: action.payload.sonarr.searchNewRequests,
         monitorNewRequests: action.payload.sonarr.monitorNewRequests,
         useSSL: action.payload.sonarr.useSSL,
-        version: action.payload.sonarr.version
+        version: action.payload.sonarr.version,
+        isLoadingPaths: false,
+        hasLoadedPaths: false,
+        arePathsValid: false,
+        paths: [],
+        isLoadingProfiles: false,
+        hasLoadedProfiles: false,
+        areProfilesValid: false,
+        profiles: [],
+        isLoadingTags: false,
+        hasLoadedTags: false,
+        areTagsValid: false,
+        tags: [],
+        isLoadingLanguages: false,
+        hasLoadedLanguages: false,
+        areLanguagesValid: false,
+        languages: [],
       },
       restrictions: action.payload.restrictions
     }
@@ -53,14 +59,6 @@ export default function TvShowsClientsReducer(state = {}, action) {
     return {
       ...state,
       client: "Disabled"
-    }
-  }
-  else if (action.type === SET_SONARR_CLIENT) {
-    return {
-      ...state,
-      sonarr: action.payload.sonarr,
-      restrictions: action.payload.restrictions,
-      client: "Sonarr"
     }
   }
   else if (action.type === SET_OMBI_CLIENT) {

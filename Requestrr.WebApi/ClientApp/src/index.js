@@ -34,21 +34,41 @@ import UserReducer from './store/reducers/UserReducer';
 import ChatClients from './store/reducers/ChatClientsReducer';
 import SettingsReducer from './store/reducers/SettingsReducer';
 import MovieClients from './store/reducers/MovieClientsReducer';
+import RadarrClients from './store/reducers/RadarrClientsReducer';
+import SonarrClients from './store/reducers/SonarrClientsReducer';
 import TvShowsClients from './store/reducers/TvShowsClientsReducer';
+
+function combinedMovieClientsReducer(state ={}, action) {
+  if (action.type.includes("radarr")) {
+    return RadarrClients(state, action);
+  }
+  else {
+    return MovieClients(state, action);
+  }
+}
+
+function combinedTvShowsClientsReducer(state ={}, action) {
+  if (action.type.includes("sonarr")) {
+    return SonarrClients(state, action);
+  }
+  else {
+    return TvShowsClients(state, action);
+  }
+}
 
 const store = createStore(combineReducers({
   user: UserReducer,
   chatClients: ChatClients,
-  movies: MovieClients,
-  tvShows: TvShowsClients,
+  movies: combinedMovieClientsReducer,
+  tvShows: combinedTvShowsClientsReducer,
   settings: SettingsReducer
 }), applyMiddleware(thunk));
 
 fetch("../api/settings", {
   method: 'GET',
   headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
   }
 })
   .then(data => data.json())

@@ -41,14 +41,14 @@ namespace Requestrr.WebApi.RequestrrBot
             [SlashCommand("[REQUEST_MOVIE_TITLE_NAME]", "[REQUEST_MOVIE_TITLE_DESCRIPTION]")]
             [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
             [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
-            public async Task MovieByTitle(InteractionContext ctx, [Option("[REQUEST_MOVIE_TITLE_OPTION_NAME]", "[REQUEST_MOVIE_TITLE_OPTION_DESCRIPTION]")] string movieTitle)
+            public async Task MovieByTitle[CATEGORY_ID](InteractionContext ctx, [Option("[REQUEST_MOVIE_TITLE_OPTION_NAME]", "[REQUEST_MOVIE_TITLE_OPTION_DESCRIPTION]")] string movieTitle)
             {
                 try
                 {
                     var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
                     await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
 
-                    var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
+                    var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction, [CATEGORY_ID]);
                     await workFlow.SearchMovieAsync(movieTitle.Trim());
                 }
                 catch (System.Exception ex)
@@ -60,14 +60,14 @@ namespace Requestrr.WebApi.RequestrrBot
             [SlashCommand("[REQUEST_MOVIE_TMDB_NAME]", "[REQUEST_MOVIE_TMDB_DESCRIPTION]")]
             [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
             [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
-            public async Task ByTmdb(InteractionContext ctx, [Option("[REQUEST_MOVIE_TMDB_OPTION_NAME]", "[REQUEST_MOVIE_TMDB_OPTION_DESCRIPTION]")] long theMovieDbId)
+            public async Task ByTmdb[CATEGORY_ID](InteractionContext ctx, [Option("[REQUEST_MOVIE_TMDB_OPTION_NAME]", "[REQUEST_MOVIE_TMDB_OPTION_DESCRIPTION]")] long theMovieDbId)
             {
                 try
                 {
                     var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
                     await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
 
-                    var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
+                    var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction, [CATEGORY_ID]);
                     await workFlow.SearchMovieAsync((int)theMovieDbId);
                 }
                 catch (System.Exception ex)
@@ -81,14 +81,14 @@ namespace Requestrr.WebApi.RequestrrBot
             [SlashCommand("[REQUEST_TV_TITLE_NAME]", "[REQUEST_TV_TITLE_DESCRIPTION]")]
             [RequireRoles(new ulong[] { [REQUIRED_TV_ROLE_IDS] })]
             [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
-            public async Task TvByTitle(InteractionContext ctx, [Option("[REQUEST_TV_TITLE_OPTION_NAME]", "[REQUEST_TV_TITLE_OPTION_DESCRIPTION]")] string tvShowTitle)
+            public async Task TvByTitle[CATEGORY_ID](InteractionContext ctx, [Option("[REQUEST_TV_TITLE_OPTION_NAME]", "[REQUEST_TV_TITLE_OPTION_DESCRIPTION]")] string tvShowTitle)
             {
                 try
                 {
                     var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
                     await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
 
-                    var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
+                    var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction, [CATEGORY_ID]);
                     await workFlow.SearchTvShowAsync(tvShowTitle.Trim());
                 }
                 catch (System.Exception ex)
@@ -100,14 +100,14 @@ namespace Requestrr.WebApi.RequestrrBot
             [SlashCommand("[REQUEST_TV_TVDB_NAME]", "[REQUEST_TV_TVDB_DESCRIPTION]")]
             [RequireRoles(new ulong[] { [REQUIRED_TV_ROLE_IDS] })]
             [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
-            public async Task ByTvdb(InteractionContext ctx, [Option("[REQUEST_TV_TVDB_OPTION_NAME]", "[REQUEST_TV_TVDB_OPTION_DESCRIPTION]")] long tvDbID)
+            public async Task ByTvdb[CATEGORY_ID](InteractionContext ctx, [Option("[REQUEST_TV_TVDB_OPTION_NAME]", "[REQUEST_TV_TVDB_OPTION_DESCRIPTION]")] long tvDbID)
             {
                 try
                 {
                     var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
                     await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
 
-                    var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction);
+                    var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction, [CATEGORY_ID]);
                     await workFlow.SearchTvShowAsync((int)tvDbID);
                 }
                 catch (System.Exception ex)
