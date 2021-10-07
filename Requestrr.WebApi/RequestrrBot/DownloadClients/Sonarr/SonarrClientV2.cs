@@ -307,6 +307,13 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var jsonTvShow = JsonConvert.DeserializeObject<IEnumerable<JSONTvShow>>(jsonResponse).First();
 
+            string seriesType = category.SeriesType;
+
+            if(seriesType == "automatic")
+            {
+                seriesType = await IsAnimeAsync(tvShow.TheTvDbId) ? "anime" : "standard";
+            }
+
             response = await HttpPostAsync($"{BaseURL}/series", JsonConvert.SerializeObject(new
             {
                 title = jsonTvShow.title,
@@ -317,7 +324,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 monitored = SonarrSettings.MonitorNewRequests,
                 images = new string[0],
                 tvdbId = tvShow.TheTvDbId,
-                seriesType = category.SeriesType,
+                seriesType = seriesType,
                 year = jsonTvShow.year,
                 seasonFolder = category.UseSeasonFolders,
                 rootFolderPath = category.RootFolder,
@@ -618,6 +625,26 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 FirstAired = ((int)jsonTvShow.year).ToString(),
                 HasEnded = ((string)jsonTvShow.status).Equals("ended", StringComparison.InvariantCultureIgnoreCase)
             };
+        }
+
+        public async Task<bool> IsAnimeAsync(int theTvDbId)
+        {
+            try
+            {
+                var tzMazeResponse = await HttpGetAsync($"http://api.tvmaze.com/lookup/shows?thetvdb={theTvDbId}");
+                await tzMazeResponse.ThrowIfNotSuccessfulAsync("TvMazeLookup failed", x => x.message);
+
+                var tvMazeJsonResponse = await tzMazeResponse.Content.ReadAsStringAsync();
+                var tvMazeShow = JsonConvert.DeserializeObject<TvMazeTvShow>(tvMazeJsonResponse);
+
+               return tvMazeShow.isAnime;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+            }
+
+            return false;
         }
 
         private TvEpisode[] ConvertToTvEpisodes(JSONSeason season, JSONEpisode[] episodes)

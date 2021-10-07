@@ -401,7 +401,7 @@ class SonarrCategory extends React.Component {
                     <Dropdown
                       name="Series Type"
                       value={this.props.category.seriesType}
-                      items={[{ name: "Standard", value: "standard" }, { name: "Daily", value: "daily" }, { name: "Anime", value: "anime" }]}
+                      items={[{ name: "Standard", value: "standard" }, { name: "Daily", value: "daily" }, { name: "Anime", value: "anime" }, { name: "Automatically Detect", value: "automatic" }]}
                       onChange={newSeriesType => this.setCategory({ ...this.props.category, seriesType: newSeriesType })} />
                   </Col>
                 </Row>

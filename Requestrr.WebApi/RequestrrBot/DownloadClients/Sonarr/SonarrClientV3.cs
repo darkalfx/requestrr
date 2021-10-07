@@ -313,6 +313,13 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
             int[] tags = category.Tags;
 
+            string seriesType = category.SeriesType;
+
+            if (seriesType == "automatic")
+            {
+                seriesType = await IsAnimeAsync(tvShow.TheTvDbId) ? "anime" : "standard";
+            }
+
             response = await HttpPostAsync($"{BaseURL}/series", JsonConvert.SerializeObject(new
             {
                 title = jsonTvShow.title,
@@ -324,7 +331,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 images = new string[0],
                 tvdbId = tvShow.TheTvDbId,
                 tags = JToken.FromObject(tags),
-                seriesType = category.SeriesType,
+                seriesType = seriesType,
                 year = jsonTvShow.year,
                 seasonFolder = category.UseSeasonFolders,
                 rootFolderPath = category.RootFolder,
@@ -593,6 +600,26 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 IsAvailable = x.hasFile,
                 IsRequested = x.monitored
             }).ToArray();
+        }
+
+        public async Task<bool> IsAnimeAsync(int theTvDbId)
+        {
+            try
+            {
+                var tzMazeResponse = await HttpGetAsync($"http://api.tvmaze.com/lookup/shows?thetvdb={theTvDbId}");
+                await tzMazeResponse.ThrowIfNotSuccessfulAsync("TvMazeLookup failed", x => x.message);
+
+                var tvMazeJsonResponse = await tzMazeResponse.Content.ReadAsStringAsync();
+                var tvMazeShow = JsonConvert.DeserializeObject<TvMazeTvShow>(tvMazeJsonResponse);
+
+                return tvMazeShow.isAnime;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+            }
+
+            return false;
         }
 
         private static string GetBaseURL(SonarrSettings settings)

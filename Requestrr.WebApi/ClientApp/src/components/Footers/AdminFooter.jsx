@@ -29,7 +29,7 @@ class Footer extends React.Component {
           <Col xl="6">
             <div className="copyright text-center text-xl-left text-muted">
               © {new Date().getFullYear()}{" "}
-              Requestrr (v2.0.3)
+              Requestrr (v2.0.4)
             </div>
           </Col>
         </Row>
