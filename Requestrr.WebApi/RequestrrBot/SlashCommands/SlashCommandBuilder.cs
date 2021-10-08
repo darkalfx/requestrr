@@ -134,7 +134,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     foreach (var category in radarrSettings.Categories)
                     {
                         var currentTemplate = categoryCommandTemplate;
-                        currentTemplate = currentTemplate.Replace("[CATEGORY_ID]", category.Id.ToString());
+                        currentTemplate = currentTemplate.Replace("[MOVIE_CATEGORY_ID]", category.Id.ToString());
                         currentTemplate = currentTemplate.Replace("[REQUEST_MOVIE_TITLE_NAME]", category.Name);
                         currentTemplate = currentTemplate.Replace("[REQUEST_MOVIE_TMDB_NAME]", $"{category.Name}-tmdb");
 
@@ -151,7 +151,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     code = code.Replace("[MOVIE_COMMAND_END]", string.Empty);
                     code = code.Replace("[TMDB_COMMAND_START]", string.Empty);
                     code = code.Replace("[TMDB_COMMAND_END]", string.Empty);
-                    code = code.Replace("[CATEGORY_ID]", "99999");
+                    code = code.Replace("[MOVIE_CATEGORY_ID]", "99999");
                 }
 
                 if (settings.TvShowDownloadClient == DownloadClient.Disabled)
@@ -178,7 +178,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     foreach (var category in sonarrSettings.Categories)
                     {
                         var currentTemplate = categoryCommandTemplate;
-                        currentTemplate = currentTemplate.Replace("[CATEGORY_ID]", category.Id.ToString());
+                        currentTemplate = currentTemplate.Replace("[TV_CATEGORY_ID]", category.Id.ToString());
                         currentTemplate = currentTemplate.Replace("[REQUEST_TV_TITLE_NAME]", category.Name);
                         currentTemplate = currentTemplate.Replace("[REQUEST_TV_TVDB_NAME]", $"{category.Name}-tvdb");
 
@@ -195,7 +195,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     code = code.Replace("[TV_COMMAND_END]", string.Empty);
                     code = code.Replace("[TVDB_COMMAND_START]", string.Empty);
                     code = code.Replace("[TVDB_COMMAND_END]", string.Empty);
-                    code = code.Replace("[CATEGORY_ID]", "99999");
+                    code = code.Replace("[TV_CATEGORY_ID]", "99999");
                 }
 
                 code = code.Replace("[REQUEST_COMMAND_START]", string.Empty);
