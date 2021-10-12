@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.Locale;
@@ -23,9 +24,9 @@ namespace Requestrr.WebApi.RequestrrBot
     {
         public static string DLLFileName = "slashcommandsbuilder";
 
-        public static Type Build(ILogger logger, DiscordSettings settings, RadarrSettingsProvider radarrSettingsProvider, SonarrSettingsProvider sonarrSettingsProvider)
+        public static Type Build(ILogger logger, DiscordSettings settings, RadarrSettingsProvider radarrSettingsProvider, SonarrSettingsProvider sonarrSettingsProvider, OverseerrSettingsProvider overseerrSettingsProvider)
         {
-            string code = GetCode(settings, radarrSettingsProvider.Provide(), sonarrSettingsProvider.Provide());
+            string code = GetCode(settings, radarrSettingsProvider.Provide(), sonarrSettingsProvider.Provide(), overseerrSettingsProvider.Provide());
             var tree = SyntaxFactory.ParseSyntaxTree(code);
             string fileName = $"{DLLFileName}-{Guid.NewGuid()}.dll";
 
@@ -75,7 +76,7 @@ namespace Requestrr.WebApi.RequestrrBot
             throw new Exception("Failed to build SlashCommands assembly.");
         }
 
-        private static string GetCode(DiscordSettings settings, RadarrSettings radarrSettings, SonarrSettings sonarrSettings)
+        private static string GetCode(DiscordSettings settings, RadarrSettings radarrSettings, SonarrSettings sonarrSettings, OverseerrSettings overseerrSettings)
         {
             var code = File.ReadAllText("SlashCommands.txt");
 
@@ -119,29 +120,11 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
                 else if (settings.MovieDownloadClient == DownloadClient.Radarr)
                 {
-                    var beginIndex = code.IndexOf("[MOVIE_COMMAND_START]");
-                    var endIndex = code.IndexOf("[MOVIE_COMMAND_END]") + "[MOVIE_COMMAND_END]".Length;
-                    var categoryCommandTemplate = code.Substring(beginIndex, endIndex - beginIndex);
-                    categoryCommandTemplate = categoryCommandTemplate.Replace("[MOVIE_COMMAND_START]", string.Empty);
-                    categoryCommandTemplate = categoryCommandTemplate.Replace("[MOVIE_COMMAND_END]", string.Empty);
-
-                    var tmdbStartIndex = categoryCommandTemplate.IndexOf("[TMDB_COMMAND_START]");
-                    var tmdbEndIndex = categoryCommandTemplate.IndexOf("[TMDB_COMMAND_END]") + "[TMDB_COMMAND_END]".Length;
-                    categoryCommandTemplate = categoryCommandTemplate.Replace(categoryCommandTemplate.Substring(tmdbStartIndex, tmdbEndIndex - tmdbStartIndex), string.Empty);
-
-                    var sb = new StringBuilder();
-
-                    foreach (var category in radarrSettings.Categories)
-                    {
-                        var currentTemplate = categoryCommandTemplate;
-                        currentTemplate = currentTemplate.Replace("[MOVIE_CATEGORY_ID]", category.Id.ToString());
-                        currentTemplate = currentTemplate.Replace("[REQUEST_MOVIE_TITLE_NAME]", category.Name);
-                        currentTemplate = currentTemplate.Replace("[REQUEST_MOVIE_TMDB_NAME]", $"{category.Name}-tmdb");
-
-                        sb.Append(currentTemplate);
-                    }
-
-                    code = code.Replace(code.Substring(beginIndex, endIndex - beginIndex), sb.ToString());
+                    code = GenerateMovieCategories(radarrSettings.Categories.Select(x => new Category { Id = x.Id, Name = x.Name }).ToArray(), code);
+                }
+                else if (settings.MovieDownloadClient == DownloadClient.Overseerr && overseerrSettings.Movies.Categories.Any())
+                {
+                    code = GenerateMovieCategories(overseerrSettings.Movies.Categories.Select(x => new Category { Id = x.Id, Name = x.Name }).ToArray(), code);
                 }
                 else
                 {
@@ -163,29 +146,11 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
                 else if (settings.TvShowDownloadClient == DownloadClient.Sonarr)
                 {
-                    var beginIndex = code.IndexOf("[TV_COMMAND_START]");
-                    var endIndex = code.IndexOf("[TV_COMMAND_END]") + "[TV_COMMAND_END]".Length;
-                    var categoryCommandTemplate = code.Substring(beginIndex, endIndex - beginIndex);
-                    categoryCommandTemplate = categoryCommandTemplate.Replace("[TV_COMMAND_START]", string.Empty);
-                    categoryCommandTemplate = categoryCommandTemplate.Replace("[TV_COMMAND_END]", string.Empty);
-
-                    var tvdbStartIndex = categoryCommandTemplate.IndexOf("[TVDB_COMMAND_START]");
-                    var tvdbEndIndex = categoryCommandTemplate.IndexOf("[TVDB_COMMAND_END]") + "[TVDB_COMMAND_END]".Length;
-                    categoryCommandTemplate = categoryCommandTemplate.Replace(categoryCommandTemplate.Substring(tvdbStartIndex, tvdbEndIndex - tvdbStartIndex), string.Empty);
-
-                    var sb = new StringBuilder();
-
-                    foreach (var category in sonarrSettings.Categories)
-                    {
-                        var currentTemplate = categoryCommandTemplate;
-                        currentTemplate = currentTemplate.Replace("[TV_CATEGORY_ID]", category.Id.ToString());
-                        currentTemplate = currentTemplate.Replace("[REQUEST_TV_TITLE_NAME]", category.Name);
-                        currentTemplate = currentTemplate.Replace("[REQUEST_TV_TVDB_NAME]", $"{category.Name}-tvdb");
-
-                        sb.Append(currentTemplate);
-                    }
-
-                    code = code.Replace(code.Substring(beginIndex, endIndex - beginIndex), sb.ToString());
+                    code = GenerateTvShowCategories(sonarrSettings.Categories.Select(x => new Category { Id = x.Id, Name = x.Name }).ToArray(), code);
+                }
+                else if (settings.TvShowDownloadClient == DownloadClient.Overseerr && overseerrSettings.TvShows.Categories.Any())
+                {
+                    code = GenerateTvShowCategories(overseerrSettings.TvShows.Categories.Select(x => new Category { Id = x.Id, Name = x.Name }).ToArray(), code);
                 }
                 else
                 {
@@ -203,6 +168,60 @@ namespace Requestrr.WebApi.RequestrrBot
             }
 
             return code;
+        }
+
+        private static string GenerateMovieCategories(Category[] categories, string code)
+        {
+            var beginIndex = code.IndexOf("[MOVIE_COMMAND_START]");
+            var endIndex = code.IndexOf("[MOVIE_COMMAND_END]") + "[MOVIE_COMMAND_END]".Length;
+            var categoryCommandTemplate = code.Substring(beginIndex, endIndex - beginIndex);
+            categoryCommandTemplate = categoryCommandTemplate.Replace("[MOVIE_COMMAND_START]", string.Empty);
+            categoryCommandTemplate = categoryCommandTemplate.Replace("[MOVIE_COMMAND_END]", string.Empty);
+
+            var tmdbStartIndex = categoryCommandTemplate.IndexOf("[TMDB_COMMAND_START]");
+            var tmdbEndIndex = categoryCommandTemplate.IndexOf("[TMDB_COMMAND_END]") + "[TMDB_COMMAND_END]".Length;
+            categoryCommandTemplate = categoryCommandTemplate.Replace(categoryCommandTemplate.Substring(tmdbStartIndex, tmdbEndIndex - tmdbStartIndex), string.Empty);
+
+            var sb = new StringBuilder();
+
+            foreach (var category in categories)
+            {
+                var currentTemplate = categoryCommandTemplate;
+                currentTemplate = currentTemplate.Replace("[MOVIE_CATEGORY_ID]", category.Id.ToString());
+                currentTemplate = currentTemplate.Replace("[REQUEST_MOVIE_TITLE_NAME]", category.Name);
+                currentTemplate = currentTemplate.Replace("[REQUEST_MOVIE_TMDB_NAME]", $"{category.Name}-tmdb");
+
+                sb.Append(currentTemplate);
+            }
+
+            return code.Replace(code.Substring(beginIndex, endIndex - beginIndex), sb.ToString());
+        }
+
+        private static string GenerateTvShowCategories(Category[] categories, string code)
+        {
+            var beginIndex = code.IndexOf("[TV_COMMAND_START]");
+            var endIndex = code.IndexOf("[TV_COMMAND_END]") + "[TV_COMMAND_END]".Length;
+            var categoryCommandTemplate = code.Substring(beginIndex, endIndex - beginIndex);
+            categoryCommandTemplate = categoryCommandTemplate.Replace("[TV_COMMAND_START]", string.Empty);
+            categoryCommandTemplate = categoryCommandTemplate.Replace("[TV_COMMAND_END]", string.Empty);
+
+            var tvdbStartIndex = categoryCommandTemplate.IndexOf("[TVDB_COMMAND_START]");
+            var tvdbEndIndex = categoryCommandTemplate.IndexOf("[TVDB_COMMAND_END]") + "[TVDB_COMMAND_END]".Length;
+            categoryCommandTemplate = categoryCommandTemplate.Replace(categoryCommandTemplate.Substring(tvdbStartIndex, tvdbEndIndex - tvdbStartIndex), string.Empty);
+
+            var sb = new StringBuilder();
+
+            foreach (var category in categories)
+            {
+                var currentTemplate = categoryCommandTemplate;
+                currentTemplate = currentTemplate.Replace("[TV_CATEGORY_ID]", category.Id.ToString());
+                currentTemplate = currentTemplate.Replace("[REQUEST_TV_TITLE_NAME]", category.Name);
+                currentTemplate = currentTemplate.Replace("[REQUEST_TV_TVDB_NAME]", $"{category.Name}-tvdb");
+
+                sb.Append(currentTemplate);
+            }
+
+            return code.Replace(code.Substring(beginIndex, endIndex - beginIndex), sb.ToString());
         }
 
         public static void CleanUp()
@@ -223,6 +242,13 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
             }
             catch { }
+        }
+
+        private class Category
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
         }
     }
 }

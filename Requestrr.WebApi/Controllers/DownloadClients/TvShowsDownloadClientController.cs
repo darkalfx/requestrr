@@ -8,6 +8,7 @@ using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
 using Requestrr.WebApi.Controllers.DownloadClients.Overseerr;
 using Requestrr.WebApi.Controllers.DownloadClients.Sonarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 using SonarrSettingsCategory = Requestrr.WebApi.Controllers.DownloadClients.Sonarr.SonarrSettingsCategory;
 
@@ -70,15 +71,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
                     UseSSL = _downloadClientsSettings.Ombi.UseSSL,
                     Version = _downloadClientsSettings.Ombi.Version
                 },
-                Overseerr = new OverseerrSettingsModel
-                {
-                    Hostname = _downloadClientsSettings.Overseerr.Hostname,
-                    Port = _downloadClientsSettings.Overseerr.Port,
-                    ApiKey = _downloadClientsSettings.Overseerr.ApiKey,
-                    DefaultApiUserID = _downloadClientsSettings.Overseerr.DefaultApiUserID,
-                    UseSSL = _downloadClientsSettings.Overseerr.UseSSL,
-                    Version = _downloadClientsSettings.Overseerr.Version
-                },
+                Overseerr = _downloadClientsSettings.Overseerr,
                 Restrictions = _tvShowsSettings.Restrictions
             });
         }

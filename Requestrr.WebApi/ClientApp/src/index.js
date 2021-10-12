@@ -36,20 +36,27 @@ import SettingsReducer from './store/reducers/SettingsReducer';
 import MovieClients from './store/reducers/MovieClientsReducer';
 import RadarrClients from './store/reducers/RadarrClientsReducer';
 import SonarrClients from './store/reducers/SonarrClientsReducer';
+import OverseerrClients from './store/reducers/OverseerrClientsReducer';
 import TvShowsClients from './store/reducers/TvShowsClientsReducer';
 
-function combinedMovieClientsReducer(state ={}, action) {
+function combinedMovieClientsReducer(state = {}, action) {
   if (action.type.includes("radarr")) {
     return RadarrClients(state, action);
+  }
+  else if (action.type.includes("overseerr")) {
+    return OverseerrClients(state, action);
   }
   else {
     return MovieClients(state, action);
   }
 }
 
-function combinedTvShowsClientsReducer(state ={}, action) {
+function combinedTvShowsClientsReducer(state = {}, action) {
   if (action.type.includes("sonarr")) {
     return SonarrClients(state, action);
+  }
+  else if (action.type.includes("overseerr")) {
+    return OverseerrClients(state, action);
   }
   else {
     return TvShowsClients(state, action);

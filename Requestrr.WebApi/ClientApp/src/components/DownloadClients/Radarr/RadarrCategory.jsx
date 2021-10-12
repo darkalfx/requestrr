@@ -24,26 +24,18 @@ class RadarrCategory extends React.Component {
     super(props);
 
     this.state = {
-      arePathsValid: true,
-      areProfilesValid: true,
-      areTagsValid: true,
       nameErrorMessage: "",
       isNameValid: true,
       isOpen: false,
     };
 
     this.validateName = this.validateName.bind(this);
-    this.setPaths = this.setPaths.bind(this);
-    this.setProfiles = this.setProfiles.bind(this);
-    this.setTags = this.setTags.bind(this);
     this.setCategory = this.setCategory.bind(this);
     this.deleteCategory = this.deleteCategory.bind(this);
   }
 
   componentDidMount() {
-    var category = { ...this.props.category };
-
-    if (category.wasCreated) {
+    if (this.props.category.wasCreated) {
       this.setState({ isOpen: true });
     }
 
@@ -52,22 +44,14 @@ class RadarrCategory extends React.Component {
       this.props.loadRootPaths(false);
       this.props.loadTags(false);
     }
-
-    category = this.setPaths(category);
-    category = this.setProfiles(category);
-    category = this.setTags(category);
-
-    this.setCategory(category)
   }
 
   componentDidUpdate(prevProps, prevState) {
-    var category = { ...this.props.category };
-
     var previousNames = prevProps.radarr.categories.map(x => x.name);
     var currentNames = this.props.radarr.categories.map(x => x.name);
 
     if (!(previousNames.length == currentNames.length && currentNames.every((value, index) => previousNames[index] == value))) {
-      this.validateName(category.name)
+      this.validateName(this.props.category.name)
     }
 
     if (this.props.canConnect) {
@@ -76,59 +60,11 @@ class RadarrCategory extends React.Component {
       this.props.loadTags(false);
     }
 
-    if (!(prevProps.radarr.tags.length == this.props.radarr.tags.length && prevProps.radarr.tags.reduce((a, b, i) => a && this.props.radarr.tags[i], true))) {
-      category = this.setTags(category);
-    }
-
-    if (!(prevProps.radarr.profiles.length == this.props.radarr.profiles.length && prevProps.radarr.profiles.reduce((a, b, i) => a && this.props.radarr.profiles[i], true))) {
-      category = this.setProfiles(category);
-    }
-
-    if (!(prevProps.radarr.paths.length == this.props.radarr.paths.length && prevProps.radarr.paths.reduce((a, b, i) => a && this.props.radarr.paths[i], true))) {
-      category = this.setPaths(category);
-    }
-
-    if (JSON.stringify(category) !== JSON.stringify(this.props.category)) {
-      this.setCategory(category)
-    }
-
     if (prevProps.isSaving != this.props.isSaving) {
       this.setState({
         isOpen: false,
       });
     }
-  }
-
-  setPaths(category) {
-    if (this.props.radarr.paths.length > 0) {
-      var defaultPathId = this.props.radarr.paths[0].path;
-      var pathValue = this.props.radarr.paths.map(x => x.path).includes(category.rootFolder) ? category.rootFolder : defaultPathId;
-
-      category = { ...category, rootFolder: pathValue };
-    }
-
-    return category;
-  }
-
-  setProfiles(category) {
-    if (this.props.radarr.profiles.length > 0) {
-      var defaultProfileId = this.props.radarr.profiles[0].id;
-      var profileValue = this.props.radarr.profiles.map(x => x.id).includes(category.profileId) ? category.profileId : defaultProfileId;
-
-      category = { ...category, profileId: profileValue };
-    }
-
-    return category;
-  }
-
-  setTags(category) {
-    if (this.props.radarr.tags.length > 0) {
-      var tagsValue = category.tags.filter(x => this.props.radarr.tags.map(x => x.id).includes(x));
-
-      category = { ...category, tags: tagsValue };
-    }
-
-    return category;
   }
 
   validateNonEmptyString = value => {
@@ -164,9 +100,9 @@ class RadarrCategory extends React.Component {
 
     return state.isNameValid;
   }
-
-  setCategory(category) {
-    this.props.setRadarrCategory(category);
+  
+  setCategory(fieldChanged, data) {
+    this.props.setRadarrCategory(this.props.category.id, fieldChanged, data);
   }
 
   deleteCategory() {
@@ -207,7 +143,7 @@ class RadarrCategory extends React.Component {
                       isSubmitted={this.props.isSubmitted || this.state.isNameValid}
                       value={this.props.category.name}
                       validation={this.validateName}
-                      onChange={newName => this.setCategory({ ...this.props.category, name: newName })}
+                      onChange={newName => this.setCategory("name", newName)}
                       onValidate={isValid => this.setState({ isNameValid: isValid })} />
                   </Col>
                 </Row>
@@ -218,7 +154,7 @@ class RadarrCategory extends React.Component {
                         name="Path"
                         value={this.props.category.rootFolder}
                         items={this.props.radarr.paths.map(x => { return { name: x.path, value: x.path } })}
-                        onChange={newPath => this.setCategory({ ...this.props.category, rootFolder: newPath })} />
+                        onChange={newPath => this.setCategory("rootFolder", newPath)} />
                       <button className="btn btn-icon btn-3 btn-default" onClick={() => this.props.loadRootPaths(true)} disabled={!this.props.canConnect} type="button">
                         <span className="btn-inner--icon">
                           {
@@ -238,7 +174,7 @@ class RadarrCategory extends React.Component {
                     {
                       !this.props.radarr.arePathsValid ? (
                         <Alert className="mt-3 mb-0 text-wrap " color="warning">
-                          <strong>Could not load paths, cannot reach Radarr.</strong>
+                          <strong>Could not find any paths.</strong>
                         </Alert>)
                         : null
                     }
@@ -256,7 +192,7 @@ class RadarrCategory extends React.Component {
                         name="Profile"
                         value={this.props.category.profileId}
                         items={this.props.radarr.profiles.map(x => { return { name: x.name, value: x.id } })}
-                        onChange={newProfile => this.setCategory({ ...this.props.category, profileId: newProfile })} />
+                        onChange={newProfile => this.setCategory("profileId", newProfile)} />
                       <button className="btn btn-icon btn-3 btn-default" onClick={() => this.props.loadProfiles(true)} disabled={!this.props.canConnect} type="button">
                         <span className="btn-inner--icon">
                           {
@@ -276,7 +212,7 @@ class RadarrCategory extends React.Component {
                     {
                       !this.props.radarr.areProfilesValid ? (
                         <Alert className="mt-3 mb-0 text-wrap " color="warning">
-                          <strong>Could not load profiles, cannot reach Radarr.</strong>
+                          <strong>Could not find any profiles.</strong>
                         </Alert>)
                         : null
                     }
@@ -295,7 +231,7 @@ class RadarrCategory extends React.Component {
                       name="Min Availability"
                       value={this.props.category.minimumAvailability}
                       items={[{ name: "Announced", value: "announced" }, { name: "In Cinemas", value: "inCinemas" }, { name: "Released", value: "released" }, { name: "PreDB", value: "preDB" }]}
-                      onChange={newMinimumAvailability => this.setCategory({ ...this.props.category, minimumAvailability: newMinimumAvailability })} />
+                      onChange={newMinimumAvailability => this.setCategory("minimumAvailability", newMinimumAvailability)} />
                   </Col>
                   {
                     this.props.apiVersion !== "2"
@@ -310,7 +246,7 @@ class RadarrCategory extends React.Component {
                               ignoreEmptyItems={true}
                               selectedItems={this.props.radarr.tags.filter(x => this.props.category.tags.includes(x.id))}
                               items={this.props.radarr.tags}
-                              onChange={newTags => this.setCategory({ ...this.props.category, tags: newTags.map(x => x.id) })} />
+                              onChange={newTags => this.setCategory("tags", newTags.map(x => x.id))} />
                             <button className="btn btn-icon btn-3 btn-default" onClick={() => this.props.loadTags(true)} disabled={!this.props.canConnect} type="button">
                               <span className="btn-inner--icon">
                                 {

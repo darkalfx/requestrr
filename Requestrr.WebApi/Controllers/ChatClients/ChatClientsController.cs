@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
+using DSharpPlus.EventArgs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Requestrr.WebApi.config;
@@ -47,6 +48,7 @@ namespace Requestrr.WebApi.Controllers.ChatClients
             });
         }
 
+
         [HttpPost("discord/test")]
         public async Task<IActionResult> TestDiscordSettings([FromBody] ChatClientTestSettingsModel model)
         {
@@ -60,15 +62,56 @@ namespace Requestrr.WebApi.Controllers.ChatClients
                     AutoReconnect = false
                 });
 
+                var tcs = new TaskCompletionSource<string>();
+
+                async Task ClientErrored(DiscordClient client, ClientErrorEventArgs args)
+                {
+                    tcs.TrySetResult("The bot is missing [Presence Intent] and/or [Server Members Intent], you must enable them in the bot discord settings and then restart the bot, check the wiki if you are unsure how to do this");
+                }
+
+                async Task SocketErrored(DiscordClient client, SocketErrorEventArgs args)
+                {
+                    tcs.TrySetResult("The bot is missing [Presence Intent] and/or [Server Members Intent], you must enable them in the bot discord settings and then restart the bot, check the wiki if you are unsure how to do this");
+                }
+
+                async Task Connected(DiscordClient client, ReadyEventArgs args)
+                {
+                    tcs.TrySetResult(string.Empty);
+                }
+
+                async Task Closed(DiscordClient client, SocketCloseEventArgs args)
+                {
+                    tcs.TrySetResult("The bot is missing [Presence Intent] and/or [Server Members Intent], you must enable them in the bot discord settings and then restart the bot, check the wiki if you are unsure how to do this");
+                }
+
+                discord.ClientErrored += ClientErrored;
+                discord.Ready += Connected;
+                discord.SocketErrored += SocketErrored;
+                discord.SocketClosed += Closed;
+
                 await discord.ConnectAsync();
+
+                Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(15));
+                    tcs.TrySetException(new Exception());
+                });
+
+                var message = await tcs.Task;
+
                 await discord.DisconnectAsync();
                 discord.Dispose();
+
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    return BadRequest(message);
+                }
 
                 return Ok(new { ok = true });
             }
             catch (System.Exception)
             {
-                return BadRequest($"Invalid bot token or missing bot presence intents.");
+                return BadRequest($"Invalid bot token");
             }
         }
 

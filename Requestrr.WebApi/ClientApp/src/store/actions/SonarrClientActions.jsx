@@ -115,14 +115,38 @@ export function removeSonarrCategory(categoryId) {
     };
 };
 
-export function setSonarrCategory(category) {
+export function setSonarrCategory(categoryId, field, data) {
     return (dispatch, getState) => {
         const state = getState();
 
         var categories = [...state.tvShows.sonarr.categories];
 
         for (let index = 0; index < categories.length; index++) {
-            if (categories[index].id == category.id) {
+            if (categories[index].id == categoryId) {
+                var category = { ...categories[index] };
+
+                if (field === "name") {
+                    category.name = data;
+                }
+                else if (field === "languageId") {
+                    category.languageId = data;
+                }
+                else if (field === "profileId") {
+                    category.profileId = data;
+                }
+                else if (field === "rootFolder") {
+                    category.rootFolder = data;
+                }
+                else if (field === "tags") {
+                    category.tags = state.tvShows.sonarr.tags.map(x => x.id).filter(x => data.includes(x));
+                }
+                else if (field === "seriesType") {
+                    category.seriesType = data;
+                }
+                else if (field === "useSeasonFolders") {
+                    category.useSeasonFolders = data;
+                }
+
                 categories[index] = category
             }
         }

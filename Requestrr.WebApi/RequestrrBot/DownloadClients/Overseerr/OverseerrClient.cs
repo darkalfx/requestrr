@@ -31,7 +31,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             _overseerrSettingsProvider = overseerrSettingsProvider;
         }
 
-        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<OverseerrClient> logger, OverseerrSettings settings)
+        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<OverseerrClient> logger, OverseerrTestSettings settings)
         {
             var testSuccessful = false;
 
@@ -63,9 +63,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                     throw new Exception("Invalid host and/or port");
                 }
 
-                if (!string.IsNullOrWhiteSpace(settings.DefaultApiUserID))
+                if (!string.IsNullOrWhiteSpace(settings.DefaultApiUserId))
                 {
-                    if (!int.TryParse(settings.DefaultApiUserID, out var userId))
+                    if (!int.TryParse(settings.DefaultApiUserId, out var userId))
                     {
                         throw new Exception("Overseerr default user ID must be a number.");
                     }
@@ -108,6 +108,91 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             {
                 throw new Exception("Invalid host and/or port");
             }
+        }
+
+        public static async Task<RadarrServiceSettings> GetRadarrServiceSettingsAsync(HttpClient httpClient, ILogger<OverseerrClient> logger, OverseerrTestSettings settings)
+        {
+            var radarrServiceSettings = new RadarrServiceSettings();
+
+            try
+            {
+                var response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}service/radarr");
+                await response.ThrowIfNotSuccessfulAsync("Overseerr GetRadarrServiceSettings Failed", x => x.error);
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var downloadClient = JsonConvert.DeserializeObject<JSONDownloadClient[]>(responseString);
+
+                foreach (var radarrClient in downloadClient)
+                {
+                    var radarrService = new RadarrService
+                    {
+                        Id = radarrClient.ID,
+                        Name = radarrClient.Name
+                    };
+
+                    response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}service/radarr/{radarrClient.ID}");
+                    await response.ThrowIfNotSuccessfulAsync("Overseerr GetRadarrDetails Failed", x => x.error);
+
+                    responseString = await response.Content.ReadAsStringAsync();
+                    var details = JsonConvert.DeserializeObject<JSONRadarrClientDetails>(responseString);
+
+                    radarrService.Profiles = details.Profiles?.Select(x => new ServiceOption { Id = x.ID, Name = x.Name }).ToArray() ?? Array.Empty<ServiceOption>();
+                    radarrService.Tags = details.Tags?.Select(x => new ServiceOption { Id = x.ID, Name = x.Label }).ToArray() ?? Array.Empty<ServiceOption>();
+                    radarrService.RootPaths = details.RootFolders?.Select(x => new ServiceOption { Id = x.ID, Name = x.Path }).ToArray() ?? Array.Empty<ServiceOption>();
+
+                    radarrServiceSettings.RadarrServices = radarrServiceSettings.RadarrServices.Concat(new[] { radarrService }).ToArray();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                logger.LogWarning(ex, "Error getting Overseerr radarr service settings" + ex.Message);
+                throw;
+            }
+
+            return radarrServiceSettings;
+        }
+
+        public static async Task<SonarrServiceSettings> GetSonarrServiceSettingsAsync(HttpClient httpClient, ILogger<OverseerrClient> logger, OverseerrTestSettings settings)
+        {
+            var sonarrServiceSettings = new SonarrServiceSettings();
+
+            try
+            {
+                var response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}service/sonarr");
+                await response.ThrowIfNotSuccessfulAsync("Overseerr GetSonarrServiceSettings Failed", x => x.error);
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var downloadClient = JsonConvert.DeserializeObject<JSONDownloadClient[]>(responseString);
+
+                foreach (var sonarrClient in downloadClient)
+                {
+                    var sonarrService = new SonarrService
+                    {
+                        Id = sonarrClient.ID,
+                        Name = sonarrClient.Name
+                    };
+
+                    response = await HttpGetAsync(httpClient, settings, $"{GetBaseURL(settings)}service/sonarr/{sonarrClient.ID}");
+                    await response.ThrowIfNotSuccessfulAsync("Overseerr GetSonarrDetails Failed", x => x.error);
+
+                    responseString = await response.Content.ReadAsStringAsync();
+                    var details = JsonConvert.DeserializeObject<JSONSonarrClientDetails>(responseString);
+
+                    sonarrService.Profiles = details.Profiles?.Select(x => new ServiceOption { Id = x.ID, Name = x.Name }).ToArray() ?? Array.Empty<ServiceOption>();
+                    sonarrService.Tags = details.Tags?.Select(x => new ServiceOption { Id = x.ID, Name = x.Label }).ToArray() ?? Array.Empty<ServiceOption>();
+                    sonarrService.RootPaths = details.RootFolders?.Select(x => new ServiceOption { Id = x.ID, Name = x.Path }).ToArray() ?? Array.Empty<ServiceOption>();
+                    sonarrService.LanguageProfiles = details.LanguageProfiles?.Select(x => new ServiceOption { Id = x.ID, Name = x.Name }).ToArray() ?? Array.Empty<ServiceOption>();
+
+                    sonarrServiceSettings.SonarrServices = sonarrServiceSettings.SonarrServices.Concat(new[] { sonarrService }).ToArray();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                logger.LogWarning(ex, "Error getting Overseerr sonarr service settings" + ex.Message);
+                throw;
+            }
+
+            return sonarrServiceSettings;
         }
 
         async Task<Dictionary<int, Movie>> IMovieSearcher.SearchAvailableMoviesAsync(HashSet<int> movieIds, CancellationToken token)
@@ -216,13 +301,103 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         {
             try
             {
-                var overseerrUser = await FindLinkedOverseerUserAsync(request.User.UserId, request.User.Username);
+                HttpResponseMessage response = null;
+                var overseerrUser = await FindLinkedOverseerUserAsync(request.User.UserId, request.User.Username, OverseerrSettings.Movies.DefaultApiUserId);
 
-                var response = await HttpPostAsync(overseerrUser, $"{BaseURL}request", JsonConvert.SerializeObject(new
+                if (OverseerrSettings.Movies.Categories.Any())
                 {
-                    mediaId = int.Parse(movie.TheMovieDbId),
-                    mediaType = "movie",
-                }));
+                    OverseerrMovieCategory category = null;
+                    Permission[] permissions = new[] { Permission.AUTO_APPROVE, Permission.AUTO_APPROVE_MOVIE };
+
+                    try
+                    {
+                        category = OverseerrSettings.Movies.Categories.Single(x => x.Id == request.CategoryId);
+
+                        if (category.Is4K)
+                        {
+                            permissions = new[] { Permission.AUTO_APPROVE_4K, Permission.AUTO_APPROVE_4K_MOVIE };
+                        }
+                    }
+                    catch
+                    {
+                        _logger.LogError($"An error occurred while requesting movie \"{movie.Title}\" from Overseerr, could not find category with id {request.CategoryId}");
+                        throw new System.Exception($"An error occurred while requesting movie \"{movie.Title}\" from Overseerr, could not find category with id {request.CategoryId}");
+                    }
+
+                    if (overseerrUser != null)
+                    {
+                        response = await HttpGetAsync($"{BaseURL}user/{overseerrUser}/settings/permissions");
+                        await response.ThrowIfNotSuccessfulAsync("OverseerrGetUserPermissions failed", x => x.error);
+                        var jsonResponse = await response.Content.ReadAsStringAsync();
+                        var userPermissions = JsonConvert.DeserializeObject<JSONUserPermissions>(jsonResponse);
+
+                        if (HasPermission(permissions, userPermissions.Permissions, PermissionCheckOptions.OR))
+                        {
+                            response = await HttpPostAsync(null, $"{BaseURL}request", JsonConvert.SerializeObject(new
+                            {
+                                mediaId = int.Parse(movie.TheMovieDbId),
+                                mediaType = "movie",
+                                is4k = category.Is4K,
+                                serverId = category.ServiceId,
+                                profileId = category.ProfileId,
+                                rootFolder = category.RootFolder,
+                                tags = JToken.FromObject(category.Tags),
+                                userId = int.Parse(overseerrUser),
+                            }));
+                        }
+                        else
+                        {
+                            response = await HttpPostAsync(overseerrUser, $"{BaseURL}request", JsonConvert.SerializeObject(new
+                            {
+                                mediaId = int.Parse(movie.TheMovieDbId),
+                                mediaType = "movie",
+                                is4k = category.Is4K
+                            }));
+
+                            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                            {
+                                return new MovieRequestResult
+                                {
+                                    WasDenied = true
+                                };
+                            }
+
+                            jsonResponse = await response.Content.ReadAsStringAsync();
+                            var overseerrRequest = JsonConvert.DeserializeObject<JSONRequest>(jsonResponse);
+
+                            response = await HttpPutAsync(null, $"{BaseURL}request/{overseerrRequest.ID}", JsonConvert.SerializeObject(new
+                            {
+                                mediaType = "movie",
+                                profileId = category.ProfileId,
+                                rootFolder = category.RootFolder,
+                                serverId = category.ServiceId,
+                                tags = JToken.FromObject(category.Tags),
+                                userId = int.Parse(overseerrUser),
+                            }));
+                        }
+                    }
+                    else
+                    {
+                        response = await HttpPostAsync(null, $"{BaseURL}request", JsonConvert.SerializeObject(new
+                        {
+                            mediaId = int.Parse(movie.TheMovieDbId),
+                            mediaType = "movie",
+                            is4k = category.Is4K,
+                            serverId = category.ServiceId,
+                            profileId = category.ProfileId,
+                            rootFolder = category.RootFolder,
+                            tags = JToken.FromObject(category.Tags)
+                        }));
+                    }
+                }
+                else
+                {
+                    response = await HttpPostAsync(overseerrUser, $"{BaseURL}request", JsonConvert.SerializeObject(new
+                    {
+                        mediaId = int.Parse(movie.TheMovieDbId),
+                        mediaType = "movie",
+                    }));
+                }
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
@@ -300,14 +475,113 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                         ? new HashSet<int>()
                         : new HashSet<int> { season.SeasonNumber };
 
-                var overseerrUser = await FindLinkedOverseerUserAsync(request.User.UserId, request.User.Username);
 
-                var response = await HttpPostAsync(overseerrUser, $"{BaseURL}request", JsonConvert.SerializeObject(new
+
+                HttpResponseMessage response = null;
+                var overseerrUser = await FindLinkedOverseerUserAsync(request.User.UserId, request.User.Username, OverseerrSettings.TvShows.DefaultApiUserId);
+
+                if (OverseerrSettings.TvShows.Categories.Any())
                 {
-                    mediaId = tvShow.TheTvDbId,
-                    mediaType = "tv",
-                    seasons = wantedSeasonIds.ToArray(),
-                }));
+                    OverseerrTvShowCategory category = null;
+                    Permission[] permissions = new[] { Permission.AUTO_APPROVE, Permission.AUTO_APPROVE_MOVIE };
+
+                    try
+                    {
+                        category = OverseerrSettings.TvShows.Categories.Single(x => x.Id == request.CategoryId);
+
+                        if (category.Is4K)
+                        {
+                            permissions = new[] { Permission.AUTO_APPROVE_4K, Permission.AUTO_APPROVE_4K_MOVIE };
+                        }
+                    }
+                    catch
+                    {
+                        _logger.LogError($"An error occurred while requesting a tv shows \"{tvShow.Title}\" from Overseerr, could not find category with id {request.CategoryId}");
+                        throw new System.Exception($"An error occurred while requesting a tv shows \"{tvShow.Title}\" from Overseerr, could not find category with id {request.CategoryId}");
+                    }
+
+                    if (overseerrUser != null)
+                    {
+                        response = await HttpGetAsync($"{BaseURL}user/{overseerrUser}/settings/permissions");
+                        await response.ThrowIfNotSuccessfulAsync("OverseerrGetUserPermissions failed", x => x.error);
+                        var jsonResponse = await response.Content.ReadAsStringAsync();
+                        var userPermissions = JsonConvert.DeserializeObject<JSONUserPermissions>(jsonResponse);
+
+                        if (HasPermission(permissions, userPermissions.Permissions, PermissionCheckOptions.OR))
+                        {
+                            response = await HttpPostAsync(null, $"{BaseURL}request", JsonConvert.SerializeObject(new
+                            {
+                                mediaId = tvShow.TheTvDbId,
+                                mediaType = "tv",
+                                seasons = wantedSeasonIds.ToArray(),
+                                is4k = category.Is4K,
+                                serverId = category.ServiceId,
+                                profileId = category.ProfileId,
+                                languageProfileId = category.LanguageProfileId,
+                                rootFolder = category.RootFolder,
+                                tags = JToken.FromObject(category.Tags),
+                                userId = int.Parse(overseerrUser),
+                            }));
+                        }
+                        else
+                        {
+                            response = await HttpPostAsync(overseerrUser, $"{BaseURL}request", JsonConvert.SerializeObject(new
+                            {
+                                mediaId = tvShow.TheTvDbId,
+                                mediaType = "tv",
+                                seasons = wantedSeasonIds.ToArray(),
+                                is4k = category.Is4K
+                            }));
+
+                            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                            {
+                                return new TvShowRequestResult
+                                {
+                                    WasDenied = true
+                                };
+                            }
+
+                            jsonResponse = await response.Content.ReadAsStringAsync();
+                            var overseerrRequest = JsonConvert.DeserializeObject<JSONRequest>(jsonResponse);
+
+                            response = await HttpPutAsync(null, $"{BaseURL}request/{overseerrRequest.ID}", JsonConvert.SerializeObject(new
+                            {
+                                mediaType = "tv",
+                                seasons = wantedSeasonIds.ToArray(),
+                                profileId = category.ProfileId,
+                                languageProfileId = category.LanguageProfileId,
+                                rootFolder = category.RootFolder,
+                                serverId = category.ServiceId,
+                                tags = JToken.FromObject(category.Tags),
+                                userId = int.Parse(overseerrUser),
+                            }));
+                        }
+                    }
+                    else
+                    {
+                        response = await HttpPostAsync(null, $"{BaseURL}request", JsonConvert.SerializeObject(new
+                        {
+                            mediaId = tvShow.TheTvDbId,
+                            mediaType = "tv",
+                            seasons = wantedSeasonIds.ToArray(),
+                            is4k = category.Is4K,
+                            serverId = category.ServiceId,
+                            profileId = category.ProfileId,
+                            languageProfileId = category.LanguageProfileId,
+                            rootFolder = category.RootFolder,
+                            tags = JToken.FromObject(category.Tags)
+                        }));
+                    }
+                }
+                else
+                {
+                    response = await HttpPostAsync(overseerrUser, $"{BaseURL}request", JsonConvert.SerializeObject(new
+                    {
+                        mediaId = tvShow.TheTvDbId,
+                        mediaType = "tv",
+                        seasons = wantedSeasonIds.ToArray(),
+                    }));
+                }
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
@@ -333,7 +607,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             throw new NotSupportedException("Overseerr does not support searching via TheTvDatabase.");
         }
 
-        private async Task<string> FindLinkedOverseerUserAsync(string userId, string username)
+        private async Task<string> FindLinkedOverseerUserAsync(string userId, string username, string defaultApiUserID)
         {
             if (_requesterIdToOverseerUserID.TryGetValue(userId, out var overseerrUserID))
             {
@@ -373,7 +647,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 }
             }
 
-            return !string.IsNullOrWhiteSpace(OverseerrSettings.DefaultApiUserID) && int.TryParse(OverseerrSettings.DefaultApiUserID, out var defaultUserId)
+            return !string.IsNullOrWhiteSpace(defaultApiUserID) && int.TryParse(defaultApiUserID, out var defaultUserId)
                 ? defaultUserId.ToString()
                 : null;
         }
@@ -509,9 +783,19 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
 
         private static async Task<HttpResponseMessage> HttpGetAsync(HttpClient client, OverseerrSettings settings, string url)
         {
+            return await HttpGetAsync(client, settings.ApiKey, url);
+        }
+
+        private static async Task<HttpResponseMessage> HttpGetAsync(HttpClient client, OverseerrTestSettings settings, string url)
+        {
+            return await HttpGetAsync(client, settings.ApiKey, url);
+        }
+
+        private static async Task<HttpResponseMessage> HttpGetAsync(HttpClient client, string apiKey, string url)
+        {
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("Accept", "application/json");
-            request.Headers.Add("X-Api-Key", settings.ApiKey);
+            request.Headers.Add("X-Api-Key", apiKey);
 
             return await client.SendAsync(request);
         }
@@ -532,10 +816,108 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             return await client.PostAsync(url, postRequest);
         }
 
+        private async Task<HttpResponseMessage> HttpPutAsync(string overseerrUserId, string url, string content)
+        {
+            var postRequest = new StringContent(content);
+            postRequest.Headers.Clear();
+            postRequest.Headers.Add("Content-Type", "application/json;charset=utf-8");
+            postRequest.Headers.Add("X-Api-Key", OverseerrSettings.ApiKey);
+
+            if (!string.IsNullOrWhiteSpace(overseerrUserId))
+            {
+                postRequest.Headers.Add("X-API-User", overseerrUserId);
+            }
+
+            var client = _httpClientFactory.CreateClient();
+            return await client.PutAsync(url, postRequest);
+        }
+
+        private static string GetBaseURL(OverseerrTestSettings settings)
+        {
+            return GetBaseURL(settings.UseSSL, settings.Hostname, settings.Port, settings.Version);
+        }
+
         private static string GetBaseURL(OverseerrSettings settings)
         {
-            var protocol = settings.UseSSL ? "https" : "http";
-            return $"{protocol}://{settings.Hostname}:{settings.Port}/api/v{settings.Version}/";
+            return GetBaseURL(settings.UseSSL, settings.Hostname, settings.Port, settings.Version);
+        }
+
+        private static string GetBaseURL(bool useSSl, string hostname, int port, string version)
+        {
+            var protocol = useSSl ? "https" : "http";
+            return $"{protocol}://{hostname}:{port}/api/v{version}/";
+        }
+
+        public class JSONDownloadClient
+        {
+            [JsonProperty("id")]
+            public int ID { get; set; }
+
+            [JsonProperty("name")]
+            public string Name { get; set; }
+        }
+
+        public class JSONSonarrClientDetails
+        {
+            [JsonProperty("profiles")]
+            public JSONProfile[]? Profiles { get; set; }
+
+            [JsonProperty("rootFolders")]
+            public JSONRootFolder[]? RootFolders { get; set; }
+
+            [JsonProperty("tags")]
+            public JSONTags[]? Tags { get; set; }
+
+            [JsonProperty("languageProfiles")]
+            public JSONLanguageProfile[]? LanguageProfiles { get; set; }
+        }
+
+        public class JSONRadarrClientDetails
+        {
+            [JsonProperty("profiles")]
+            public JSONProfile[]? Profiles { get; set; }
+
+            [JsonProperty("rootFolders")]
+            public JSONRootFolder[]? RootFolders { get; set; }
+
+            [JsonProperty("tags")]
+            public JSONTags[]? Tags { get; set; }
+        }
+
+        public class JSONProfile
+        {
+            [JsonProperty("id")]
+            public int ID { get; set; }
+
+            [JsonProperty("name")]
+            public string Name { get; set; }
+        }
+
+        public class JSONTags
+        {
+            [JsonProperty("id")]
+            public int ID { get; set; }
+
+            [JsonProperty("label")]
+            public string Label { get; set; }
+        }
+
+        public class JSONRootFolder
+        {
+            [JsonProperty("id")]
+            public int ID { get; set; }
+
+            [JsonProperty("path")]
+            public string Path { get; set; }
+        }
+
+        public class JSONLanguageProfile
+        {
+            [JsonProperty("id")]
+            public int ID { get; set; }
+
+            [JsonProperty("name")]
+            public string Name { get; set; }
         }
 
         public class JSONAllUserQuery
@@ -601,6 +983,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
 
         public class JSONRequest
         {
+            [JsonProperty("id")]
+            public int ID { get; set; }
+
             [JsonProperty("status")]
             public int StatusValue { get; set; }
 
@@ -779,6 +1164,67 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         {
             [JsonProperty("results")]
             public List<JSONMedia> Results { get; set; }
+        }
+
+        public class JSONUserPermissions
+        {
+            [JsonProperty("permissions")]
+            public int Permissions { get; set; }
+        }
+
+        private enum Permission
+        {
+            NONE = 0,
+            ADMIN = 2,
+            MANAGE_SETTINGS = 4,
+            MANAGE_USERS = 8,
+            MANAGE_REQUESTS = 16,
+            REQUEST = 32,
+            VOTE = 64,
+            AUTO_APPROVE = 128,
+            AUTO_APPROVE_MOVIE = 256,
+            AUTO_APPROVE_TV = 512,
+            REQUEST_4K = 1024,
+            REQUEST_4K_MOVIE = 2048,
+            REQUEST_4K_TV = 4096,
+            REQUEST_ADVANCED = 8192,
+            REQUEST_VIEW = 16384,
+            AUTO_APPROVE_4K = 32768,
+            AUTO_APPROVE_4K_MOVIE = 65536,
+            AUTO_APPROVE_4K_TV = 131072,
+            REQUEST_MOVIE = 262144,
+            REQUEST_TV = 524288,
+        }
+
+        private enum PermissionCheckOptions
+        {
+            AND,
+            OR
+        }
+
+        private static bool HasPermission(Permission[] permissions, int value, PermissionCheckOptions options = PermissionCheckOptions.AND)
+        {
+            int total = 0;
+
+            if (!permissions.Any())
+            {
+                return true;
+            }
+
+            if ((value & (int)Permission.ADMIN) != 0)
+            {
+                return true;
+            }
+
+            switch (options)
+            {
+                case PermissionCheckOptions.AND:
+                    return permissions.All((permission) => !!((value & (int)permission) != 0));
+                case PermissionCheckOptions.OR:
+                    return permissions.Any((permission) => !!((value & (int)permission) != 0));
+            }
+
+            return !!((value & (int)Permission.ADMIN) != 0) || !!((value & total) != 0);
         }
     }
 }

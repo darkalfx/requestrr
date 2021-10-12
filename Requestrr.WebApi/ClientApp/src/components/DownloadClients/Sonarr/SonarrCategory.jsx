@@ -25,55 +25,28 @@ class SonarrCategory extends React.Component {
     super(props);
 
     this.state = {
-      arePathsValid: true,
-      areProfilesValid: true,
-      areTagsValid: true,
-      areLanguagesValid: true,
       nameErrorMessage: "",
       isNameValid: true,
       isOpen: false,
     };
 
     this.validateName = this.validateName.bind(this);
-    this.setPaths = this.setPaths.bind(this);
-    this.setProfiles = this.setProfiles.bind(this);
-    this.setTags = this.setTags.bind(this);
-    this.setLanguages = this.setLanguages.bind(this);
-    this.onUseSeasonFoldersChanged = this.onUseSeasonFoldersChanged.bind(this);
     this.setCategory = this.setCategory.bind(this);
     this.deleteCategory = this.deleteCategory.bind(this);
   }
 
   componentDidMount() {
-    var category = { ...this.props.category };
-
-    if (category.wasCreated) {
+    if (this.props.category.wasCreated) {
       this.setState({ isOpen: true });
     }
-
-    if (this.props.canConnect) {
-      this.props.loadProfiles(false);
-      this.props.loadRootPaths(false);
-      this.props.loadTags(false);
-      this.props.loadLanguages(false);
-    }
-
-    category = this.setPaths(category);
-    category = this.setProfiles(category);
-    category = this.setTags(category);
-    category = this.setLanguages(category);
-
-    this.setCategory(category)
   }
 
   componentDidUpdate(prevProps, prevState) {
-    var category = { ...this.props.category };
-
     var previousNames = prevProps.sonarr.categories.map(x => x.name);
     var currentNames = this.props.sonarr.categories.map(x => x.name);
 
     if (!(previousNames.length == currentNames.length && currentNames.every((value, index) => previousNames[index] == value))) {
-      this.validateName(category.name)
+      this.validateName(this.props.category.name)
     }
 
     if (this.props.canConnect) {
@@ -81,26 +54,6 @@ class SonarrCategory extends React.Component {
       this.props.loadRootPaths(false);
       this.props.loadTags(false);
       this.props.loadLanguages(false);
-    }
-
-    if (!(prevProps.sonarr.tags.length == this.props.sonarr.tags.length && prevProps.sonarr.tags.reduce((a, b, i) => a && this.props.sonarr.tags[i], true))) {
-      category = this.setTags(category);
-    }
-
-    if (!(prevProps.sonarr.profiles.length == this.props.sonarr.profiles.length && prevProps.sonarr.profiles.reduce((a, b, i) => a && this.props.sonarr.profiles[i], true))) {
-      category = this.setProfiles(category);
-    }
-
-    if (!(prevProps.sonarr.paths.length == this.props.sonarr.paths.length && prevProps.sonarr.paths.reduce((a, b, i) => a && this.props.sonarr.paths[i], true))) {
-      category = this.setPaths(category);
-    }
-
-    if (!(prevProps.sonarr.languages.length == this.props.sonarr.languages.length && prevProps.sonarr.languages.reduce((a, b, i) => a && this.props.sonarr.languages[i], true))) {
-      category = this.setLanguages(category);
-    }
-
-    if (JSON.stringify(category) !== JSON.stringify(this.props.category)) {
-      this.setCategory(category)
     }
 
     if (prevProps.isSaving != this.props.isSaving) {
@@ -108,53 +61,6 @@ class SonarrCategory extends React.Component {
         isOpen: false,
       });
     }
-  }
-
-  onUseSeasonFoldersChanged = event => {
-    this.setCategory({ ...this.props.category, useSeasonFolders: !this.props.category.useSeasonFolders })
-  }
-
-  setPaths(category) {
-    if (this.props.sonarr.paths.length > 0) {
-      var defaultPathId = this.props.sonarr.paths[0].path;
-      var pathValue = this.props.sonarr.paths.map(x => x.path).includes(category.rootFolder) ? category.rootFolder : defaultPathId;
-
-      category = { ...category, rootFolder: pathValue };
-    }
-
-    return category;
-  }
-
-  setProfiles(category) {
-    if (this.props.sonarr.profiles.length > 0) {
-      var defaultProfileId = this.props.sonarr.profiles[0].id;
-      var profileValue = this.props.sonarr.profiles.map(x => x.id).includes(category.profileId) ? category.profileId : defaultProfileId;
-
-      category = { ...category, profileId: profileValue };
-    }
-
-    return category;
-  }
-
-  setTags(category) {
-    if (this.props.sonarr.tags.length > 0) {
-      var tagsValue = category.tags.filter(x => this.props.sonarr.tags.map(x => x.id).includes(x));
-
-      category = { ...category, tags: tagsValue };
-    }
-
-    return category;
-  }
-
-  setLanguages(category) {
-    if (this.props.sonarr.languages.length > 0) {
-      var defaultLanguageId = this.props.sonarr.languages[0].id;
-      var languageValue = this.props.sonarr.languages.map(x => x.id).includes(category.languageId) ? category.languageId : defaultLanguageId;
-
-      category = { ...category, languageId: languageValue };
-    }
-
-    return category;
   }
 
   validateNonEmptyString = value => {
@@ -191,8 +97,8 @@ class SonarrCategory extends React.Component {
     return state.isNameValid;
   }
 
-  setCategory(category) {
-    this.props.setSonarrCategory(category);
+  setCategory(fieldChanged, data) {
+    this.props.setSonarrCategory(this.props.category.id, fieldChanged, data);
   }
 
   deleteCategory() {
@@ -233,7 +139,7 @@ class SonarrCategory extends React.Component {
                       isSubmitted={this.props.isSubmitted || this.state.isNameValid}
                       value={this.props.category.name}
                       validation={this.validateName}
-                      onChange={newName => this.setCategory({ ...this.props.category, name: newName })}
+                      onChange={newName => this.setCategory("name", newName)}
                       onValidate={isValid => this.setState({ isNameValid: isValid })} />
                   </Col>
                 </Row>
@@ -244,7 +150,7 @@ class SonarrCategory extends React.Component {
                         name="Path"
                         value={this.props.category.rootFolder}
                         items={this.props.sonarr.paths.map(x => { return { name: x.path, value: x.path } })}
-                        onChange={newPath => this.setCategory({ ...this.props.category, rootFolder: newPath })} />
+                        onChange={newPath => this.setCategory("rootFolder", newPath)} />
                       <button className="btn btn-icon btn-3 btn-default" onClick={() => this.props.loadRootPaths(true)} disabled={!this.props.canConnect} type="button">
                         <span className="btn-inner--icon">
                           {
@@ -264,7 +170,7 @@ class SonarrCategory extends React.Component {
                     {
                       !this.props.sonarr.arePathsValid ? (
                         <Alert className="mt-3 mb-0 text-wrap " color="warning">
-                          <strong>Could not load paths, cannot reach Sonarr.</strong>
+                          <strong>Could not find any paths.</strong>
                         </Alert>)
                         : null
                     }
@@ -282,7 +188,7 @@ class SonarrCategory extends React.Component {
                         name="Profile"
                         value={this.props.category.profileId}
                         items={this.props.sonarr.profiles.map(x => { return { name: x.name, value: x.id } })}
-                        onChange={newProfile => this.setCategory({ ...this.props.category, profileId: newProfile })} />
+                        onChange={newProfile => this.setCategory("profileId", newProfile)} />
                       <button className="btn btn-icon btn-3 btn-default" onClick={() => this.props.loadProfiles(true)} disabled={!this.props.canConnect} type="button">
                         <span className="btn-inner--icon">
                           {
@@ -302,7 +208,7 @@ class SonarrCategory extends React.Component {
                     {
                       !this.props.sonarr.areProfilesValid ? (
                         <Alert className="mt-3 mb-0 text-wrap " color="warning">
-                          <strong>Could not load profiles, cannot reach Sonarr.</strong>
+                          <strong>Could not find any profiles.</strong>
                         </Alert>)
                         : null
                     }
@@ -325,7 +231,7 @@ class SonarrCategory extends React.Component {
                               name="Language"
                               value={this.props.category.languageId}
                               items={this.props.sonarr.languages.map(x => { return { name: x.name, value: x.id } })}
-                              onChange={newLanguage => this.setCategory({ ...this.props.category, languageId: newLanguage })} />
+                              onChange={newLanguage => this.setCategory("languageId", newLanguage)} />
                             <button className="btn btn-icon btn-3 btn-default" onClick={() => this.props.loadLanguages(true)} disabled={!this.props.canConnect} type="button">
                               <span className="btn-inner--icon">
                                 {
@@ -345,7 +251,7 @@ class SonarrCategory extends React.Component {
                           {
                             !this.props.sonarr.areLanguagesValid ? (
                               <Alert className="mt-3 mb-4 text-wrap " color="warning">
-                                <strong>Could not load languages, cannot reach Sonarr.</strong>
+                                <strong>Could not find any languages.</strong>
                               </Alert>)
                               : null
                           }
@@ -367,7 +273,7 @@ class SonarrCategory extends React.Component {
                               ignoreEmptyItems={true}
                               selectedItems={this.props.sonarr.tags.filter(x => this.props.category.tags.includes(x.id))}
                               items={this.props.sonarr.tags}
-                              onChange={newTags => this.setCategory({ ...this.props.category, tags: newTags.map(x => x.id) })} />
+                              onChange={newTags => this.setCategory("tags", newTags.map(x => x.id))} />
                             <button className="btn btn-icon btn-3 btn-default" onClick={() => this.props.loadTags(true)} disabled={!this.props.canConnect} type="button">
                               <span className="btn-inner--icon">
                                 {
@@ -402,7 +308,7 @@ class SonarrCategory extends React.Component {
                       name="Series Type"
                       value={this.props.category.seriesType}
                       items={[{ name: "Standard", value: "standard" }, { name: "Daily", value: "daily" }, { name: "Anime", value: "anime" }, { name: "Automatically Detect", value: "automatic" }]}
-                      onChange={newSeriesType => this.setCategory({ ...this.props.category, seriesType: newSeriesType })} />
+                      onChange={newSeriesType => this.setCategory("seriesType", newSeriesType)} />
                   </Col>
                 </Row>
                 <Row>
@@ -412,7 +318,7 @@ class SonarrCategory extends React.Component {
                         className="custom-control-input"
                         id={"tvUseSeasonFolders" + this.props.category.id}
                         type="checkbox"
-                        onChange={this.onUseSeasonFoldersChanged}
+                        onChange={() => this.setCategory("useSeasonFolders", !this.props.category.useSeasonFolders)}
                         checked={this.props.category.useSeasonFolders}
                       />
                       <label

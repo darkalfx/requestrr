@@ -9,34 +9,11 @@ class MultiDropdown extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      selectedItems: []
-    };
-
     this.onSelectedItemsChange = this.onSelectedItemsChange.bind(this);
-    this.updateStateFromProps = this.updateStateFromProps.bind(this);
   }
-
-  componentDidMount() {
-    this.updateStateFromProps(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.updateStateFromProps(nextProps);
-  }
-
-  updateStateFromProps = props => {
-    if (props.selectedItems.length != this.state.selectedItems.length || props.selectedItems.filter(x => !this.state.selectedItems.includes(x)).length > 0) {
-      this.setState({ selectedItems: props.selectedItems });
-    }
-  };
 
   onSelectedItemsChange = selectedItems => {
-    if (!this.props.ignoreEmptyItems || this.props.items.length > 0) {
-      this.setState({
-        selectedItems: selectedItems,
-      }, () => this.props.onChange(this.state.selectedItems));
-    }
+    this.props.onChange(selectedItems);
   }
 
   render() {
@@ -52,9 +29,9 @@ class MultiDropdown extends React.Component {
           className={this.props.create === true ? "dropdown react-dropdown-create" : "dropdown"}
           options={this.props.items}
           placeholder={this.props.placeholder}
-          values={this.state.selectedItems}
-          labelField={this.props.labelField}
-          valueField={this.props.valueField}
+          values={this.props.items.length > 0 ? this.props.items.filter(x => this.props.selectedItems.map(s => s.id).includes(x.id)).length > 0 ? this.props.items.filter(x => this.props.selectedItems.map(x => x.id).includes(x.id)) : [] : []}
+          labelField="name"
+          valueField="id"
           dropdownHandle={this.props.dropdownHandle !== false}
           searchable={this.props.searchable === true}
           create={this.props.create === true}

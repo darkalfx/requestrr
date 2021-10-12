@@ -167,7 +167,7 @@ namespace Requestrr.WebApi.RequestrrBot
                         var prop = _slashCommands.GetType().GetProperty("_updateList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                         prop.SetValue(_slashCommands, new List<KeyValuePair<ulong?, Type>>());
 
-                        var slashCommandType = SlashCommandBuilder.Build(_logger, newSettings, _serviceProvider.Get<RadarrSettingsProvider>(), _serviceProvider.Get<SonarrSettingsProvider>());
+                        var slashCommandType = SlashCommandBuilder.Build(_logger, newSettings, _serviceProvider.Get<RadarrSettingsProvider>(), _serviceProvider.Get<SonarrSettingsProvider>(), _serviceProvider.Get<OverseerrSettingsProvider>());
 
                         if (newSettings.EnableRequestsThroughDirectMessages)
                         {
@@ -193,6 +193,7 @@ namespace Requestrr.WebApi.RequestrrBot
                         }
 
                         await _slashCommands.RefreshCommands();
+                        await Task.Delay(TimeSpan.FromMinutes(1));
                     }
                 }
                 else

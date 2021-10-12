@@ -226,6 +226,19 @@ namespace Requestrr.WebApi
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
+
+            if (settingsJson.Version.ToString().Equals("2.0.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "2.1.0";
+
+                var defaultApiUserID = (string)((JObject)settingsJson["DownloadClients"]["Overseerr"]).GetValue("DefaultApiUserID");
+                ((JObject)settingsJson["DownloadClients"]["Overseerr"]).Remove("DefaultApiUserID");
+
+                ((JObject)settingsJson["DownloadClients"]["Overseerr"]).Add("Movies", JToken.FromObject(new OverseerrMovieSettings { DefaultApiUserId = defaultApiUserID }));
+                ((JObject)settingsJson["DownloadClients"]["Overseerr"]).Add("TvShows", JToken.FromObject(new OverseerrTvShowSettings { DefaultApiUserId = defaultApiUserID }));
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
         }
     }
 }

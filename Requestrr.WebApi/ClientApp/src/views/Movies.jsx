@@ -22,11 +22,11 @@ import { getSettings } from "../store/actions/MovieClientsActions"
 import { saveDisabledClient } from "../store/actions/MovieClientsActions"
 import { saveRadarrClient } from "../store/actions/RadarrClientActions"
 import { saveOmbiClient } from "../store/actions/MovieClientsActions"
-import { saveOverseerrClient } from "../store/actions/MovieClientsActions"
+import { saveOverseerrMovieClient } from "../store/actions/OverseerrClientRadarrActions"
 import Dropdown from "../components/Inputs/Dropdown"
 import Radarr from "../components/DownloadClients/Radarr/Radarr"
 import Ombi from "../components/DownloadClients/Ombi"
-import Overseerr from "../components/DownloadClients/Overseerr"
+import Overseerr from "../components/DownloadClients/Overseerr/Movies/OverseerrMovie"
 
 // reactstrap components
 import {
@@ -234,7 +234,7 @@ class Movies extends React.Component {
                           {
                             this.state.client === "Overseerr"
                               ? <>
-                                <Overseerr settings={this.state.overseerr} onChange={newOverseerr => this.setState({ overseerr: newOverseerr })} onValidate={isOverseerrValid => this.setState({ isOverseerrValid: isOverseerrValid })} isSubmitted={this.state.isSubmitted} />
+                                <Overseerr onChange={newOverseerr => this.setState({ overseerr: newOverseerr })} onValidate={isOverseerrValid => this.setState({ isOverseerrValid: isOverseerrValid })} isSubmitted={this.state.isSubmitted} isSaving={this.state.isSaving} />
                               </>
                               : null
                           }
@@ -295,7 +295,7 @@ const mapPropsToAction = {
   saveDisabledClient: saveDisabledClient,
   saveRadarrClient: saveRadarrClient,
   saveOmbiClient: saveOmbiClient,
-  saveOverseerrClient: saveOverseerrClient,
+  saveOverseerrClient: saveOverseerrMovieClient,
 };
 
 export default connect(mapPropsToState, mapPropsToAction)(Movies);

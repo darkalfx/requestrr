@@ -1,7 +1,6 @@
 import { GET_SETTINGS } from "../actions/TvShowsClientsActions"
 import { SET_DISABLED_CLIENT } from "../actions/TvShowsClientsActions"
 import { SET_OMBI_CLIENT } from "../actions/TvShowsClientsActions"
-import { SET_OVERSEERR_CLIENT } from "../actions/TvShowsClientsActions"
 
 export default function TvShowsClientsReducer(state = {}, action) {
   if (action.type === GET_SETTINGS) {
@@ -21,9 +20,14 @@ export default function TvShowsClientsReducer(state = {}, action) {
         hostname: action.payload.overseerr.hostname,
         port: action.payload.overseerr.port,
         apiKey: action.payload.overseerr.apiKey,
-        defaultApiUserID: action.payload.overseerr.defaultApiUserID,
+        defaultApiUserID: action.payload.overseerr.tvShows.defaultApiUserId,
+        categories: action.payload.overseerr.tvShows.categories,
         useSSL: action.payload.overseerr.useSSL,
         version: action.payload.overseerr.version,
+        sonarrServiceSettings: { sonarrServices: [] },
+        isLoadinSonarrServiceSettings: false,
+        hasLoadedSonarrServiceSettings: false,
+        isSonarrServiceSettingsValid: false,
       },
       sonarr: {
         hostname: action.payload.sonarr.hostname,
@@ -67,14 +71,6 @@ export default function TvShowsClientsReducer(state = {}, action) {
       ombi: action.payload.ombi,
       restrictions: action.payload.restrictions,
       client: "Ombi"
-    }
-  }
-  else if (action.type === SET_OVERSEERR_CLIENT) {
-    return {
-      ...state,
-      overseerr: action.payload.overseerr,
-      restrictions: action.payload.restrictions,
-      client: "Overseerr"
     }
   }
 

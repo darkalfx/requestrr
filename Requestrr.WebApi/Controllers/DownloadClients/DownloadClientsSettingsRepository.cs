@@ -32,11 +32,12 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             });
         }
 
-        public static void SetOverseerr(MoviesSettings movieSettings, OverseerrSettingsModel overseerrSettings)
+        public static void SetOverseerr(MoviesSettings movieSettings, SaveOverseerrMoviesSettingsModel overseerrSettings)
         {
             SettingsFile.Write(settings =>
             {
                 SetOverseerrSettings(overseerrSettings, settings);
+                settings.DownloadClients.Overseerr.Movies = JToken.FromObject(overseerrSettings.Movies);
                 SetMovieSettings(movieSettings, settings);
             });
         }
@@ -93,11 +94,12 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             });
         }
 
-        public static void SetOverseerr(TvShowsSettings movieSettings, OverseerrSettingsModel overseerrSettings)
+        public static void SetOverseerr(TvShowsSettings movieSettings, SaveOverseerrTvShowsSettingsModel overseerrSettings)
         {
             SettingsFile.Write(settings =>
             {
                 SetOverseerrSettings(overseerrSettings, settings);
+                settings.DownloadClients.Overseerr.TvShows = JToken.FromObject(overseerrSettings.TvShows);
                 SetTvShowSettings(movieSettings, settings);
             });
         }
@@ -149,12 +151,11 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             settings.DownloadClients.Overseerr.Hostname = overseerrSettings.Hostname;
             settings.DownloadClients.Overseerr.Port = overseerrSettings.Port;
             settings.DownloadClients.Overseerr.ApiKey = overseerrSettings.ApiKey;
-            settings.DownloadClients.Overseerr.DefaultApiUserID = overseerrSettings.DefaultApiUserID;
             settings.DownloadClients.Overseerr.UseSSL = overseerrSettings.UseSSL;
             settings.DownloadClients.Overseerr.Version = overseerrSettings.Version;
         }
 
-        private static void SetTvShowSettings(TvShowsSettings tvSettings, dynamic settings)
+        private static void SetTvShowSettings(TvShowsSettings tvSettings, dynamic settings) 
         {
             if (settings.TvShows.Client != tvSettings.Client)
             {

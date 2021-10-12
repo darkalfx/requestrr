@@ -9,7 +9,8 @@
             return new OverseerrSettings
             {
                 ApiKey = settings.DownloadClients.Overseerr.ApiKey,
-                DefaultApiUserID = settings.DownloadClients.Overseerr.DefaultApiUserID,
+                Movies = settings.DownloadClients.Overseerr.Movies.ToObject<OverseerrMovieSettings>(),
+                TvShows = settings.DownloadClients.Overseerr.TvShows.ToObject<OverseerrTvShowSettings>(),
                 Hostname = settings.DownloadClients.Overseerr.Hostname,
                 Port = settings.DownloadClients.Overseerr.Port,
                 UseSSL = (bool)settings.DownloadClients.Overseerr.UseSSL,

@@ -754,7 +754,8 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             public string premiered { get; set; }
             public string type { get; set; }
             public string language { get; set; }
-            public bool isAnime => type.Equals("animation", StringComparison.InvariantCultureIgnoreCase) && language.Equals("japanese", StringComparison.InvariantCultureIgnoreCase);
+            public string[] genres { get; set; }
+            public bool isAnime => (genres != null && genres.Any(x => string.Equals(x, "anime", StringComparison.InvariantCultureIgnoreCase))) || (type.Equals("animation", StringComparison.InvariantCultureIgnoreCase) && language.Equals("japanese", StringComparison.InvariantCultureIgnoreCase));
             public TvMazeShowExternals externals { get; set; }
             public TvMazeShowImages image { get; set; }
         }

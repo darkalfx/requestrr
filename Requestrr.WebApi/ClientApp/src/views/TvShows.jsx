@@ -22,12 +22,11 @@ import { getSettings } from "../store/actions/TvShowsClientsActions"
 import { saveDisabledClient } from "../store/actions/TvShowsClientsActions"
 import { saveSonarrClient } from "../store/actions/SonarrClientActions"
 import { saveOmbiClient } from "../store/actions/TvShowsClientsActions"
-import { saveOverseerrClient } from "../store/actions/TvShowsClientsActions"
-import ValidatedTextbox from "../components/Inputs/ValidatedTextbox"
+import { saveOverseerrTvShowClient } from "../store/actions/OverseerrClientSonarrActions"
 import Dropdown from "../components/Inputs/Dropdown"
 import Sonarr from "../components/DownloadClients/Sonarr/Sonarr"
 import Ombi from "../components/DownloadClients/Ombi"
-import Overseerr from "../components/DownloadClients/Overseerr"
+import Overseerr from "../components/DownloadClients/Overseerr/TvShows/OverseerrTvShow"
 
 // reactstrap components
 import {
@@ -253,7 +252,7 @@ class TvShows extends React.Component {
                           {
                             this.state.client === "Overseerr"
                               ? <>
-                                <Overseerr settings={this.state.overseerr} onChange={newOverseerr => this.setState({ overseerr: newOverseerr })} onValidate={isOverseerrValid => this.setState({ isOverseerrValid: isOverseerrValid })} isSubmitted={this.state.isSubmitted} />
+                                <Overseerr onChange={newOverseerr => this.setState({ overseerr: newOverseerr })} onValidate={isOverseerrValid => this.setState({ isOverseerrValid: isOverseerrValid })} isSubmitted={this.state.isSubmitted} isSaving={this.state.isSaving} />
                               </>
                               : null
                           }
@@ -314,7 +313,7 @@ const mapPropsToAction = {
   saveDisabledClient: saveDisabledClient,
   saveSonarrClient: saveSonarrClient,
   saveOmbiClient: saveOmbiClient,
-  saveOverseerrClient: saveOverseerrClient,
+  saveOverseerrClient: saveOverseerrTvShowClient,
 };
 
 export default connect(mapPropsToState, mapPropsToAction)(TvShows);

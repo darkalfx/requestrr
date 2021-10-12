@@ -2,10 +2,11 @@ import React from "react";
 import Loader from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
-import { testOverseerrSettings } from "../../store/actions/MovieClientsActions"
-import ValidatedTextbox from "../Inputs/ValidatedTextbox"
-import Textbox from "../Inputs/Textbox"
-import Dropdown from "../Inputs/Dropdown"
+import { testOverseerrMovieSettings } from "../../../../store/actions/OverseerrClientRadarrActions"
+import { setOverseerrMovieConnectionSettings } from "../../../../store/actions/OverseerrClientRadarrActions"
+import ValidatedTextbox from "../../../Inputs/ValidatedTextbox"
+import Dropdown from "../../../Inputs/Dropdown"
+import OverseerrMovieCategoryList from "./OverseerrMovieCategoryList"
 
 import {
   FormGroup,
@@ -14,7 +15,7 @@ import {
   Col
 } from "reactstrap";
 
-class Overseerr extends React.Component {
+class OverseerrMovie extends React.Component {
   constructor(props) {
     super(props);
 
@@ -49,6 +50,10 @@ class Overseerr extends React.Component {
     this.updateStateFromProps(this.props);
   }
 
+  componentDidUpdate(prevProps) {
+    this.onValidate();
+  }
+
   updateStateFromProps = props => {
     this.setState({
       isTestingSettings: false,
@@ -66,7 +71,8 @@ class Overseerr extends React.Component {
       isDefaultApiUserIDValid: true,
       useSSL: props.settings.useSSL,
       apiVersion: props.settings.version,
-    });
+      isValid: false,
+    }, this.onValueChange);
   }
 
   onUseSSLChanged = event => {
@@ -102,7 +108,7 @@ class Overseerr extends React.Component {
         port: this.state.port,
         apiKey: this.state.apiKey,
         useSSL: this.state.useSSL,
-        defaultApiUserID: this.state.defaultApiUserID,
+        DefaultApiUserID: this.state.DefaultApiUserID,
         version: this.state.apiVersion,
       })
         .then(data => {
@@ -132,6 +138,14 @@ class Overseerr extends React.Component {
   }
 
   onValueChange() {
+    this.props.setConnectionSettings({
+      hostname: this.state.hostname,
+      port: this.state.port,
+      apiKey: this.state.apiKey,
+      useSSL: this.state.useSSL,
+      version: this.state.apiVersion,
+    });
+
     this.props.onChange({
       client: this.state.client,
       hostname: this.state.hostname,
@@ -139,9 +153,6 @@ class Overseerr extends React.Component {
       apiKey: this.state.apiKey,
       defaultApiUserID: this.state.defaultApiUserID,
       useSSL: this.state.useSSL,
-      qualityProfile: this.state.qualityProfile,
-      path: this.state.path,
-      profile: this.state.profile,
       version: this.state.apiVersion,
     });
 
@@ -149,7 +160,43 @@ class Overseerr extends React.Component {
   }
 
   onValidate() {
-    this.props.onValidate(this.state.isApiKeyValid && this.state.isHostnameValid && this.state.isPortValid && this.state.isDefaultApiUserIDValid);
+    let isValid = this.state.isApiKeyValid
+      && this.state.isHostnameValid
+      && this.state.isPortValid
+      && this.state.isDefaultApiUserIDValid
+      && (this.props.settings.categories.length == 0 || (this.props.settings.categories.every(x => this.validateCategory(x)) && this.props.settings.isRadarrServiceSettingsValid));
+
+    if (isValid !== this.state.isValid) {
+      this.setState({ isValid: isValid },
+        () => this.props.onValidate(isValid));
+    }
+  }
+
+  validateCategory(category) {
+    if (!/\S/.test(category.name)) {
+      return false;
+    }
+    else if (/^[\w-]{1,32}$/.test(category.name)) {
+      var names = this.props.settings.categories.map(x => x.name);
+
+      if (new Set(names).size !== names.length) {
+        return false;
+      }
+      else if (this.props.settings.radarrServiceSettings.radarrServices.every(x => x.id !== category.serviceId)) {
+        return false;
+      }
+      else {
+        var radarrService = this.props.settings.radarrServiceSettings.radarrServices.filter(x => x.id === category.serviceId)[0];
+
+        if (radarrService.profiles.length == 0 || radarrService.rootPaths.length == 0) {
+          return false;
+        }
+      }
+    }
+    else {
+      return false;
+    }
+    return true;
   }
 
   render() {
@@ -283,14 +330,21 @@ class Overseerr extends React.Component {
             </Col>
           </Row>
         </div>
-        <hr className="my-4" />
+        <OverseerrMovieCategoryList isSubmitted={this.props.isSubmitted} isSaving={this.props.isSaving} apiVersion={this.state.apiVersion} canConnect={this.state.isHostnameValid && this.state.isPortValid && this.state.isApiKeyValid} />
       </>
     );
   }
 }
 
-const mapPropsToAction = {
-  testSettings: testOverseerrSettings,
+const mapPropsToState = state => {
+  return {
+    settings: state.movies.overseerr
+  }
 };
 
-export default connect(null, mapPropsToAction)(Overseerr);
+const mapPropsToAction = {
+  testSettings: testOverseerrMovieSettings,
+  setConnectionSettings: setOverseerrMovieConnectionSettings,
+};
+
+export default connect(mapPropsToState, mapPropsToAction)(OverseerrMovie);

@@ -64,6 +64,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             {
                 var clientSettings = new OverseerrSettingsProvider().Provide();
 
+                hash.Add(clientSettings.Movies.Categories.Select(x => x.Name).GetSequenceHashCode());
                 hash.Add(clientSettings.ApiKey);
                 hash.Add(clientSettings.Hostname);
                 hash.Add(clientSettings.Port);
@@ -107,6 +108,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             {
                 var clientSettings = new OverseerrSettingsProvider().Provide();
 
+                hash.Add(clientSettings.TvShows.Categories.Select(x => x.Name).GetSequenceHashCode());
                 hash.Add(clientSettings.ApiKey);
                 hash.Add(clientSettings.Hostname);
                 hash.Add(clientSettings.Port);

@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from 'react-redux';
-import { addSonarrCategory } from "../../../store/actions/SonarrClientActions"
-import SonarrCategory from "./SonarrCategory";
+import { addOverseerrTvShowCategory } from "../../../../store/actions/OverseerrClientSonarrActions"
+import OverseerrTvShowCategory from "./OverseerrTvShowCategory";
 
 // reactstrap components
 import {
@@ -18,32 +18,30 @@ import {
   UncontrolledTooltip,
 } from "reactstrap";
 
-class SonarrCategoryList extends React.Component {
+class OverseerrTvShowCategoryList extends React.Component {
   constructor(props) {
     super(props);
-    this.createSonarrCategory = this.createSonarrCategory.bind(this);
+    this.createOverseerrCategory = this.createOverseerrCategory.bind(this);
   }
 
-  createSonarrCategory() {
+  createOverseerrCategory() {
     var newId = Math.floor((Math.random() * 900) + 1);
 
-    while (this.props.categories.map(x => x.id).includes(newId)) {
+    while (this.props.overseerr.categories.map(x => x.id).includes(newId)) {
       newId = Math.floor((Math.random() * 900) + 1);
     }
 
     var newCategory = {
       id: newId,
       name: "new-category",
+      serviceId: this.props.overseerr.sonarrServiceSettings.sonarrServices.length > 0 ? this.props.overseerr.sonarrServiceSettings.sonarrServices[0].id : -1,
       profileId: -1,
       rootFolder: "",
-      useSeasonFolders: true,
-      seriesType: "standard",
-      languageId: -1,
       tags: [],
       wasCreated: true
     };
 
-    this.props.addSonarrCategory(newCategory);
+    this.props.addOverseerrCategory(newCategory);
   }
 
   render() {
@@ -51,7 +49,7 @@ class SonarrCategoryList extends React.Component {
       <>
         <hr className="my-4" />
         <h6 className="heading-small text-muted">
-          Sonarr Category Settings
+          Overseerr Category Settings
         </h6>
         <div class="table-responsive mt-4 overflow-visible">
           <div>
@@ -63,16 +61,16 @@ class SonarrCategoryList extends React.Component {
                 </tr>
               </thead>
               <tbody class="list">
-                {this.props.categories.map((category, key) => {
+                {this.props.overseerr.categories.map((category, key) => {
                   return (
                     <React.Fragment key={category.id}>
-                      <SonarrCategory key={category.id} isSubmitted={this.props.isSubmitted} isSaving={this.props.isSaving} canConnect={this.props.canConnect} apiVersion={this.props.apiVersion} category={{ ...category }} />
+                      <OverseerrTvShowCategory key={category.id} isSubmitted={this.props.isSubmitted} isSaving={this.props.isSaving} canConnect={this.props.canConnect} apiVersion={this.props.apiVersion} category={{ ...category }} />
                     </React.Fragment>)
                 })}
                 <tr>
                   <td className="text-right" colSpan="2">
                     <FormGroup className="form-group text-right mt-2">
-                      <button onClick={this.createSonarrCategory} className="btn btn-icon btn-3 btn-success" type="button">
+                      <button onClick={this.createOverseerrCategory} className="btn btn-icon btn-3 btn-success" type="button">
                         <span className="btn-inner--icon"><i className="fas fa-plus"></i></span>
                         <span className="btn-inner--text">Add new category</span>
                       </button>
@@ -91,12 +89,12 @@ class SonarrCategoryList extends React.Component {
 
 const mapPropsToState = state => {
   return {
-    categories: state.tvShows.sonarr.categories
+    overseerr: state.tvShows.overseerr
   }
 };
 
 const mapPropsToAction = {
-  addSonarrCategory: addSonarrCategory,
+  addOverseerrCategory: addOverseerrTvShowCategory,
 };
 
-export default connect(mapPropsToState, mapPropsToAction)(SonarrCategoryList);
+export default connect(mapPropsToState, mapPropsToAction)(OverseerrTvShowCategoryList);

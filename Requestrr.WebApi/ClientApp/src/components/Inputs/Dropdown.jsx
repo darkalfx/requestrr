@@ -10,32 +10,24 @@ class Dropdown extends React.Component {
     super(props);
 
     this.state = {
-      value: "",
-    };
+      selectedValues: [{ name: "", value: 838738 }]
+    }
 
     this.onValueChange = this.onValueChange.bind(this);
-    this.updateStateFromProps = this.updateStateFromProps.bind(this);
   }
 
-  componentDidMount() {
-    this.updateStateFromProps(this.props);
-  }
+  componentDidUpdate() {
+    var newSelectedValues = this.props.items.length > 0 ? this.props.items.filter(x => x.value === this.props.value).length > 0 ? this.props.items.filter(x => x.value === this.props.value) : [this.props.items[0]] : [];
 
-  componentWillReceiveProps(nextProps) {
-    this.updateStateFromProps(nextProps);
-  }
-
-  updateStateFromProps = props => {
-    if (this.state.value != props.value) {
-      this.setState({ value: props.value });
+    if (JSON.stringify(this.state.selectedValues) !== JSON.stringify(newSelectedValues)) {
+      this.setState({
+        selectedValues: newSelectedValues
+      })
     }
-  };
-
-  onValueChange = value => {
-    this.setState({
-      value: value,
-    }, () => this.props.onChange(this.state.value));
   }
+
+  onValueChange = value =>
+    this.props.onChange(value);
 
   render() {
     return (
@@ -49,7 +41,7 @@ class Dropdown extends React.Component {
           placeholder=""
           className="dropdown"
           options={this.props.items}
-          values={this.props.items.filter(x => x.value === this.state.value)}
+          values={this.state.selectedValues}
           labelField="name"
           valueField="value"
           searchable={false}

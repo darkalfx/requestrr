@@ -99,14 +99,32 @@ export function removeRadarrCategory(categoryId) {
     };
 };
 
-export function setRadarrCategory(category) {
+export function setRadarrCategory(categoryId, field, data) {
     return (dispatch, getState) => {
         const state = getState();
 
         var categories = [...state.movies.radarr.categories];
 
         for (let index = 0; index < categories.length; index++) {
-            if (categories[index].id == category.id) {
+            if (categories[index].id == categoryId) {
+                var category = { ...categories[index] };
+
+                if (field === "name") {
+                    category.name = data;
+                }
+                else if (field === "minimumAvailability") {
+                    category.minimumAvailability = data;
+                }
+                else if (field === "profileId") {
+                    category.profileId = data;
+                }
+                else if (field === "rootFolder") {
+                    category.rootFolder = data;
+                }
+                else if (field === "tags") {
+                    category.tags = state.movies.radarr.tags.map(x => x.id).filter(x => data.includes(x));
+                }
+
                 categories[index] = category
             }
         }

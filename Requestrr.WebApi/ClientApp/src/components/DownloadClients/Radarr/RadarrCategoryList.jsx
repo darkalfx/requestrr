@@ -1,7 +1,6 @@
 import React from "react";
 import { connect } from 'react-redux';
 import { addRadarrCategory } from "../../../store/actions/RadarrClientActions"
-import { setRadarrCategories } from "../../../store/actions/RadarrClientActions"
 import RadarrCategory from "./RadarrCategory";
 
 // reactstrap components
@@ -95,8 +94,7 @@ const mapPropsToState = state => {
 };
 
 const mapPropsToAction = {
-  addRadarrCategory: addRadarrCategory,
-  updateCategories: setRadarrCategories
+  addRadarrCategory: addRadarrCategory
 };
 
 export default connect(mapPropsToState, mapPropsToAction)(RadarrCategoryList);
