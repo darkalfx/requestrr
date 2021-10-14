@@ -143,7 +143,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while getting Radarr tags");
         }
 
-        public async Task<Movie> SearchMovieAsync(int theMovieDbId)
+        public async Task<Movie> SearchMovieAsync(MovieRequest request, int theMovieDbId)
         {
             try
             {
@@ -168,7 +168,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while searching for a movie by tmdbId with Radarr");
         }
 
-        public async Task<IReadOnlyList<Movie>> SearchMovieAsync(string movieName)
+        public async Task<IReadOnlyList<Movie>> SearchMovieAsync(MovieRequest request, string movieName)
         {
             try
             {
@@ -189,7 +189,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while searching for movies with Radarr");
         }
 
-        public Task<MovieDetails> GetMovieDetails(string theMovieDbId)
+        public Task<MovieDetails> GetMovieDetails(MovieRequest request, string theMovieDbId)
         {
             return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId, _logger);
         }
@@ -368,9 +368,9 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
         {
             var posterImage = jsonImages.Where(x => x.coverType.Equals("poster", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
 
-            if(posterImage != null)
+            if (posterImage != null)
             {
-                if(!string.IsNullOrWhiteSpace(posterImage.remoteUrl))
+                if (!string.IsNullOrWhiteSpace(posterImage.remoteUrl))
                 {
                     return posterImage.remoteUrl;
                 }

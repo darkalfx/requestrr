@@ -56,7 +56,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
         {
             try
             {
-                var searchedTvShow = await _searcher.SearchTvShowAsync(tvDbId);
+                var searchedTvShow = await _searcher.SearchTvShowAsync(new TvShowRequest(_user, _categoryId), tvDbId);
                 await HandleTvShowSelectionAsync(tvDbId);
             }
             catch
@@ -70,7 +70,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             IReadOnlyList<SearchedTvShow> searchedTvShows = Array.Empty<SearchedTvShow>();
 
             tvShowName = tvShowName.Replace(".", " ");
-            searchedTvShows = await _searcher.SearchTvShowAsync(tvShowName);
+            searchedTvShows = await _searcher.SearchTvShowAsync(new TvShowRequest(_user, _categoryId), tvShowName);
 
             if (!searchedTvShows.Any())
             {
@@ -200,7 +200,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
 
         private async Task<TvShow> GetTvShowAsync(int tvDbId)
         {
-            var tvShow = await _searcher.GetTvShowDetailsAsync(tvDbId);
+            var tvShow = await _searcher.GetTvShowDetailsAsync(new TvShowRequest(_user, _categoryId), tvDbId);
 
             if (tvShow.IsMultiSeasons())
             {

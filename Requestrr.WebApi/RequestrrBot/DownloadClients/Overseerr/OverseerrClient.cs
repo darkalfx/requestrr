@@ -23,6 +23,8 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         private OverseerrSettings OverseerrSettings => _overseerrSettingsProvider.Provide();
         private string BaseURL => GetBaseURL(OverseerrSettings);
         private ConcurrentDictionary<string, int> _requesterIdToOverseerUserID = new ConcurrentDictionary<string, int>();
+        private static OverseerrTvShowCategory DefaultTvShowCategory = new OverseerrTvShowCategory { Is4K = false };
+        private static OverseerrMovieCategory DefaultMovieCategory = new OverseerrMovieCategory { Is4K = false };
 
         public OverseerrClient(IHttpClientFactory httpClientFactory, ILogger<OverseerrClient> logger, OverseerrSettingsProvider overseerrSettingsProvider)
         {
@@ -205,7 +207,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 {
                     try
                     {
-                        var movie = await SearchMovieAsync(movieId);
+                        var movie = await SearchMovieAsync(new MovieRequest(null, int.MinValue), movieId);
 
                         if (movie.Available)
                         {
@@ -237,7 +239,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 {
                     try
                     {
-                        var show = await GetTvShowDetailsAsync(showId);
+                        var show = await GetTvShowDetailsAsync(new TvShowRequest(null, int.MinValue), showId);
                         tvShows.Add(show);
                     }
                     catch (System.Exception ex)
@@ -255,10 +257,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
-        public async Task<IReadOnlyList<Movie>> SearchMovieAsync(string movieName)
+        public async Task<IReadOnlyList<Movie>> SearchMovieAsync(MovieRequest request, string movieName)
         {
             try
             {
+                var category = GetCurrentCategory(request, movieName);
                 var response = await HttpGetAsync($"{BaseURL}search/?query={Uri.EscapeDataString(movieName)}&page=1&language=en");
                 await response.ThrowIfNotSuccessfulAsync("OverseerrMovieSearch failed", x => x.error);
 
@@ -268,7 +271,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                     .Where(x => x.MediaType == MediaTypes.MOVIE)
                     .ToArray();
 
-                return movies.Select(ConvertMovie).ToArray();
+                return movies.Select(x => ConvertMovie(x, category.Is4K ? x.MediaInfo?.Status4k : x.MediaInfo?.Status)).ToArray();
             }
             catch (System.Exception ex)
             {
@@ -277,10 +280,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
-        public async Task<Movie> SearchMovieAsync(int theMovieDbId)
+        public async Task<Movie> SearchMovieAsync(MovieRequest request, int theMovieDbId)
         {
             try
             {
+                var category = GetCurrentCategory(request, $"with TMDB Id {theMovieDbId}");
                 var response = await HttpGetAsync($"{BaseURL}movie/{theMovieDbId}");
                 await response.ThrowIfNotSuccessfulAsync("OverseerrMovieSearchByMovieDbId failed", x => x.error);
 
@@ -288,7 +292,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
 
                 var movie = JsonConvert.DeserializeObject<JSONMedia>(jsonResponse);
 
-                return ConvertMovie(movie);
+                return ConvertMovie(movie, category.Is4K ? movie.MediaInfo?.Status4k : movie.MediaInfo?.Status);
             }
             catch (System.Exception ex)
             {
@@ -306,22 +310,13 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
 
                 if (OverseerrSettings.Movies.Categories.Any())
                 {
-                    OverseerrMovieCategory category = null;
                     Permission[] permissions = new[] { Permission.AUTO_APPROVE, Permission.AUTO_APPROVE_MOVIE };
 
-                    try
-                    {
-                        category = OverseerrSettings.Movies.Categories.Single(x => x.Id == request.CategoryId);
+                    var category = GetCurrentCategory(request, movie.Title);
 
-                        if (category.Is4K)
-                        {
-                            permissions = new[] { Permission.AUTO_APPROVE_4K, Permission.AUTO_APPROVE_4K_MOVIE };
-                        }
-                    }
-                    catch
+                    if (category.Is4K)
                     {
-                        _logger.LogError($"An error occurred while requesting movie \"{movie.Title}\" from Overseerr, could not find category with id {request.CategoryId}");
-                        throw new System.Exception($"An error occurred while requesting movie \"{movie.Title}\" from Overseerr, could not find category with id {request.CategoryId}");
+                        permissions = new[] { Permission.AUTO_APPROVE_4K, Permission.AUTO_APPROVE_4K_MOVIE };
                     }
 
                     if (overseerrUser != null)
@@ -418,12 +413,12 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
-        public Task<MovieDetails> GetMovieDetails(string theMovieDbId)
+        public Task<MovieDetails> GetMovieDetails(MovieRequest request, string theMovieDbId)
         {
             return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId, _logger);
         }
 
-        async Task<IReadOnlyList<SearchedTvShow>> ITvShowSearcher.SearchTvShowAsync(string tvShowName)
+        async Task<IReadOnlyList<SearchedTvShow>> ITvShowSearcher.SearchTvShowAsync(TvShowRequest request, string tvShowName)
         {
             try
             {
@@ -445,10 +440,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
-        public async Task<TvShow> GetTvShowDetailsAsync(int theTvDbId)
+        public async Task<TvShow> GetTvShowDetailsAsync(TvShowRequest request, int theTvDbId)
         {
             try
             {
+                var category = GetCurrentCategory(request, $"with TVDB id {theTvDbId}");
                 var response = await HttpGetAsync($"{BaseURL}tv/{theTvDbId}");
                 await response.ThrowIfNotSuccessfulAsync("OverseerrGetTvShowDetail failed", x => x.error);
 
@@ -456,7 +452,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
 
                 var tvShow = JsonConvert.DeserializeObject<JSONMedia>(jsonResponse);
 
-                return ConvertTvShow(tvShow);
+                return ConvertTvShow(tvShow, category.Is4K ? tvShow.MediaInfo?.Status4k : tvShow.MediaInfo?.Status);
             }
             catch (System.Exception ex)
             {
@@ -475,29 +471,18 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                         ? new HashSet<int>()
                         : new HashSet<int> { season.SeasonNumber };
 
-
-
                 HttpResponseMessage response = null;
                 var overseerrUser = await FindLinkedOverseerUserAsync(request.User.UserId, request.User.Username, OverseerrSettings.TvShows.DefaultApiUserId);
 
                 if (OverseerrSettings.TvShows.Categories.Any())
                 {
-                    OverseerrTvShowCategory category = null;
-                    Permission[] permissions = new[] { Permission.AUTO_APPROVE, Permission.AUTO_APPROVE_MOVIE };
+                    Permission[] permissions = new[] { Permission.AUTO_APPROVE, Permission.AUTO_APPROVE_TV };
 
-                    try
-                    {
-                        category = OverseerrSettings.TvShows.Categories.Single(x => x.Id == request.CategoryId);
+                    var category = GetCurrentCategory(request, tvShow.Title);
 
-                        if (category.Is4K)
-                        {
-                            permissions = new[] { Permission.AUTO_APPROVE_4K, Permission.AUTO_APPROVE_4K_MOVIE };
-                        }
-                    }
-                    catch
+                    if (category.Is4K)
                     {
-                        _logger.LogError($"An error occurred while requesting a tv shows \"{tvShow.Title}\" from Overseerr, could not find category with id {request.CategoryId}");
-                        throw new System.Exception($"An error occurred while requesting a tv shows \"{tvShow.Title}\" from Overseerr, could not find category with id {request.CategoryId}");
+                        permissions = new[] { Permission.AUTO_APPROVE_4K, Permission.AUTO_APPROVE_4K_TV };
                     }
 
                     if (overseerrUser != null)
@@ -602,7 +587,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
-        Task<SearchedTvShow> ITvShowSearcher.SearchTvShowAsync(int tvDbId)
+        Task<SearchedTvShow> ITvShowSearcher.SearchTvShowAsync(TvShowRequest request, int tvDbId)
         {
             throw new NotSupportedException("Overseerr does not support searching via TheTvDatabase.");
         }
@@ -661,18 +646,18 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             return JsonConvert.DeserializeObject<JSONUserNotificationSettings>(jsonResponse);
         }
 
-        private Movie ConvertMovie(JSONMedia jsonMedia)
+        private Movie ConvertMovie(JSONMedia jsonMedia, MediaStatus? mediaStatus)
         {
             return new Movie
             {
                 TheMovieDbId = jsonMedia.Id.ToString(),
                 Title = jsonMedia.Title,
-                Available = jsonMedia.MediaInfo?.Status == MediaStatus.AVAILABLE,
+                Available = mediaStatus == MediaStatus.AVAILABLE,
                 Quality = string.Empty,
-                Requested = jsonMedia.MediaInfo?.Status == MediaStatus.PENDING
-                    || jsonMedia.MediaInfo?.Status == MediaStatus.PROCESSING
-                    || jsonMedia.MediaInfo?.Status == MediaStatus.PARTIALLY_AVAILABLE
-                    || jsonMedia.MediaInfo?.Status == MediaStatus.AVAILABLE,
+                Requested = mediaStatus == MediaStatus.PENDING
+                    || mediaStatus == MediaStatus.PROCESSING
+                    || mediaStatus == MediaStatus.PARTIALLY_AVAILABLE
+                    || mediaStatus == MediaStatus.AVAILABLE,
                 PlexUrl = jsonMedia.MediaInfo?.PlexUrl,
                 Overview = jsonMedia.Overview,
                 PosterPath = !string.IsNullOrWhiteSpace(jsonMedia.PosterPath) ? $"https://image.tmdb.org/t/p/w500{jsonMedia.PosterPath}" : null,
@@ -691,7 +676,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             };
         }
 
-        private TvShow ConvertTvShow(JSONMedia jsonMedia)
+        private TvShow ConvertTvShow(JSONMedia jsonMedia, MediaStatus? mediaInfo)
         {
             return new TvShow
             {
@@ -699,10 +684,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 Title = jsonMedia.Name,
                 Banner = !string.IsNullOrWhiteSpace(jsonMedia.PosterPath) ? $"https://image.tmdb.org/t/p/w500{jsonMedia.PosterPath}" : null,
                 FirstAired = jsonMedia.FirstAirDate,
-                IsRequested = jsonMedia.MediaInfo?.Status == MediaStatus.PENDING
-                    || jsonMedia.MediaInfo?.Status == MediaStatus.PROCESSING
-                    || jsonMedia.MediaInfo?.Status == MediaStatus.PARTIALLY_AVAILABLE
-                    || jsonMedia.MediaInfo?.Status == MediaStatus.AVAILABLE,
+                IsRequested = mediaInfo == MediaStatus.PENDING
+                    || mediaInfo == MediaStatus.PROCESSING
+                    || mediaInfo == MediaStatus.PARTIALLY_AVAILABLE
+                    || mediaInfo == MediaStatus.AVAILABLE,
                 Quality = string.Empty,
                 WebsiteUrl = jsonMedia.TvdbId != null && jsonMedia.TvdbId.ToString() != "0" ? $"https://www.thetvdb.com/?id={jsonMedia.TvdbId}&tab=series" : null,
                 PlexUrl = jsonMedia.MediaInfo?.PlexUrl,
@@ -846,6 +831,38 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         {
             var protocol = useSSl ? "https" : "http";
             return $"{protocol}://{hostname}:{port}/api/v{version}/";
+        }
+
+        private OverseerrMovieCategory GetCurrentCategory(MovieRequest request, string movieTitle)
+        {
+            try
+            {
+                if (OverseerrSettings.Movies.Categories.Any() && request.CategoryId != int.MinValue)
+                    return OverseerrSettings.Movies.Categories.Single(x => x.Id == request.CategoryId);
+            }
+            catch
+            {
+                _logger.LogError($"An error occurred while requesting movie \"{movieTitle}\" from Overseerr, could not find category with id {request.CategoryId}");
+                throw new Exception($"An error occurred while requesting movie \"{movieTitle}\" from Overseerr, could not find category with id {request.CategoryId}");
+            }
+
+            return DefaultMovieCategory;
+        }
+
+        private OverseerrTvShowCategory GetCurrentCategory(TvShowRequest request, string tvShowTitle)
+        {
+            try
+            {
+                if (OverseerrSettings.TvShows.Categories.Any() && request.CategoryId != int.MinValue)
+                    return OverseerrSettings.TvShows.Categories.Single(x => x.Id == request.CategoryId);
+            }
+            catch
+            {
+                _logger.LogError($"An error occurred while requesting a tv show \"{tvShowTitle}\" from Overseerr, could not find category with id {request.CategoryId}");
+                throw new Exception($"An error occurred while requesting a tv show \"{tvShowTitle}\" from Overseerr, could not find category with id {request.CategoryId}");
+            }
+
+            return DefaultTvShowCategory;
         }
 
         public class JSONDownloadClient
@@ -1037,8 +1054,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 }
             }
 
+            public MediaStatus Status4k
+            {
+                get
+                {
+                    return (MediaStatus)Status4kValue;
+                }
+            }
+
             [JsonProperty("status4k")]
-            public int Status4k { get; set; }
+            public int Status4kValue { get; set; }
 
             [JsonProperty("createdAt")]
             public DateTime? CreatedAt { get; set; }

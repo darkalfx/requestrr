@@ -22,11 +22,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         public static Task TestConnectionAsync(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
-            if(settings.Version == "2")
+            if (settings.Version == "2")
             {
                 return SonarrClientV2.TestConnectionAsync(httpClient, logger, settings);
             }
-            else 
+            else
             {
                 return SonarrClientV3.TestConnectionAsync(httpClient, logger, settings);
             }
@@ -34,11 +34,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         public static Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
-            if(settings.Version == "2")
+            if (settings.Version == "2")
             {
                 return SonarrClientV2.GetRootPaths(httpClient, logger, settings);
             }
-            else 
+            else
             {
                 return SonarrClientV3.GetRootPaths(httpClient, logger, settings);
             }
@@ -46,11 +46,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         public static Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
-            if(settings.Version == "2")
+            if (settings.Version == "2")
             {
                 return SonarrClientV2.GetProfiles(httpClient, logger, settings);
             }
-            else 
+            else
             {
                 return SonarrClientV3.GetProfiles(httpClient, logger, settings);
             }
@@ -58,11 +58,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         public static Task<IList<JSONLanguageProfile>> GetLanguages(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
-            if(settings.Version == "2")
+            if (settings.Version == "2")
             {
                 return Task.FromResult((IList<JSONLanguageProfile>)new List<JSONLanguageProfile>());
             }
-            else 
+            else
             {
                 return SonarrClientV3.GetLanguages(httpClient, logger, settings);
             }
@@ -70,29 +70,29 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         public static Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
         {
-            if(settings.Version == "2")
+            if (settings.Version == "2")
             {
                 return Task.FromResult((IList<JSONTag>)new List<JSONTag>());
             }
-            else 
+            else
             {
                 return SonarrClientV3.GetTags(httpClient, logger, settings);
             }
         }
 
-        public Task<SearchedTvShow> SearchTvShowAsync(int tvDbId)
+        public Task<SearchedTvShow> SearchTvShowAsync(TvShowRequest request, int tvDbId)
         {
-            return CreateInstance<ITvShowSearcher>().SearchTvShowAsync(tvDbId);
+            return CreateInstance<ITvShowSearcher>().SearchTvShowAsync(request, tvDbId);
         }
 
-        public Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(string tvShowName)
+        public Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(TvShowRequest request, string tvShowName)
         {
-            return CreateInstance<ITvShowSearcher>().SearchTvShowAsync(tvShowName);
+            return CreateInstance<ITvShowSearcher>().SearchTvShowAsync(request, tvShowName);
         }
 
-        public Task<TvShow> GetTvShowDetailsAsync(int theTvDbId)
+        public Task<TvShow> GetTvShowDetailsAsync(TvShowRequest request, int theTvDbId)
         {
-            return CreateInstance<ITvShowSearcher>().GetTvShowDetailsAsync(theTvDbId);
+            return CreateInstance<ITvShowSearcher>().GetTvShowDetailsAsync(request, theTvDbId);
         }
 
         public Task<IReadOnlyList<TvShow>> GetTvShowDetailsAsync(HashSet<int> theTvDbIds, CancellationToken token)

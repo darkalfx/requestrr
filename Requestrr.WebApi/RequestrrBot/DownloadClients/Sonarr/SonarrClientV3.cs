@@ -157,7 +157,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while getting Sonarr tags");
         }
 
-        public async Task<SearchedTvShow> SearchTvShowAsync(int tvDbId)
+        public async Task<SearchedTvShow> SearchTvShowAsync(TvShowRequest request, int tvDbId)
         {
             try
             {
@@ -184,7 +184,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while searching for tv show by tvDbId from Sonarr");
         }
 
-        public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(string tvShowName)
+        public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(TvShowRequest request, string tvShowName)
         {
             try
             {
@@ -211,7 +211,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while searching for tv show from Sonarr");
         }
 
-        public async Task<TvShow> GetTvShowDetailsAsync(int tvDbId)
+        public async Task<TvShow> GetTvShowDetailsAsync(TvShowRequest request, int tvDbId)
         {
             try
             {

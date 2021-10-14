@@ -46,7 +46,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         public async Task AddNotificationAsync(string userId, int theMovieDbId)
         {
-            var movie = await _movieSearcher.SearchMovieAsync(theMovieDbId);
+            var movie = await _movieSearcher.SearchMovieAsync(new MovieRequest(null, int.MinValue), theMovieDbId);
             _notificationsRepository.AddNotification(userId, int.Parse(movie.TheMovieDbId));
             await _userInterface.DisplayNotificationSuccessAsync(movie);
         }

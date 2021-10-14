@@ -50,7 +50,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
         {
             TvSeason selectedSeason;
 
-            var tvShow = await _tvShowSearcher.GetTvShowDetailsAsync(theTvDbId);
+            var tvShow = await _tvShowSearcher.GetTvShowDetailsAsync(new TvShowRequest(null, int.MinValue), theTvDbId);
 
             switch (seasonType.ToLower())
             {

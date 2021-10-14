@@ -5,10 +5,10 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 {
     public interface IMovieSearcher
     {
-        Task<IReadOnlyList<Movie>> SearchMovieAsync(string movieName);
-        Task<MovieDetails> GetMovieDetails(string theMovieDbId);
+        Task<IReadOnlyList<Movie>> SearchMovieAsync(MovieRequest request, string movieName);
+        Task<MovieDetails> GetMovieDetails(MovieRequest request, string theMovieDbId);
         Task<Dictionary<int, Movie>> SearchAvailableMoviesAsync(HashSet<int> movies, System.Threading.CancellationToken token);
-        Task<Movie> SearchMovieAsync(int theMovieDbId);
+        Task<Movie> SearchMovieAsync(MovieRequest request, int theMovieDbId);
     }
 
     public class MovieDetails

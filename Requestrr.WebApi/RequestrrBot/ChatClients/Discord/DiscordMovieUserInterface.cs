@@ -96,7 +96,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             {
                 try
                 {
-                    var details = await movieSearcher.GetMovieDetails(movie.TheMovieDbId);
+                    var details = await movieSearcher.GetMovieDetails(new MovieRequest(null, int.MinValue), movie.TheMovieDbId);
 
                     if (!string.IsNullOrWhiteSpace(details.InTheatersDate))
                     {

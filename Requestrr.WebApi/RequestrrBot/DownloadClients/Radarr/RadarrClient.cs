@@ -18,14 +18,14 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             _logger = logger;
             _settingsProvider = RadarrSettingsProvider;
         }
-        
+
         public static Task TestConnectionAsync(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
         {
-            if(settings.Version == "2")
+            if (settings.Version == "2")
             {
                 return RadarrClientV2.TestConnectionAsync(httpClient, logger, settings);
             }
-            else 
+            else
             {
                 return RadarrClientV3.TestConnectionAsync(httpClient, logger, settings);
             }
@@ -33,11 +33,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
         public static Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
         {
-            if(settings.Version == "2")
+            if (settings.Version == "2")
             {
                 return RadarrClientV2.GetRootPaths(httpClient, logger, settings);
             }
-            else 
+            else
             {
                 return RadarrClientV3.GetRootPaths(httpClient, logger, settings);
             }
@@ -45,11 +45,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
         public static Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
         {
-            if(settings.Version == "2")
+            if (settings.Version == "2")
             {
                 return RadarrClientV2.GetProfiles(httpClient, logger, settings);
             }
-            else 
+            else
             {
                 return RadarrClientV3.GetProfiles(httpClient, logger, settings);
             }
@@ -57,29 +57,29 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
         public static Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
         {
-            if(settings.Version == "2")
+            if (settings.Version == "2")
             {
                 return Task.FromResult((IList<JSONTag>)new List<JSONTag>());
             }
-            else 
+            else
             {
                 return RadarrClientV3.GetTags(httpClient, logger, settings);
             }
         }
 
-        public Task<Movie> SearchMovieAsync(int theMovieDbId)
+        public Task<Movie> SearchMovieAsync(MovieRequest request, int theMovieDbId)
         {
-            return CreateInstance<IMovieSearcher>().SearchMovieAsync(theMovieDbId);
+            return CreateInstance<IMovieSearcher>().SearchMovieAsync(request, theMovieDbId);
         }
 
-        public Task<IReadOnlyList<Movie>> SearchMovieAsync(string movieName)
+        public Task<IReadOnlyList<Movie>> SearchMovieAsync(MovieRequest request, string movieName)
         {
-            return CreateInstance<IMovieSearcher>().SearchMovieAsync(movieName);
+            return CreateInstance<IMovieSearcher>().SearchMovieAsync(request, movieName);
         }
 
-        public Task<MovieDetails> GetMovieDetails(string theMovieDbId)
+        public Task<MovieDetails> GetMovieDetails(MovieRequest request, string theMovieDbId)
         {
-            return CreateInstance<IMovieSearcher>().GetMovieDetails(theMovieDbId);
+            return CreateInstance<IMovieSearcher>().GetMovieDetails(request, theMovieDbId);
         }
 
         public Task<Dictionary<int, Movie>> SearchAvailableMoviesAsync(HashSet<int> theMovieDbIds, System.Threading.CancellationToken token)
@@ -94,11 +94,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
         private T CreateInstance<T>() where T : class
         {
-            if(_settingsProvider.Provide().Version == "2")
+            if (_settingsProvider.Provide().Version == "2")
             {
                 return new RadarrClientV2(_httpClientFactory, _logger, _settingsProvider) as T;
             }
-            else 
+            else
             {
                 return new RadarrClientV3(_httpClientFactory, _logger, _settingsProvider) as T;
             }

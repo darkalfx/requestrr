@@ -52,7 +52,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         {
             try
             {
-                var movie = await _searcher.SearchMovieAsync(theMovieDbId);
+                var movie = await _searcher.SearchMovieAsync(new MovieRequest(_user, _categoryId), theMovieDbId);
                 await HandleMovieSelectionAsync(movie);
             }
             catch
@@ -66,7 +66,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
             IReadOnlyList<Movie> movies = Array.Empty<Movie>();
 
             movieName = movieName.Replace(".", " ");
-            movies = await _searcher.SearchMovieAsync(movieName);
+            movies = await _searcher.SearchMovieAsync(new MovieRequest(_user, _categoryId), movieName);
 
             if (!movies.Any())
             {
@@ -78,7 +78,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         public async Task HandleMovieSelectionAsync(int theMovieDbId)
         {
-            await HandleMovieSelectionAsync(await _searcher.SearchMovieAsync(theMovieDbId));
+            await HandleMovieSelectionAsync(await _searcher.SearchMovieAsync(new MovieRequest(_user, _categoryId), theMovieDbId));
         }
 
         private async Task HandleMovieSelectionAsync(Movie movie)
@@ -102,7 +102,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
         public async Task RequestMovieAsync(int theMovieDbId)
         {
-            var movie = await _searcher.SearchMovieAsync(theMovieDbId);
+            var movie = await _searcher.SearchMovieAsync(new MovieRequest(_user, _categoryId), theMovieDbId);
             var result = await _requester.RequestMovieAsync(new MovieRequest(_user, _categoryId), movie);
 
             if (result.WasDenied)

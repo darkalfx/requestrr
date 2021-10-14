@@ -127,7 +127,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             throw new System.Exception("An error occurred while requesting a movie from oOmbimbi");
         }
 
-        public async Task<Movie> SearchMovieAsync(int theMovieDbId)
+        public async Task<Movie> SearchMovieAsync(MovieRequest request, int theMovieDbId)
         {
             var retryCount = 0;
 
@@ -155,7 +155,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             throw new System.Exception("An error occurred while searching for a movie by tmdbId from Ombi");
         }
 
-        public async Task<IReadOnlyList<Movie>> SearchMovieAsync(string movieName)
+        public async Task<IReadOnlyList<Movie>> SearchMovieAsync(MovieRequest request, string movieName)
         {
             var retryCount = 0;
 
@@ -182,7 +182,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             throw new System.Exception("An error occurred while searching for movies from Ombi");
         }
 
-        public Task<MovieDetails> GetMovieDetails(string theMovieDbId)
+        public Task<MovieDetails> GetMovieDetails(MovieRequest request, string theMovieDbId)
         {
             return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId, _logger);
         }
@@ -311,7 +311,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             throw new System.Exception("Something went wrong while requesting a tv show from Ombi");
         }
 
-        public async Task<TvShow> GetTvShowDetailsAsync(int TheTvDbId)
+        public async Task<TvShow> GetTvShowDetailsAsync(TvShowRequest request, int TheTvDbId)
         {
             var retryCount = 0;
 
@@ -349,7 +349,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
 
                         try
                         {
-                            var show = await GetTvShowDetailsAsync(showId);
+                            var show = await GetTvShowDetailsAsync(new TvShowRequest(null, int.MinValue), showId);
                             tvShows.Add(show);
                         }
                         catch
@@ -372,7 +372,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
         }
 
 
-        public async Task<SearchedTvShow> SearchTvShowAsync(int tvDbId)
+        public async Task<SearchedTvShow> SearchTvShowAsync(TvShowRequest request, int tvDbId)
         {
             var retryCount = 0;
 
@@ -407,7 +407,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi
             throw new System.Exception("An error occurred while searching for tv show by tvDbId from Ombi");
         }
 
-        public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(string tvShowName)
+        public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(TvShowRequest request, string tvShowName)
         {
             var retryCount = 0;
 
