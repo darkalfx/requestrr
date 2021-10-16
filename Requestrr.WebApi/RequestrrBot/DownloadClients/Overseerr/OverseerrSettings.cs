@@ -43,39 +43,23 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         public int Port { get; set; } = 5055;
         public bool UseSSL { get; set; } = false;
         public string ApiKey { get; set; } = string.Empty;
-        public OverseerrMovieSettings Movies { get; set; } = new OverseerrMovieSettings();
-        public OverseerrTvShowSettings TvShows { get; set; } = new OverseerrTvShowSettings();
         public string Version { get; set; } = "1";
     }
 
-    public class OverseerrMovieSettings
+    public class OverseerrMovieCategory : Category
     {
         public string DefaultApiUserId { get; set; }
-        public OverseerrMovieCategory[] Categories { get; set; } = Array.Empty<OverseerrMovieCategory>();
-    }
-
-    public class OverseerrMovieCategory
-    {
-        public int Id { get; set; } = -1;
         public bool Is4K { get; set; } = false;
-        public string Name { get; set; } = string.Empty;
         public int ServiceId { get; set; } = -1;
         public int ProfileId { get; set; } = -1;
         public string RootFolder { get; set; } = string.Empty;
         public int[] Tags { get; set; } = Array.Empty<int>();
     }
 
-    public class OverseerrTvShowSettings
+    public class OverseerrTvShowCategory : Category
     {
         public string DefaultApiUserId { get; set; }
-        public OverseerrTvShowCategory[] Categories { get; set; } = Array.Empty<OverseerrTvShowCategory>();
-    }
-
-    public class OverseerrTvShowCategory
-    {
-        public int Id { get; set; } = -1;
         public bool Is4K { get; set; } = false;
-        public string Name { get; set; } = string.Empty;
         public int ServiceId { get; set; } = -1;
         public int ProfileId { get; set; } = -1;
         public int LanguageProfileId { get; set; } = -1;

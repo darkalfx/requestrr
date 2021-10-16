@@ -20,86 +20,19 @@
     },
     "Language": "english"
   },
-  "DownloadClients": {
-    "Ombi": {
-      "Hostname": "",
-      "Port": 3579,
-      "ApiKey": "",
-      "ApiUsername": "",
-      "BaseUrl": "",
-      "UseSSL": false,
-      "Version": "3"
-    },
-    "Overseerr": {
-      "Hostname": "",
-      "Port": 5055,
-      "ApiKey": "",
-      "Movies": {
-        "DefaultApiUserID": "",
-        "Categories": []
-      },
-      "TvShows": {
-        "DefaultApiUserID": "",
-        "Categories": []
-      },
-      "UseSSL": false,
-      "Version": "1"
-    },
-    "Radarr": {
-      "Hostname": "",
-      "Port": 7878,
-      "ApiKey": "",
-      "BaseUrl": "",
-      "Categories": [
-        {
-          "Id": 0,
-          "Name": "movie",
-          "ProfileId": "1",
-          "RootFolder": "",
-          "MinimumAvailability": "announced",
-          "Tags": []
-        }
-      ],
-      "SearchNewRequests": true,
-      "MonitorNewRequests": true,
-      "UseSSL": false,
-      "Version": "3"
-    },
-    "Sonarr": {
-      "Hostname": "",
-      "Port": 8989,
-      "ApiKey": "",
-      "BaseUrl": "",
-      "Categories": [
-        {
-          "Id": 0,
-          "Name": "tv",
-          "ProfileId": "1",
-          "RootFolder": "",
-          "Tags": [],
-          "LanguageId": "1",
-          "UseSeasonFolders": true,
-          "SeriesType": "standard"
-        }
-      ],
-      "SearchNewRequests": true,
-      "MonitorNewRequests": true,
-      "UseSSL": false,
-      "Version": "3"
-    }
-  },
+  "DownloadClients": [],
   "BotClient": {
     "Client": ""
   },
   "Movies": {
-    "Client": "Disabled"
+    "Categories": []
   },
   "TvShows": {
-    "Client": "Disabled",
-    "Restrictions": "None"
+    "Restrictions": "None",
+    "Categories": []
   },
   "Port": 4545,
   "BaseUrl": "",
   "DisableAuthentication": false,
-  "Version": "2.1.0"
+  "Version": "2.2.0"
 }

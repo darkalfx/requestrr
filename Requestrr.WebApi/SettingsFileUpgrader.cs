@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Requestrr.WebApi.config;
+using Requestrr.WebApi.RequestrrBot.DownloadClients;
+using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
@@ -153,7 +157,7 @@ namespace Requestrr.WebApi
 
                 var radarrCategories = new[]
                 {
-                    new RadarrCategory
+                    new
                     {
                         Id = 0,
                         Name = "movie",
@@ -162,7 +166,7 @@ namespace Requestrr.WebApi
                         MinimumAvailability = (string)((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("MovieMinimumAvailability"),
                         Tags = ((JObject)settingsJson["DownloadClients"]["Radarr"]).GetValue("MovieTags").ToObject<int[]>()
                     },
-                    new RadarrCategory
+                    new
                     {
                         Id = 1,
                         Name = "movie-anime",
@@ -186,7 +190,7 @@ namespace Requestrr.WebApi
 
                 var sonarrCategories = new[]
                 {
-                    new SonarrCategory
+                    new
                     {
                         Id = 0,
                         Name = "tv",
@@ -197,7 +201,7 @@ namespace Requestrr.WebApi
                         UseSeasonFolders = (bool)((JObject)settingsJson["DownloadClients"]["Sonarr"]).GetValue("TvUseSeasonFolders"),
                         SeriesType = "standard",
                     },
-                    new SonarrCategory
+                    new
                     {
                         Id = 1,
                         Name = "tv-anime",
@@ -234,8 +238,130 @@ namespace Requestrr.WebApi
                 var defaultApiUserID = (string)((JObject)settingsJson["DownloadClients"]["Overseerr"]).GetValue("DefaultApiUserID");
                 ((JObject)settingsJson["DownloadClients"]["Overseerr"]).Remove("DefaultApiUserID");
 
-                ((JObject)settingsJson["DownloadClients"]["Overseerr"]).Add("Movies", JToken.FromObject(new OverseerrMovieSettings { DefaultApiUserId = defaultApiUserID }));
-                ((JObject)settingsJson["DownloadClients"]["Overseerr"]).Add("TvShows", JToken.FromObject(new OverseerrTvShowSettings { DefaultApiUserId = defaultApiUserID }));
+                ((JObject)settingsJson["DownloadClients"]["Overseerr"]).Add("Movies", JToken.FromObject(new { DefaultApiUserId = defaultApiUserID, Categories = Array.Empty<object>() }));
+                ((JObject)settingsJson["DownloadClients"]["Overseerr"]).Add("TvShows", JToken.FromObject(new { DefaultApiUserId = defaultApiUserID, Categories = Array.Empty<object>() }));
+
+                File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
+            }
+
+            if (settingsJson.Version.ToString().Equals("2.1.0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                settingsJson.Version = "2.2.0";
+
+                var sonarrSettings = ((JObject)settingsJson["DownloadClients"]["Sonarr"]).ToObject<dynamic>();
+                var radarrSettings = ((JObject)settingsJson["DownloadClients"]["Radarr"]).ToObject<dynamic>();
+                var overseerrSettings = ((JObject)settingsJson["DownloadClients"]["Overseerr"]).ToObject<dynamic>();
+                var ombiSettings = ((JObject)settingsJson["DownloadClients"]["Ombi"]).ToObject<dynamic>();
+
+                var movieSettings = ((JObject)settingsJson).GetValue("Movies").ToObject<dynamic>();
+                var tvShowSettings = ((JObject)settingsJson).GetValue("TvShows").ToObject<dynamic>();
+
+                var downloadClients = new List<DownloadClient>();
+
+                if (movieSettings.Client == DownloadClient.Radarr)
+                {
+                    downloadClients.Add(
+                        new RadarrDownloadClient
+                        {
+                            Id = 1,
+                            Name = "Radarr",
+                            ApiKey = radarrSettings.ApiKey,
+                            BaseUrl = radarrSettings.BaseUrl,
+                            Hostname = radarrSettings.Hostname,
+                            MonitorNewRequests = radarrSettings.MonitorNewRequests,
+                            SearchNewRequests = radarrSettings.MonitorNewRequests,
+                            Port = radarrSettings.Port,
+                            UseSSL = radarrSettings.UseSSL,
+                            Version = radarrSettings.Version
+                        });
+                }
+                else if (movieSettings.Client == DownloadClient.Overseerr)
+                {
+                    downloadClients.Add(
+                        new OverseerrDownloadClient
+                        {
+                            Id = 2,
+                            Name = "Overseerr",
+                            ApiKey = overseerrSettings.ApiKey,
+                            Hostname = overseerrSettings.Hostname,
+                            Port = overseerrSettings.Port,
+                            UseSSL = overseerrSettings.UseSSL,
+                            Version = overseerrSettings.Version
+                        });
+                }
+                else if (movieSettings.Client == DownloadClient.Ombi)
+                {
+                    downloadClients.Add(
+                        new OmbiDownloadClient
+                        {
+                            Id = 3,
+                            Name = "Ombi",
+                            ApiKey = ombiSettings.ApiKey,
+                            BaseUrl = ombiSettings.BaseUrl,
+                            Hostname = ombiSettings.Hostname,
+                            Port = ombiSettings.Port,
+                            UseSSL = ombiSettings.UseSSL,
+                            Version = ombiSettings.Version
+                        });
+                }
+
+                if (tvShowSettings.Client == DownloadClient.Sonarr)
+                {
+                    downloadClients.Add(
+                        new SonarrDownloadClient
+                        {
+                            Id = 4,
+                            Name = "Sonarr",
+                            ApiKey = sonarrSettings.ApiKey,
+                            BaseUrl = sonarrSettings.BaseUrl,
+                            Hostname = sonarrSettings.Hostname,
+                            MonitorNewRequests = sonarrSettings.MonitorNewRequests,
+                            SearchNewRequests = sonarrSettings.MonitorNewRequests,
+                            Port = sonarrSettings.Port,
+                            UseSSL = sonarrSettings.UseSSL,
+                            Version = sonarrSettings.Version
+                        });
+                }
+                else if (tvShowSettings.Client == DownloadClient.Overseerr && !downloadClients.OfType<OverseerrDownloadClient>().Any())
+                {
+                    downloadClients.Add(
+                        new OverseerrDownloadClient
+                        {
+                            Id = 5,
+                            Name = "Overseerr",
+                            ApiKey = overseerrSettings.ApiKey,
+                            Hostname = overseerrSettings.Hostname,
+                            Port = overseerrSettings.Port,
+                            UseSSL = overseerrSettings.UseSSL,
+                            Version = overseerrSettings.Version
+                        });
+                }
+                else if (tvShowSettings.Client == DownloadClient.Ombi && !downloadClients.OfType<OmbiDownloadClient>().Any())
+                {
+                    downloadClients.Add(
+                        new OmbiDownloadClient
+                        {
+                            Id = 6,
+                            Name = "Ombi",
+                            ApiKey = ombiSettings.ApiKey,
+                            BaseUrl = ombiSettings.BaseUrl,
+                            Hostname = ombiSettings.Hostname,
+                            Port = ombiSettings.Port,
+                            UseSSL = ombiSettings.UseSSL,
+                            Version = ombiSettings.Version
+                        });
+                }
+
+                ((JObject)settingsJson).Remove("DownloadClients");
+                ((JObject)settingsJson).Add("DownloadClients", JToken.FromObject(downloadClients.ToArray()));
+
+                var movieCategories = new List<Category>();
+
+                ((JObject)settingsJson["Movies"]).Remove("Client");
+                ((JObject)settingsJson["TvShows"]).Remove("Client");
+
+                ((JObject)settingsJson["Movies"]).Add("Categories", JToken.FromObject(Array.Empty<object>()));
+                ((JObject)settingsJson["TvShows"]).Add("Categories", JToken.FromObject(Array.Empty<object>()));
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
