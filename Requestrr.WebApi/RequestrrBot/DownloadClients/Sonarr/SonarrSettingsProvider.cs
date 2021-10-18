@@ -1,23 +1,13 @@
-﻿namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
+﻿using System.Collections.Generic;
+
+namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 {
     public class SonarrSettingsProvider
     {
-        public SonarrSettings Provide()
+        public IDictionary<int, SonarrDownloadClientSettings> Provide()
         {
             dynamic settings = SettingsFile.Read();
-
-            return new SonarrSettings
-            {
-                Hostname = settings.DownloadClients.Sonarr.Hostname,
-                BaseUrl = settings.DownloadClients.Sonarr.BaseUrl,
-                Port = (int)settings.DownloadClients.Sonarr.Port,
-                ApiKey = settings.DownloadClients.Sonarr.ApiKey,
-                Categories =  settings.DownloadClients.Sonarr.Categories.ToObject<SonarrCategory[]>(),
-                SearchNewRequests  = settings.DownloadClients.Sonarr.SearchNewRequests,
-                MonitorNewRequests  = settings.DownloadClients.Sonarr.MonitorNewRequests,
-                UseSSL = (bool)settings.DownloadClients.Sonarr.UseSSL,
-                Version = settings.DownloadClients.Sonarr.Version,
-            };
+            return settings.DownloadClients.Where(x => x.ClientType == "RadarrDownloadClient").ToDictionary(x => x.Id, x => x);
         }
     }
 }

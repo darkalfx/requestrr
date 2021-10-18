@@ -1,4 +1,5 @@
 using System;
+using Requestrr.WebApi.config;
 
 namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
 {
@@ -37,7 +38,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         public string Name { get; set; }
     }
 
-    public class OverseerrSettings
+    public class OverseerrDownloadClientSettings : DownloadClientSettings
     {
         public string Hostname { get; set; } = string.Empty;
         public int Port { get; set; } = 5055;
@@ -49,6 +50,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
     public class OverseerrMovieCategory : Category
     {
         public string DefaultApiUserId { get; set; }
+        public bool UseOverseerrSettings { get; set; } = true;
         public bool Is4K { get; set; } = false;
         public int ServiceId { get; set; } = -1;
         public int ProfileId { get; set; } = -1;
@@ -59,6 +61,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
     public class OverseerrTvShowCategory : Category
     {
         public string DefaultApiUserId { get; set; }
+        public bool UseOverseerrSettings { get; set; } = true;
         public bool Is4K { get; set; } = false;
         public int ServiceId { get; set; } = -1;
         public int ProfileId { get; set; } = -1;

@@ -5,8 +5,8 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Requestrr.WebApi.config;
+using Requestrr.WebApi.Controllers.DownloadClients.Ombi;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
-using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr;
@@ -100,7 +100,15 @@ namespace Requestrr.WebApi
             {
                 settingsJson.Version = "1.12.0";
 
-                ((JObject)settingsJson["DownloadClients"]).Add("Overseerr", JToken.FromObject(new OverseerrSettings()));
+                ((JObject)settingsJson["DownloadClients"]).Add("Overseerr", JToken.FromObject(new
+                {
+                    Hostname = string.Empty,
+                    Port = 5055,
+                    UseSSL = false,
+                    ApiKey = string.Empty,
+                    DefaultApiUserID = string.Empty,
+                    Version = "1"
+                }));
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }
@@ -256,13 +264,14 @@ namespace Requestrr.WebApi
                 var movieSettings = ((JObject)settingsJson).GetValue("Movies").ToObject<dynamic>();
                 var tvShowSettings = ((JObject)settingsJson).GetValue("TvShows").ToObject<dynamic>();
 
-                var downloadClients = new List<DownloadClient>();
+                var downloadClients = new List<dynamic>();
 
-                if (movieSettings.Client == DownloadClient.Radarr)
+                if (movieSettings.Client == "Radarr")
                 {
                     downloadClients.Add(
-                        new RadarrDownloadClient
+                        new
                         {
+                            ClientType = "RadarrDownloadClientSettings",
                             Id = 1,
                             Name = "Radarr",
                             ApiKey = radarrSettings.ApiKey,
@@ -275,11 +284,12 @@ namespace Requestrr.WebApi
                             Version = radarrSettings.Version
                         });
                 }
-                else if (movieSettings.Client == DownloadClient.Overseerr)
+                else if (movieSettings.Client == "Overseerr")
                 {
                     downloadClients.Add(
-                        new OverseerrDownloadClient
+                        new
                         {
+                            ClientType = "OverseerrDownloadClientSettings",
                             Id = 2,
                             Name = "Overseerr",
                             ApiKey = overseerrSettings.ApiKey,
@@ -289,11 +299,12 @@ namespace Requestrr.WebApi
                             Version = overseerrSettings.Version
                         });
                 }
-                else if (movieSettings.Client == DownloadClient.Ombi)
+                else if (movieSettings.Client == "Ombi")
                 {
                     downloadClients.Add(
-                        new OmbiDownloadClient
+                        new
                         {
+                            ClientType = "OmbiDownloadClientSettings",
                             Id = 3,
                             Name = "Ombi",
                             ApiKey = ombiSettings.ApiKey,
@@ -305,11 +316,12 @@ namespace Requestrr.WebApi
                         });
                 }
 
-                if (tvShowSettings.Client == DownloadClient.Sonarr)
+                if (tvShowSettings.Client == "Sonarr")
                 {
                     downloadClients.Add(
-                        new SonarrDownloadClient
+                        new
                         {
+                            ClientType = "SonarrDownloadClientSettings",
                             Id = 4,
                             Name = "Sonarr",
                             ApiKey = sonarrSettings.ApiKey,
@@ -322,11 +334,12 @@ namespace Requestrr.WebApi
                             Version = sonarrSettings.Version
                         });
                 }
-                else if (tvShowSettings.Client == DownloadClient.Overseerr && !downloadClients.OfType<OverseerrDownloadClient>().Any())
+                else if (tvShowSettings.Client == "Overseerr" && downloadClients.All(x => x.ClientType != "OverseerrDownloadClientSettings"))
                 {
                     downloadClients.Add(
-                        new OverseerrDownloadClient
+                        new
                         {
+                            ClientType = "OverseerrDownloadClientSettings",
                             Id = 5,
                             Name = "Overseerr",
                             ApiKey = overseerrSettings.ApiKey,
@@ -336,11 +349,12 @@ namespace Requestrr.WebApi
                             Version = overseerrSettings.Version
                         });
                 }
-                else if (tvShowSettings.Client == DownloadClient.Ombi && !downloadClients.OfType<OmbiDownloadClient>().Any())
+                else if (tvShowSettings.Client == "Ombi" && downloadClients.All(x => x.ClientType != "OmbiDownloadClientSettings"))
                 {
                     downloadClients.Add(
-                        new OmbiDownloadClient
+                        new
                         {
+                            ClientType = "OmbiDownloadClientSettings",
                             Id = 6,
                             Name = "Ombi",
                             ApiKey = ombiSettings.ApiKey,
@@ -355,13 +369,156 @@ namespace Requestrr.WebApi
                 ((JObject)settingsJson).Remove("DownloadClients");
                 ((JObject)settingsJson).Add("DownloadClients", JToken.FromObject(downloadClients.ToArray()));
 
-                var movieCategories = new List<Category>();
+                var movieCategories = new List<dynamic>();
+
+                if (movieSettings.Client == "Radarr")
+                {
+                    foreach (var category in radarrSettings.Categories)
+                    {
+                        movieCategories.Add(new
+                        {
+                            Id = category.Id,
+                            CategoryType = "RadarrCategory",
+                            DownloadClientId = downloadClients.Single(x => x.ClientType == "RadarrDownloadClientSettings").Id,
+                            MinimumAvailability = category.MinimumAvailability,
+                            Name = category.Name,
+                            ProfileId = category.ProfileId,
+                            RootFolder = category.RootFolder,
+                            Tags = category.Tags,
+                        });
+                    }
+                }
+                else if (movieSettings.Client == "Overseerr")
+                {
+                    if (overseerrSettings.Movies.Categories.Any())
+                    {
+                        foreach (var category in overseerrSettings.Movies.Categories)
+                        {
+                            movieCategories.Add(new
+                            {
+                                Id = category.Id,
+                                CategoryType = "OverseerrMovieCategory",
+                                DownloadClientId = downloadClients.Single(x => x.ClientType == "OverseerrDownloadClientSettings").Id,
+                                Is4K = category.Is4K,
+                                DefaultApiUserId = overseerrSettings.Movies.DefaultApiUserID,
+                                ServiceId = category.ServiceId,
+                                UseOverseerrSettings = false,
+                                Name = category.Name,
+                                ProfileId = category.ProfileId,
+                                RootFolder = category.RootFolder,
+                                Tags = category.Tags,
+                            });
+                        }
+                    }
+                    else
+                    {
+                        movieCategories.Add(new
+                        {
+                            Id = 85,
+                            CategoryType = "OverseerrMovieCategory",
+                            DownloadClientId = downloadClients.Single(x => x.ClientType == "OverseerrDownloadClientSettings").Id,
+                            Is4K = false,
+                            DefaultApiUserId = overseerrSettings.Movies.DefaultApiUserID,
+                            ServiceId = -1,
+                            UseOverseerrSettings = true,
+                            Name = "Movies",
+                            ProfileId = 01,
+                            RootFolder = string.Empty,
+                            Tags = Array.Empty<int>(),
+                        });
+                    }
+                }
+                else if (movieSettings.Client == "Ombi")
+                {
+                    movieCategories.Add(new
+                    {
+                        Id = 75,
+                        CategoryType = "OmbiMovieCategory",
+                        DownloadClientId = downloadClients.Single(x => x.ClientType == "OmbiDownloadClientSettings").Id,
+                        UseOmbiSettings = true,
+                    });
+                }
+
+                var tvShowCategories = new List<dynamic>();
+
+                if (tvShowSettings.Client == "Sonarr")
+                {
+                    foreach (var category in sonarrSettings.Categories)
+                    {
+                        tvShowCategories.Add(new
+                        {
+                            Id = category.Id,
+                            CategoryType = "SonarrCategory",
+                            DownloadClientId = downloadClients.Single(x => x.ClientType == "RadarrDownloadClientSettings").Id,
+                            LanguageId = category.LanguageId,
+                            SeriesType = category.SeriesType,
+                            UseSeasonFolders = category.UseSeasonFolders,
+                            Name = category.Name,
+                            ProfileId = category.ProfileId,
+                            RootFolder = category.RootFolder,
+                            Tags = category.Tags,
+                        });
+                    }
+
+                }
+                else if (tvShowSettings.Client == "Overseerr")
+                {
+                    if (overseerrSettings.TvShows.Categories.Any())
+                    {
+                        foreach (var category in overseerrSettings.TvShows.Categories)
+                        {
+                            tvShowCategories.Add(new
+                            {
+                                Id = category.Id,
+                                CategoryType = "OverseerrTvShowCategory",
+                                DownloadClientId = downloadClients.Single(x => x.ClientType == "OverseerrDownloadClientSettings").Id,
+                                Is4K = category.Is4K,
+                                LanguageProfileId = category.ServiceId,
+                                DefaultApiUserId = overseerrSettings.TvShows.DefaultApiUserID,
+                                ServiceId = category.ServiceId,
+                                UseOverseerrSettings = false,
+                                Name = category.Name,
+                                ProfileId = category.ProfileId,
+                                RootFolder = category.RootFolder,
+                                Tags = category.Tags,
+                            });
+                        }
+                    }
+                    else
+                    {
+                        tvShowCategories.Add(new
+                        {
+                            Id = 55,
+                            CategoryType = "OverseerrTvShowCategory",
+                            DownloadClientId = downloadClients.Single(x => x.ClientType == "OverseerrDownloadClientSettings").Id,
+                            Is4K = false,
+                            LanguageProfileId = -1,
+                            DefaultApiUserId = overseerrSettings.TvShows.DefaultApiUserID,
+                            ServiceId = -1,
+                            UseOverseerrSettings = true,
+                            Name = "TvShows",
+                            ProfileId = 01,
+                            RootFolder = string.Empty,
+                            Tags = Array.Empty<int>(),
+                        });
+                    }
+                }
+                else if (tvShowSettings.Client == "Ombi")
+                {
+                    tvShowCategories.Add(new
+                    {
+                        Id = 45,
+                        CategoryType = "OmbiTvShowCategory",
+                        DownloadClientId = downloadClients.Single(x => x.ClientType == "OmbiDownloadClientSettings").Id,
+                        UseOmbiSettings = true,
+                    });
+                }
 
                 ((JObject)settingsJson["Movies"]).Remove("Client");
                 ((JObject)settingsJson["TvShows"]).Remove("Client");
 
-                ((JObject)settingsJson["Movies"]).Add("Categories", JToken.FromObject(Array.Empty<object>()));
-                ((JObject)settingsJson["TvShows"]).Add("Categories", JToken.FromObject(Array.Empty<object>()));
+                ((JObject)settingsJson["Movies"]).Add("Categories", JToken.FromObject(movieCategories));
+                ((JObject)settingsJson["TvShows"]).Add("Categories", JToken.FromObject(tvShowCategories));
 
                 File.WriteAllText(settingsFilePath, JsonConvert.SerializeObject(settingsJson));
             }

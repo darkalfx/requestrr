@@ -108,7 +108,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Radarr
         {
             var movieSettings = new MoviesSettings
             {
-                Client = DownloadClient.Radarr
+                Client = DownloadClientSettings.Radarr
             };
 
             if (!model.Categories.Any())

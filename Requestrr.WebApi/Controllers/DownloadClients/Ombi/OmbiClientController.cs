@@ -56,7 +56,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Ombi
         {
             var movieSettings = new MoviesSettings
             {
-                Client = DownloadClient.Ombi
+                Client = DownloadClientSettings.Ombi
             };
 
             var ombiSettings = Sanitize(model);
@@ -71,7 +71,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Ombi
         {
             var tvShowsSettings = new TvShowsSettings
             {
-                Client = DownloadClient.Ombi,
+                Client = DownloadClientSettings.Ombi,
                 Restrictions = model.Restrictions
             };
 

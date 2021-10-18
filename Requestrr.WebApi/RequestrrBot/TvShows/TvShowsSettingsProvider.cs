@@ -1,6 +1,5 @@
 ﻿namespace Requestrr.WebApi.RequestrrBot.TvShows
 {
-
     public class TvShowsSettingsProvider
     {
         public TvShowsSettings Provide()

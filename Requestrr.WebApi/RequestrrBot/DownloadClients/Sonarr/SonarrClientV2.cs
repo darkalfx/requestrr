@@ -18,22 +18,24 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
     {
         private IHttpClientFactory _httpClientFactory;
         private readonly ILogger<SonarrClient> _logger;
-        private SonarrSettingsProvider _sonarrSettingsProvider;
-        private SonarrSettings SonarrSettings => _sonarrSettingsProvider.Provide();
-        private string BaseURL => GetBaseURL(SonarrSettings);
+        private readonly SonarrDownloadClientSettings _settings;
+        private readonly SonarrCategory category;
         private object _lock = new object();
         private bool _loadedCache = false;
         private string _cachedEndpoint = string.Empty;
+        private readonly SonarrCategory _category;
+        private string BaseURL => GetBaseURL(_settings);
         private Dictionary<int, int> _tvDbToSonarrId = new Dictionary<int, int>();
 
-        public SonarrClientV2(IHttpClientFactory httpClientFactory, ILogger<SonarrClient> logger, SonarrSettingsProvider sonarrSettingsProvider)
+        public SonarrClientV2(IHttpClientFactory httpClientFactory, ILogger<SonarrClient> logger, SonarrDownloadClientSettings settings, SonarrCategory category)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-            _sonarrSettingsProvider = sonarrSettingsProvider;
+            _settings = settings;
+            _category = category;
         }
 
-        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
+        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrDownloadClientSettings settings)
         {
             if (!string.IsNullOrWhiteSpace(settings.BaseUrl) && !settings.BaseUrl.StartsWith("/"))
             {
@@ -97,7 +99,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             }
         }
 
-        public static async Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
+        public static async Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrDownloadClientSettings settings)
         {
             try
             {
@@ -113,7 +115,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             throw new System.Exception("An error occurred while getting Sonarr root paths");
         }
 
-        public static async Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
+        public static async Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrDownloadClientSettings settings)
         {
             try
             {
@@ -216,36 +218,35 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         public async Task<IReadOnlyList<TvShow>> GetTvShowDetailsAsync(HashSet<int> theTvDbIds, CancellationToken token)
         {
-
             try
             {
-                RefreshSonarrCache();
+                // RefreshSonarrCache();
 
-                var jsonTvShows = await GetSonarrSeriesAsync();
-                var sonarrSeriesToSonarrId = new Dictionary<int, JSONTvShow>();
+                // var jsonTvShows = await GetSonarrSeriesAsync();
+                // var sonarrSeriesToSonarrId = new Dictionary<int, JSONTvShow>();
 
-                foreach (var show in jsonTvShows)
-                {
-                    sonarrSeriesToSonarrId.Add(show.id.Value, show);
-                }
+                // foreach (var show in jsonTvShows)
+                // {
+                //     sonarrSeriesToSonarrId.Add(show.id.Value, show);
+                // }
 
                 var convertedTvShows = new List<TvShow>();
 
-                await Task.WhenAll(jsonTvShows.Where(x => theTvDbIds.Contains(x.tvdbId.Value)).Select(async x =>
-                {
-                    var convertedTvShow = Convert(x, sonarrSeriesToSonarrId[x.id.Value].seasons, await GetSonarrEpisodesAsync(x.id.Value));
+                // await Task.WhenAll(jsonTvShows.Where(x => theTvDbIds.Contains(x.tvdbId.Value)).Select(async x =>
+                // {
+                //     var convertedTvShow = Convert(x, sonarrSeriesToSonarrId[x.id.Value].seasons, await GetSonarrEpisodesAsync(x.id.Value));
 
-                    try
-                    {
-                        convertedTvShow.Banner = (await SearchSerieByTvDbIdAsync(x.tvdbId.Value)).remotePoster;
-                    }
-                    catch
-                    {
-                        // Ignore
-                    }
+                //     try
+                //     {
+                //         convertedTvShow.Banner = (await SearchSerieByTvDbIdAsync(x.tvdbId.Value)).remotePoster;
+                //     }
+                //     catch
+                //     {
+                //         // Ignore
+                //     }
 
-                    convertedTvShows.Add(convertedTvShow);
-                }));
+                //     convertedTvShows.Add(convertedTvShow);
+                // }));
 
                 return convertedTvShows;
             }
@@ -260,6 +261,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         public async Task<TvShowRequestResult> RequestTvShowAsync(TvShowRequest request, TvShow tvShow, TvSeason season)
         {
             RefreshSonarrCache();
+
             try
             {
                 var requestedSeasons = season is AllTvSeasons
@@ -289,18 +291,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         private async Task CreateSonarrTvSeriesAsync(TvShowRequest request, TvShow tvShow, IReadOnlyList<TvSeason> seasons)
         {
-            SonarrCategory category = null;
-
-            try
-            {
-                category = SonarrSettings.Categories.Single(x => x.Id == request.CategoryId);
-            }
-            catch
-            {
-                _logger.LogError($"An error occurred while requesting a tv show \"{tvShow.Title}\" from Sonarr, could not find category with id {request.CategoryId}");
-                throw new System.Exception($"An error occurred while requesting tv show \"{tvShow.Title}\" from Sonarr, could not find category with id {request.CategoryId}");
-            }
-
             var response = await HttpGetAsync($"{BaseURL}/series/lookup?term=tvdb:{tvShow.TheTvDbId}");
             await response.ThrowIfNotSuccessfulAsync("SonarrSeriesLookup failed", x => x.error);
 
@@ -321,7 +311,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 profileId = category.ProfileId,
                 languageProfileId = category.LanguageId,
                 titleSlug = jsonTvShow.titleSlug,
-                monitored = SonarrSettings.MonitorNewRequests,
+                monitored = _settings.MonitorNewRequests,
                 images = new string[0],
                 tvdbId = tvShow.TheTvDbId,
                 seriesType = seriesType,
@@ -336,7 +326,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 }),
                 addOptions = new
                 {
-                    searchForMissingEpisodes = SonarrSettings.SearchNewRequests
+                    searchForMissingEpisodes = _settings.SearchNewRequests
                 }
             }));
 
@@ -381,20 +371,8 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             var jsonResponse = await response.Content.ReadAsStringAsync();
             dynamic sonarrSeries = JObject.Parse(jsonResponse);
 
-            SonarrCategory category = null;
-
-            try
-            {
-                category = SonarrSettings.Categories.Single(x => x.Id == request.CategoryId);
-            }
-            catch
-            {
-                _logger.LogError($"An error occurred while requesting a tv show \"{tvShow.Title}\" from Sonarr, could not find category with id {request.CategoryId}");
-                throw new System.Exception($"An error occurred while requesting tv show \"{tvShow.Title}\" from Sonarr, could not find category with id {request.CategoryId}");
-            }
-
             sonarrSeries.profileId = category.ProfileId;
-            sonarrSeries.monitored = SonarrSettings.MonitorNewRequests;
+            sonarrSeries.monitored = _settings.MonitorNewRequests;
             sonarrSeries.seasonFolder = category.UseSeasonFolders;
 
             if (seasons.Any())
@@ -418,7 +396,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             response = await HttpPutAsync($"{BaseURL}/series/{tvShow.DownloadClientId}", JsonConvert.SerializeObject(sonarrSeries));
             await response.ThrowIfNotSuccessfulAsync("SonarrSeriesUpdate failed", x => x.error);
 
-            if (SonarrSettings.SearchNewRequests)
+            if (_settings.SearchNewRequests)
             {
                 var episodes = await GetSonarrEpisodesAsync(int.Parse(tvShow.DownloadClientId));
 
@@ -542,7 +520,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         {
             try
             {
-                if (_loadedCache && string.Equals(_cachedEndpoint, $"{SonarrSettings.Hostname}:{SonarrSettings.Port}"))
+                if (_loadedCache && string.Equals(_cachedEndpoint, $"{_settings.Hostname}:{_settings.Port}"))
                     return;
 
                 var jsonTvShows = await GetSonarrSeriesAsync();
@@ -558,7 +536,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
                     _loadedCache = true;
 
-                    _cachedEndpoint = $"{SonarrSettings.Hostname}:{SonarrSettings.Port}";
+                    _cachedEndpoint = $"{_settings.Hostname}:{_settings.Port}";
                 }
             }
             catch (System.Exception ex)
@@ -570,7 +548,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         private TvShow Convert(JSONTvShow jsonTvShow, IReadOnlyList<JSONSeason> seasons, IDictionary<int, JSONEpisode[]> episodesToSeason)
         {
             var downloadClientId = jsonTvShow.id?.ToString();
-            var isTvShowMonitored = (string.IsNullOrWhiteSpace(downloadClientId) || SonarrSettings.MonitorNewRequests) ? jsonTvShow.monitored : true;
+            var isTvShowMonitored = (string.IsNullOrWhiteSpace(downloadClientId) || _settings.MonitorNewRequests) ? jsonTvShow.monitored : true;
 
             var tvSeasons = seasons.Where(x => x.seasonNumber > 0).Select(x =>
             {
@@ -657,7 +635,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             }).ToArray();
         }
 
-        private static string GetBaseURL(SonarrSettings settings)
+        private static string GetBaseURL(SonarrDownloadClientSettings settings)
         {
             var protocol = settings.UseSSL ? "https" : "http";
 
@@ -666,10 +644,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
         private Task<HttpResponseMessage> HttpGetAsync(string url)
         {
-            return HttpGetAsync(_httpClientFactory.CreateClient(), SonarrSettings, url);
+            return HttpGetAsync(_httpClientFactory.CreateClient(), _settings, url);
         }
 
-        private static async Task<HttpResponseMessage> HttpGetAsync(HttpClient client, SonarrSettings settings, string url)
+        private static async Task<HttpResponseMessage> HttpGetAsync(HttpClient client, SonarrDownloadClientSettings settings, string url)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("Accept", "application/json");
@@ -686,7 +664,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             var postRequest = new StringContent(content);
             postRequest.Headers.Clear();
             postRequest.Headers.Add("Content-Type", "application/json");
-            postRequest.Headers.Add("X-Api-Key", SonarrSettings.ApiKey);
+            postRequest.Headers.Add("X-Api-Key", _settings.ApiKey);
 
             var client = _httpClientFactory.CreateClient();
             return await client.PostAsync(url, postRequest);
@@ -697,7 +675,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             var putRequest = new StringContent(content);
             putRequest.Headers.Clear();
             putRequest.Headers.Add("Content-Type", "application/json");
-            putRequest.Headers.Add("X-Api-Key", SonarrSettings.ApiKey);
+            putRequest.Headers.Add("X-Api-Key", _settings.ApiKey);
 
             var client = _httpClientFactory.CreateClient();
             return await client.PutAsync(url, putRequest);

@@ -79,7 +79,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
         [HttpPost("disable")]
         public async Task<IActionResult> SaveAsync()
         {
-            _tvShowsSettings.Client = DownloadClient.Disabled;
+            _tvShowsSettings.Client = DownloadClientSettings.Disabled;
             DownloadClientsSettingsRepository.SetDisabledClient(_tvShowsSettings);
             return Ok(new { ok = true });
         }

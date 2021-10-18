@@ -18,18 +18,19 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
     {
         private IHttpClientFactory _httpClientFactory;
         private readonly ILogger<RadarrClient> _logger;
-        private RadarrSettingsProvider _RadarrSettingsProvider;
-        private RadarrSettings RadarrSettings => _RadarrSettingsProvider.Provide();
-        private string BaseURL => GetBaseURL(RadarrSettings);
+        private readonly RadarrDownloadClientSettings _settings;
+        private readonly RadarrCategory _category;
+        private string BaseURL => GetBaseURL(_settings);
 
-        public RadarrClientV3(IHttpClientFactory httpClientFactory, ILogger<RadarrClient> logger, RadarrSettingsProvider RadarrSettingsProvider)
+        public RadarrClientV3(IHttpClientFactory httpClientFactory, ILogger<RadarrClient> logger, RadarrDownloadClientSettings settings, RadarrCategory category)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-            _RadarrSettingsProvider = RadarrSettingsProvider;
+            _settings = settings;
+            _category = category;
         }
 
-        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
+        public static async Task TestConnectionAsync(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrDownloadClientSettings settings)
         {
             if (!string.IsNullOrWhiteSpace(settings.BaseUrl) && !settings.BaseUrl.StartsWith("/"))
             {
@@ -93,7 +94,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             }
         }
 
-        public static async Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
+        public static async Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrDownloadClientSettings settings)
         {
             try
             {
@@ -110,7 +111,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while getting Radarr root paths");
         }
 
-        public static async Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
+        public static async Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrDownloadClientSettings settings)
         {
             try
             {
@@ -127,7 +128,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while getting Radarr profiles");
         }
 
-        public static async Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
+        public static async Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrDownloadClientSettings settings)
         {
             try
             {
@@ -200,15 +201,15 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             {
                 var convertedMovies = new List<Movie>();
 
-                foreach (var movieDbId in theMovieDbIds)
-                {
-                    var existingMovie = await FindExistingMovieByMovieDbIdAsync(movieDbId);
+                // foreach (var movieDbId in theMovieDbIds)
+                // {
+                //     var existingMovie = await FindExistingMovieByMovieDbIdAsync(movieDbId);
 
-                    if (existingMovie != null)
-                    {
-                        convertedMovies.Add(Convert(existingMovie));
-                    }
-                }
+                //     if (existingMovie != null)
+                //     {
+                //         convertedMovies.Add(Convert(existingMovie));
+                //     }
+                // }
 
                 return convertedMovies.Where(x => x.Available).ToDictionary(x => int.Parse(x.TheMovieDbId), x => x);
             }
@@ -226,11 +227,11 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             {
                 if (string.IsNullOrEmpty(movie.DownloadClientId))
                 {
-                    await CreateMovieInRadarr(request, movie);
+                    await CreateMovieInRadarr(movie);
                 }
                 else
                 {
-                    await UpdateExistingMovie(request, movie);
+                    await UpdateExistingMovie(movie);
                 }
 
                 return new MovieRequestResult();
@@ -243,48 +244,35 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             throw new System.Exception("An error occurred while requesting a movie from Radarr");
         }
 
-        private async Task CreateMovieInRadarr(MovieRequest request, Movie movie)
+        private async Task CreateMovieInRadarr(Movie movie)
         {
-            RadarrCategory category = null;
-
-            try
-            {
-                category = RadarrSettings.Categories.Single(x => x.Id == request.CategoryId);
-            }
-            catch
-            {
-                _logger.LogError($"An error occurred while requesting movie \"{movie.Title}\" from Radarr, could not find category with id {request.CategoryId}");
-                throw new System.Exception($"An error occurred while requesting movie \"{movie.Title}\" from Radarr, could not find category with id {request.CategoryId}");
-            }
-
             var jsonMovie = await SearchMovieByMovieDbId(int.Parse(movie.TheMovieDbId));
 
             var response = await HttpPostAsync($"{BaseURL}/movie", JsonConvert.SerializeObject(new
             {
                 title = jsonMovie.title,
-                qualityProfileId = category.ProfileId,
+                qualityProfileId = _category.ProfileId,
                 titleSlug = jsonMovie.titleSlug,
-                monitored = RadarrSettings.MonitorNewRequests,
-                tags = JToken.FromObject(category.Tags),
+                monitored = _settings.MonitorNewRequests,
+                tags = JToken.FromObject(_category.Tags),
                 images = new string[0],
                 tmdbId = int.Parse(movie.TheMovieDbId),
                 year = jsonMovie.year,
-                rootFolderPath = category.RootFolder,
-                minimumAvailability = category.MinimumAvailability,
+                rootFolderPath = _category.RootFolder,
+                minimumAvailability = _category.MinimumAvailability,
                 addOptions = new
                 {
                     ignoreEpisodesWithFiles = false,
                     ignoreEpisodesWithoutFiles = false,
-                    searchForMovie = RadarrSettings.SearchNewRequests
+                    searchForMovie = _settings.SearchNewRequests
                 }
             }));
 
             await response.ThrowIfNotSuccessfulAsync("RadarrMovieCreation failed", x => x.error);
         }
 
-        private async Task UpdateExistingMovie(MovieRequest request, Movie movie)
+        private async Task UpdateExistingMovie(Movie movie)
         {
-            RadarrCategory category = null;
             var radarrMovieId = int.Parse(movie.DownloadClientId);
             var response = await HttpGetAsync($"{BaseURL}/movie/{radarrMovieId}");
 
@@ -292,7 +280,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    await CreateMovieInRadarr(request, movie);
+                    await CreateMovieInRadarr(movie);
                     return;
                 }
 
@@ -302,26 +290,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             var jsonResponse = await response.Content.ReadAsStringAsync();
             dynamic radarrMovie = JObject.Parse(jsonResponse);
 
-            try
-            {
-                category = RadarrSettings.Categories.Single(x => x.Id == request.CategoryId);
-            }
-            catch
-            {
-                _logger.LogError($"An error occurred while requesting movie \"{movie.Title}\" from Radarr, could not find category with id {request.CategoryId}");
-                throw new System.Exception($"An error occurred while requesting movie \"{movie.Title}\" from Radarr, could not find category with id {request.CategoryId}");
-            }
-
-            radarrMovie.tags = JToken.FromObject(category.Tags);
-            radarrMovie.qualityProfileId = category.ProfileId;
-            radarrMovie.minimumAvailability = category.MinimumAvailability;
-            radarrMovie.monitored = RadarrSettings.MonitorNewRequests;
+            radarrMovie.tags = JToken.FromObject(_category.Tags);
+            radarrMovie.qualityProfileId = _category.ProfileId;
+            radarrMovie.minimumAvailability = _category.MinimumAvailability;
+            radarrMovie.monitored = _settings.MonitorNewRequests;
 
             response = await HttpPutAsync($"{BaseURL}/movie/{radarrMovieId}", JsonConvert.SerializeObject(radarrMovie));
 
             await response.ThrowIfNotSuccessfulAsync("RadarrUpdateMovie failed", x => x.error);
 
-            if (RadarrSettings.SearchNewRequests)
+            if (_settings.SearchNewRequests)
             {
                 try
                 {
@@ -356,7 +334,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
                 Overview = jsonMovie.overview,
                 TheMovieDbId = jsonMovie.tmdbId.ToString(),
                 Quality = "",
-                Requested = !isDownloaded && (string.IsNullOrWhiteSpace(downloadClientId) || RadarrSettings.MonitorNewRequests) ? isMonitored : true,
+                Requested = !isDownloaded && (string.IsNullOrWhiteSpace(downloadClientId) || _settings.MonitorNewRequests) ? isMonitored : true,
                 PlexUrl = "",
                 EmbyUrl = "",
                 PosterPath = GetPosterImageUrl(jsonMovie.images),
@@ -415,10 +393,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
         private Task<HttpResponseMessage> HttpGetAsync(string url)
         {
-            return HttpGetAsync(_httpClientFactory.CreateClient(), RadarrSettings, url);
+            return HttpGetAsync(_httpClientFactory.CreateClient(), _settings, url);
         }
 
-        private static async Task<HttpResponseMessage> HttpGetAsync(HttpClient client, RadarrSettings settings, string url)
+        private static async Task<HttpResponseMessage> HttpGetAsync(HttpClient client, RadarrDownloadClientSettings settings, string url)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("Accept", "application/json");
@@ -435,7 +413,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             var postRequest = new StringContent(content);
             postRequest.Headers.Clear();
             postRequest.Headers.Add("Content-Type", "application/json");
-            postRequest.Headers.Add("X-Api-Key", RadarrSettings.ApiKey);
+            postRequest.Headers.Add("X-Api-Key", _settings.ApiKey);
 
             var client = _httpClientFactory.CreateClient();
             return await client.PostAsync(url, postRequest);
@@ -446,13 +424,13 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             var putRequest = new StringContent(content);
             putRequest.Headers.Clear();
             putRequest.Headers.Add("Content-Type", "application/json");
-            putRequest.Headers.Add("X-Api-Key", RadarrSettings.ApiKey);
+            putRequest.Headers.Add("X-Api-Key", _settings.ApiKey);
 
             var client = _httpClientFactory.CreateClient();
             return await client.PutAsync(url, putRequest);
         }
 
-        private static string GetBaseURL(RadarrSettings settings)
+        private static string GetBaseURL(RadarrDownloadClientSettings settings)
         {
             var protocol = settings.UseSSL ? "https" : "http";
 

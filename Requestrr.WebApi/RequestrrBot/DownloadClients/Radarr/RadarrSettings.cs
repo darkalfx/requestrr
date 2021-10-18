@@ -1,8 +1,9 @@
 ﻿using System;
+using Requestrr.WebApi.config;
 
 namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 {
-    public class RadarrSettings
+    public class RadarrDownloadClientSettings : DownloadClientSettings
     {
         public string Hostname { get; set; }
         public int Port { get; set; }
@@ -13,7 +14,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
         public bool UseSSL { get; set; }
         public string Version { get; set; }
     }
-
+    
     public class RadarrCategory : Category
     {
         public int ProfileId { get; set; }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Requestrr.WebApi.RequestrrBot.DownloadClients;
 
 namespace Requestrr.WebApi.Controllers.DownloadClients.Ombi
 {

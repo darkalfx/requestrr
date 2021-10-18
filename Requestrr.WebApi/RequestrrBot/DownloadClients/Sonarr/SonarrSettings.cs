@@ -1,8 +1,9 @@
 ﻿using System;
+using Requestrr.WebApi.config;
 
 namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 {
-    public class SonarrSettings
+    public class SonarrDownloadClientSettings : DownloadClientSettings
     {
         public string Hostname { get; set; }
         public int Port { get; set; }

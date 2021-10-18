@@ -9,6 +9,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
             return new MoviesSettings
             {
                 Client = settings.Movies.Client,
+                Categories = settings.Movie.Categories,
             };
         }
     }

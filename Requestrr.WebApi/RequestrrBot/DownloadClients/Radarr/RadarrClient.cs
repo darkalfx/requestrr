@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -10,16 +11,20 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<RadarrClient> _logger;
-        private readonly RadarrSettingsProvider _settingsProvider;
+        private RadarrSettingsProvider _RadarrSettingsProvider;
+        private readonly MoviesSettingsProvider _moviesSettingsProvider;
+        private MoviesSettings MoviesSettings => _moviesSettingsProvider.Provide();
+        private IDictionary<int, RadarrDownloadClientSettings> RadarrSettings => _RadarrSettingsProvider.Provide();
 
-        public RadarrClient(IHttpClientFactory httpClientFactory, ILogger<RadarrClient> logger, RadarrSettingsProvider RadarrSettingsProvider)
+        public RadarrClient(IHttpClientFactory httpClientFactory, ILogger<RadarrClient> logger, RadarrSettingsProvider RadarrSettingsProvider, MoviesSettingsProvider moviesSettingsProvider)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-            _settingsProvider = RadarrSettingsProvider;
+            _RadarrSettingsProvider = RadarrSettingsProvider;
+            _moviesSettingsProvider = moviesSettingsProvider;
         }
 
-        public static Task TestConnectionAsync(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
+        public static Task TestConnectionAsync(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrDownloadClientSettings settings)
         {
             if (settings.Version == "2")
             {
@@ -31,7 +36,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             }
         }
 
-        public static Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
+        public static Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrDownloadClientSettings settings)
         {
             if (settings.Version == "2")
             {
@@ -43,7 +48,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             }
         }
 
-        public static Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
+        public static Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrDownloadClientSettings settings)
         {
             if (settings.Version == "2")
             {
@@ -55,7 +60,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
             }
         }
 
-        public static Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrSettings settings)
+        public static Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<RadarrClient> logger, RadarrDownloadClientSettings settings)
         {
             if (settings.Version == "2")
             {
@@ -69,38 +74,74 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Radarr
 
         public Task<Movie> SearchMovieAsync(MovieRequest request, int theMovieDbId)
         {
-            return CreateInstance<IMovieSearcher>().SearchMovieAsync(request, theMovieDbId);
+            return CreateInstance<IMovieSearcher>(request, $"with tmdb id of {theMovieDbId}").SearchMovieAsync(request, theMovieDbId);
         }
 
         public Task<IReadOnlyList<Movie>> SearchMovieAsync(MovieRequest request, string movieName)
         {
-            return CreateInstance<IMovieSearcher>().SearchMovieAsync(request, movieName);
+            return CreateInstance<IMovieSearcher>(request, movieName).SearchMovieAsync(request, movieName);
         }
 
         public Task<MovieDetails> GetMovieDetails(MovieRequest request, string theMovieDbId)
         {
-            return CreateInstance<IMovieSearcher>().GetMovieDetails(request, theMovieDbId);
+            return CreateInstance<IMovieSearcher>(request, $"with tmdb id of {theMovieDbId}").GetMovieDetails(request, theMovieDbId);
         }
 
         public Task<Dictionary<int, Movie>> SearchAvailableMoviesAsync(HashSet<int> theMovieDbIds, System.Threading.CancellationToken token)
         {
-            return CreateInstance<IMovieSearcher>().SearchAvailableMoviesAsync(theMovieDbIds, token);
+            // return CreateInstance<IMovieSearcher>(MovieRequest, theMovieDbId).SearchAvailableMoviesAsync(theMovieDbIds, token);
+            throw new System.Exception("Not yet bruh");
         }
 
         public Task<MovieRequestResult> RequestMovieAsync(MovieRequest request, Movie movie)
         {
-            return CreateInstance<IMovieRequester>().RequestMovieAsync(request, movie);
+            return CreateInstance<IMovieRequester>(request, movie.Title).RequestMovieAsync(request, movie);
         }
 
-        private T CreateInstance<T>() where T : class
+        private T CreateInstance<T>(MovieRequest request, string movieTitle) where T : class
         {
-            if (_settingsProvider.Provide().Version == "2")
+            var category = GetRadarrCategory(request, movieTitle);
+            var settings = GetRadarrClientSettings(category, movieTitle);
+
+            if (settings.Version == "2")
             {
-                return new RadarrClientV2(_httpClientFactory, _logger, _settingsProvider) as T;
+                return new RadarrClientV2(_httpClientFactory, _logger, settings, category) as T;
             }
             else
             {
-                return new RadarrClientV3(_httpClientFactory, _logger, _settingsProvider) as T;
+                return new RadarrClientV3(_httpClientFactory, _logger, settings, category) as T;
+            }
+        }
+
+        private RadarrDownloadClientSettings GetRadarrClientSettings(MovieRequest request, string movieTitle)
+        {
+            var category = GetRadarrCategory(request, movieTitle);
+            return GetRadarrClientSettings(category, movieTitle);
+        }
+
+        private RadarrDownloadClientSettings GetRadarrClientSettings(RadarrCategory category, string movieTitle)
+        {
+            try
+            {
+                return RadarrSettings[category.DownloadClientId];
+            }
+            catch
+            {
+                _logger.LogError($"An error occurred while requesting movie \"{movieTitle}\" from Radarr, could not find radarr client with id {category.DownloadClientId}");
+                throw new System.Exception($"An error occurred while requesting movie \"{movieTitle}\" from Radarr, could not find radarr client with id {category.DownloadClientId}");
+            }
+        }
+
+        private RadarrCategory GetRadarrCategory(MovieRequest request, string movieTitle)
+        {
+            try
+            {
+                return MoviesSettings.Categories.OfType<RadarrCategory>().Single(x => x.Id == request.CategoryId);
+            }
+            catch
+            {
+                _logger.LogError($"An error occurred while requesting movie \"{movieTitle}\" from Radarr, could not find category with id {request.CategoryId}");
+                throw new System.Exception($"An error occurred while requesting movie \"{movieTitle}\" from Radarr, could not find category with id {request.CategoryId}");
             }
         }
 
