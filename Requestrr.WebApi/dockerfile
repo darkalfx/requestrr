@@ -3,7 +3,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:5.0
 COPY publish/ /root/
 
 # allow all users access to this so we can run container as non root.
-RUN chmod -R 755 /root
+# create /root/tmp if nonexistent
+RUN chmod -R 755 /root && mkdir /root/tmp
 
 WORKDIR /root/
 
