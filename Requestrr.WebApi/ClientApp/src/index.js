@@ -1,7 +1,7 @@
 /*!
 
 =========================================================
-* Argon Dashboard React - v1.0.0
+* Argon Dashboard React - v1.0.0   -----   Updated packages to v1.2.2
 =========================================================
 
 * Product Page: https://www.creative-tim.com/product/argon-dashboard-react
@@ -21,12 +21,12 @@ import thunk from 'redux-thunk';
 import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
+import { configureStore } from "@reduxjs/toolkit";
 import { combineReducers } from 'redux'
 
 import "./assets/vendor/nucleo/css/nucleo.css";
 import "./assets/vendor/@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/scss/argon-dashboard-react.scss";
-import "react-loader-spinner/dist/loader/css/react-spinner-loader.css"
 
 import AdminLayout from "./layouts/Admin.jsx";
 import AuthLayout from "./layouts/Auth.jsx";
@@ -71,15 +71,28 @@ const store = createStore(combineReducers({
   settings: SettingsReducer
 }), applyMiddleware(thunk));
 
-fetch("../api/settings", {
-  method: 'GET',
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
-})
-  .then(data => data.json())
-  .then(data => {
+// const store = configureStore({
+//   // middleware: applyMiddleware(thunk),
+//   enhancers: applyMiddleware(thunk),
+//   reducer: combineReducers({
+//     user: UserReducer,
+//     chatClients: ChatClients,
+//     movies: combinedMovieClientsReducer,
+//     tvShows: combinedTvShowsClientsReducer,
+//     settings: SettingsReducer
+//   })
+// });
+
+let data = {baseUrl: "/"};
+// fetch("../api/settings", {
+//   method: 'GET',
+//   headers: {
+//     'Accept': 'application/json',
+//     'Content-Type': 'application/json'
+//   }
+// })
+//   .then(data => data.json())
+//   .then(data => {
     ReactDOM.render(
       <Provider store={store}>
         <BrowserRouter basename={data.baseUrl}>
@@ -92,4 +105,4 @@ fetch("../api/settings", {
       </Provider>,
       document.getElementById("root")
     );
-  });
+  // });

@@ -43,7 +43,7 @@ export function removeOverseerrMovieCategory(categoryId) {
         const state = getState();
 
         var categories = [...state.movies.overseerr.categories];
-        categories = categories.filter(x => x.id != categoryId);
+        categories = categories.filter(x => x.id !== categoryId);
 
         var overseerr = {
             ...state.movies.overseerr,
@@ -67,7 +67,7 @@ export function setOverseerrMovieCategory(categoryId, field, data) {
         var categories = [...state.movies.overseerr.categories];
 
         for (let index = 0; index < categories.length; index++) {
-            if (categories[index].id == categoryId) {
+            if (categories[index].id === categoryId) {
                 var category = { ...categories[index] };
 
                 if (field === "name") {
@@ -83,7 +83,7 @@ export function setOverseerrMovieCategory(categoryId, field, data) {
                     category.rootFolder = data;
                 }
                 else if (field === "tags") {
-                    category.tags = (state.movies.overseerr.radarrServiceSettings.radarrServices.some(x => x.id == category.serviceId) ? state.movies.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id == category.serviceId)[0].tags : []).filter(x => data.includes(x.id)).map(x => x.id);
+                    category.tags = (state.movies.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === category.serviceId) ? state.movies.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === category.serviceId)[0].tags : []).filter(x => data.includes(x.id)).map(x => x.id);
                 }
                 else if (field === "is4K") {
                     category.is4K = data;

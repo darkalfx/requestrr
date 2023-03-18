@@ -16,7 +16,7 @@
 
 */
 import React from "react";
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 import { Redirect } from 'react-router-dom'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";

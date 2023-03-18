@@ -229,7 +229,7 @@ class TvShows extends React.Component {
                       <Row>
                         <Col lg="6">
                           {
-                            this.props.settings.client != this.state.client && this.props.settings.client != "Disabled" ?
+                            this.props.settings.client !== this.state.client && this.props.settings.client !== "Disabled" ?
                               <Alert className="text-center" color="warning">
                                 <strong>Changing the download client will delete all pending tv notifications.</strong>
                               </Alert>

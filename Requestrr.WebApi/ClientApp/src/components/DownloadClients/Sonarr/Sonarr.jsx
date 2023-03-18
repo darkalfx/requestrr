@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { testSonarrSettings } from "../../../store/actions/SonarrClientActions"
@@ -56,10 +56,10 @@ class Sonarr extends React.Component {
     var previousNames = prevProps.settings.categories.map(x => x.name);
     var currentNames = this.props.settings.categories.map(x => x.name);
 
-    if (!(prevProps.settings.profiles.length == this.props.settings.profiles.length && prevProps.settings.profiles.reduce((a, b, i) => a && this.props.settings.profiles[i], true))
-      || !(prevProps.settings.paths.length == this.props.settings.paths.length && prevProps.settings.paths.reduce((a, b, i) => a && this.props.settings.paths[i], true))
-      || !(prevProps.settings.languages.length == this.props.settings.languages.length && prevProps.settings.languages.reduce((a, b, i) => a && this.props.settings.languages[i], true))
-      || !(previousNames.length == currentNames.length && currentNames.every((value, index) => previousNames[index] == value))) {
+    if (!(prevProps.settings.profiles.length === this.props.settings.profiles.length && prevProps.settings.profiles.reduce((a, b, i) => a && this.props.settings.profiles[i], true))
+      || !(prevProps.settings.paths.length === this.props.settings.paths.length && prevProps.settings.paths.reduce((a, b, i) => a && this.props.settings.paths[i], true))
+      || !(prevProps.settings.languages.length === this.props.settings.languages.length && prevProps.settings.languages.reduce((a, b, i) => a && this.props.settings.languages[i], true))
+      || !(previousNames.length === currentNames.length && currentNames.every((value, index) => previousNames[index] === value))) {
       this.onValueChange();
     }
   }
@@ -305,8 +305,8 @@ class Sonarr extends React.Component {
                   <span className="btn-inner--icon">
                     {
                       this.state.isTestingSettings ? (
-                        <Loader
-                          className="loader"
+                        <Oval
+                          wrapperClass="loader"
                           type="Oval"
                           color="#11cdef"
                           height={19}

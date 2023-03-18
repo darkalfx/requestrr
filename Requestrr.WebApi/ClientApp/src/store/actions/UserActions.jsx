@@ -42,7 +42,7 @@ export function validateLogin() {
         const state = getState();
         let token = null;
 
-        if (state.user != null && typeof (state.user.token) === "undefined") {
+        if (state.user !== null && typeof (state.user.token) === "undefined") {
             token = window.localStorage.getItem("token");
         }
         else {

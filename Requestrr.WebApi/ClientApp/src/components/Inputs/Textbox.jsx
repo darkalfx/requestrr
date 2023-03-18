@@ -17,13 +17,13 @@ class Textbox extends React.Component {
   }
 
   componentDidMount() {
-    if (this.state.value != this.props.value) {
+    if (this.state.value !== this.props.value) {
       this.setState({ value: this.props.value });
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.state.value != nextProps.value) {
+    if (this.state.value !== nextProps.value) {
       this.setState({ value: nextProps.value });
     }
   }

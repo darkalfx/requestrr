@@ -95,7 +95,7 @@ class Sidebar extends React.Component {
   };
   // creates the links that appear in the left menu / Sidebar
   createLinks = routes => {
-    return routes.filter(r => r.layout != "/auth").map((prop, key) => {
+    return routes.filter(r => r.layout !== "/auth").map((prop, key) => {
       return (
         !this.state.disableAuthentication || (this.state.disableAuthentication && prop.supportsAnonymousUser)
           ?

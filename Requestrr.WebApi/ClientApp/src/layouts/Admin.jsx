@@ -26,6 +26,8 @@ import Sidebar from "../components/Sidebar/Sidebar.jsx";
 import { validateLogin } from "../store/actions/UserActions"
 
 import routes from "../routes.js";
+import requestrrLogo from "../assets/img/brand/requestrr_black.svg";
+
 
 class Admin extends React.Component {
   constructor(props) {
@@ -88,8 +90,8 @@ class Admin extends React.Component {
             routes={routes}
             logo={{
               innerLink: "/admin/",
-              imgSrc: require("../assets/img/brand/requestrr_black.svg"),
-              imgAlt: "..."
+              imgSrc: requestrrLogo,
+              imgAlt: "Requestrr Logo"
             }}
           />
           <div className="main-content" ref="mainContent">

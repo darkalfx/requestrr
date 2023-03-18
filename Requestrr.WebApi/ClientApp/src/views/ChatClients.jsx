@@ -16,7 +16,7 @@
 
 */
 import React from "react";
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { testSettings } from "../store/actions/ChatClientsActions"
@@ -602,8 +602,8 @@ class ChatClients extends React.Component {
                               <span className="btn-inner--icon">
                                 {
                                   this.state.isTestingSettings ? (
-                                    <Loader
-                                      className="loader"
+                                    <Oval
+                                      wrapperClass="loader"
                                       type="Oval"
                                       color="#11cdef"
                                       height={19}

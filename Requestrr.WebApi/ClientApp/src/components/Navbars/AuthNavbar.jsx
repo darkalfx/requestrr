@@ -19,16 +19,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 // reactstrap components
 import {
-  UncontrolledCollapse,
   NavbarBrand,
   Navbar,
-  NavItem,
-  NavLink,
-  Nav,
-  Container,
-  Row,
-  Col
+  Container
 } from "reactstrap";
+import requestrrLogo from "../../assets/img/brand/requestrr_white.svg";
+
 
 class AuthNavbar extends React.Component {
   render() {
@@ -40,7 +36,7 @@ class AuthNavbar extends React.Component {
         >
           <Container className="px-4">
             <NavbarBrand to="/" tag={Link}>
-              <img alt="..." src={require("../../assets/img/brand/requestrr_white.svg")} />
+              <img alt="..." src={requestrrLogo} />
             </NavbarBrand>
           </Container>
         </Navbar>
