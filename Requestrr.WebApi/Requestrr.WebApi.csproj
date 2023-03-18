@@ -12,10 +12,10 @@
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.15" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.27.0" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.27.0" />
-    <PackageReference Include="DSharpPlus" Version="4.4.0-nightly-01421" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.4.0-nightly-01421" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.4.0-nightly-01421" />
-    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.4.0-nightly-01421" />
+    <PackageReference Include="DSharpPlus" Version="4.3.0" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.3.0" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.3.0" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.3.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
