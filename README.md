@@ -6,6 +6,22 @@
 [![Timeline](https://img.shields.io/badge/Project-Timeline-%23233240?style=for-the-badge&logo=gitkraken)](https://timelines.gitkraken.com/timeline/0656f1edc0dd4a2191406c62343c22c1)
 
 
+=================
+
+Fork Notes:
+
+Purpose.
+This fork was created to learn, tests and tweak this bot for personal use, you are welcome to copy/fork/correct or fork the original, I take no credit for this bot other then the small tweaks and changes.
+
+Changes:
+* Updated the Webapps React version, updated from version 16.8.4 to version 18.2.0, updated all packages to latest versions
+* Small changes to Webapp code to remove un-needed lines or update to function with new version of React or packages.
+* Updated .Net from version 5 to version 6, updated all packages to work with .Net 6
+* Due to a change in Discords API and the package DSharpPlus version 4.3.0, the Bot uses `Intents = DiscordIntents.All` to connect, you will need to enable `Message Content Intent` in the Discords Developer Portal for your bot.
+
+=================
+
+
 Requestrr 
 =================
 
