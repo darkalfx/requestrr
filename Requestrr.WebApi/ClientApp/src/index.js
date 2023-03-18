@@ -83,7 +83,6 @@ const store = createStore(combineReducers({
 //   })
 // });
 
-let data = {baseUrl: "/"};
 fetch("../api/settings", {
   method: 'GET',
   headers: {

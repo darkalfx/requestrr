@@ -12,8 +12,6 @@ import Dropdown from "../../Inputs/Dropdown"
 import MultiDropdown from "../../Inputs/MultiDropdown"
 
 import {
-  FormGroup,
-  Input,
   Row,
   Col,
   Collapse

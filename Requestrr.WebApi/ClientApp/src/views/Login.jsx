@@ -16,18 +16,13 @@
 
 */
 import React from "react";
-import { Oval } from 'react-loader-spinner'
 import { Alert } from "reactstrap";
-import { Redirect } from 'react-router-dom'
 import { connect } from 'react-redux';
-import { hasRegistered } from "../store/actions/UserActions"
 import { login } from "../store/actions/UserActions"
 
 // reactstrap components
 import {
-  Button,
   Card,
-  CardHeader,
   CardBody,
   FormGroup,
   Form,
@@ -35,7 +30,6 @@ import {
   InputGroupAddon,
   InputGroupText,
   InputGroup,
-  Row,
   Col
 } from "reactstrap";
 
@@ -160,7 +154,7 @@ class Login extends React.Component {
                         <i className="ni ni-single-02" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input placeholder="Username" value={this.state.username} onChange={this.onUsernameChange} placeholder="Username" type="text" />
+                    <Input placeholder="Username" value={this.state.username} onChange={this.onUsernameChange} type="text" />
                   </InputGroup>
                   {
                     this.state.usernameInvalid ? (
@@ -177,7 +171,7 @@ class Login extends React.Component {
                         <i className="ni ni-lock-circle-open" />
                       </InputGroupText>
                     </InputGroupAddon>
-                    <Input placeholder="Password" onChange={this.onPasswordChange} placeholder="Password" type="password" />
+                    <Input placeholder="Password" onChange={this.onPasswordChange} type="password" />
                   </InputGroup>
                   {
                     this.state.passwordInvalid ? (

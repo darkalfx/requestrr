@@ -5,6 +5,9 @@ import { OVERSEERR_SET_SONARR_SERVICE_SETTINGS } from "../actions/OverseerrClien
 import { OVERSEERR_LOAD_SONARR_SERVICE_SETTINGS } from "../actions/OverseerrClientSonarrActions"
 
 export default function OverseerrClientsReducer(state = {}, action) {
+  var newState;
+  var newOverseerr
+
   if (action.type === OVERSEERR_SET_CLIENT) {
     return {
       ...state,
@@ -13,8 +16,8 @@ export default function OverseerrClientsReducer(state = {}, action) {
     }
   }
   else if (action.type === OVERSEERR_LOAD_RADARR_SERVICE_SETTINGS) {
-    var newState = { ...state };
-    var newOverseerr = { ...newState.overseerr };
+    newState = { ...state };
+    newOverseerr = { ...newState.overseerr };
 
     newOverseerr.isLoadinRadarrServiceSettings = action.payload;
 
@@ -23,8 +26,8 @@ export default function OverseerrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === OVERSEERR_SET_RADARR_SERVICE_SETTINGS) {
-    var newState = { ...state };
-    var newOverseerr = { ...newState.overseerr };
+    newState = { ...state };
+    newOverseerr = { ...newState.overseerr };
 
     newOverseerr.isLoadinRadarrServiceSettings = false;
     newOverseerr.hasLoadedRadarrServiceSettings = true;
@@ -36,8 +39,8 @@ export default function OverseerrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === OVERSEERR_LOAD_SONARR_SERVICE_SETTINGS) {
-    var newState = { ...state };
-    var newOverseerr = { ...newState.overseerr };
+    newState = { ...state };
+    newOverseerr = { ...newState.overseerr };
 
     newOverseerr.isLoadinSonarrServiceSettings = action.payload;
 
@@ -46,8 +49,8 @@ export default function OverseerrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === OVERSEERR_SET_SONARR_SERVICE_SETTINGS) {
-    var newState = { ...state };
-    var newOverseerr = { ...newState.overseerr };
+    newState = { ...state };
+    newOverseerr = { ...newState.overseerr };
 
     newOverseerr.isLoadinSonarrServiceSettings = false;
     newOverseerr.hasLoadedSonarrServiceSettings = true;
