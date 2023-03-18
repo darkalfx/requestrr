@@ -84,15 +84,15 @@ const store = createStore(combineReducers({
 // });
 
 let data = {baseUrl: "/"};
-// fetch("../api/settings", {
-//   method: 'GET',
-//   headers: {
-//     'Accept': 'application/json',
-//     'Content-Type': 'application/json'
-//   }
-// })
-//   .then(data => data.json())
-//   .then(data => {
+fetch("../api/settings", {
+  method: 'GET',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  }
+})
+  .then(data => data.json())
+  .then(data => {
     ReactDOM.render(
       <Provider store={store}>
         <BrowserRouter basename={data.baseUrl}>
@@ -105,4 +105,4 @@ let data = {baseUrl: "/"};
       </Provider>,
       document.getElementById("root")
     );
-  // });
+  });
