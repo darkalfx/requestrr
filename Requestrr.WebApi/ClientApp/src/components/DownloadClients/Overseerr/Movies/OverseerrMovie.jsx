@@ -288,7 +288,7 @@ class OverseerrMovie extends React.Component {
               </FormGroup>
             </Col>
             <Col lg="6">
-              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank">Click here to view how configure Overseerr permissions with the bot</a>
+              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank" rel="noreferrer">Click here to view how configure Overseerr permissions with the bot</a>
             </Col>
           </Row>
           <Row>
