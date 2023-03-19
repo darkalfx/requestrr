@@ -68,7 +68,7 @@ Build Instructions
 
 ### Setup
 * npm. You can install npm via brew on mac. On mac you might need to re install your xcode command line tools. See https://medium.com/flawless-app-stories/gyp-no-xcode-or-clt-version-detected-macos-catalina-anansewaa-38b536389e8d.
-* .netcore sdk. Download [SDK 5.0.402](https://dotnet.microsoft.com/download/dotnet-core/5.0) installer for your environment.
+* .netcore sdk. Download [SDK 6.0.407](https://dotnet.microsoft.com/download/dotnet-core/6.0) installer for your environment.
 
 ### Building
 * In directory [Requestrr.WebApi/ClientApp](Requestrr.WebApi/ClientApp) run `npm run install:clean`. You can safefly exit it once the build is done running. For example
