@@ -86,7 +86,8 @@ export function setOverseerrTvShowCategory(categoryId, field, data) {
                     category.rootFolder = data;
                 }
                 else if (field === "tags") {
-                    category.tags = (state.tvShows.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === category.serviceId) ? state.tvShows.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === category.serviceId)[0].tags : []).filter(x => data.includes(x.id)).map(x => x.id);
+                    const serviceId = category.serviceId;
+                    category.tags = (state.tvShows.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === serviceId) ? state.tvShows.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === serviceId)[0].tags : []).filter(x => data.includes(x.id)).map(x => x.id);
                 }
                 else if (field === "is4K") {
                     category.is4K = data;

@@ -83,7 +83,8 @@ export function setOverseerrMovieCategory(categoryId, field, data) {
                     category.rootFolder = data;
                 }
                 else if (field === "tags") {
-                    category.tags = (state.movies.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === category.serviceId) ? state.movies.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === category.serviceId)[0].tags : []).filter(x => data.includes(x.id)).map(x => x.id);
+                    const serviceId = category.serviceId;
+                    category.tags = (state.movies.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === serviceId) ? state.movies.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === serviceId)[0].tags : []).filter(x => data.includes(x.id)).map(x => x.id);
                 }
                 else if (field === "is4K") {
                     category.is4K = data;

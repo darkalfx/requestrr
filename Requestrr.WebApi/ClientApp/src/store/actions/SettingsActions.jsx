@@ -9,8 +9,7 @@ export function setSettings(settings) {
 
 export function getSettings() {
     return (dispatch, getState) => {
-        const state = getState();
-
+        
         return fetch("../api/settings", {
             method: 'GET',
             headers: {
