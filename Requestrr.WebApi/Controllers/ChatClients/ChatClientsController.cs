@@ -66,12 +66,12 @@ namespace Requestrr.WebApi.Controllers.ChatClients
 
                 async Task ClientErrored(DiscordClient client, ClientErrorEventArgs args)
                 {
-                    tcs.TrySetResult("The bot is missing [Presence Intent] and/or [Server Members Intent], you must enable them in the bot discord settings and then restart the bot, check the wiki if you are unsure how to do this");
+                    tcs.TrySetResult("The bot is missing [Presence Intent] and/or [Server Members Intent] and/or [Message Content Intent], you must enable them in the bot discord settings and then restart the bot, check the wiki if you are unsure how to do this");
                 }
 
                 async Task SocketErrored(DiscordClient client, SocketErrorEventArgs args)
                 {
-                    tcs.TrySetResult("The bot is missing [Presence Intent] and/or [Server Members Intent], you must enable them in the bot discord settings and then restart the bot, check the wiki if you are unsure how to do this");
+                    tcs.TrySetResult("The bot is missing [Presence Intent] and/or [Server Members Intent] and/or [Message Content Intent], you must enable them in the bot discord settings and then restart the bot, check the wiki if you are unsure how to do this");
                 }
 
                 async Task Connected(DiscordClient client, ReadyEventArgs args)
@@ -81,7 +81,7 @@ namespace Requestrr.WebApi.Controllers.ChatClients
 
                 async Task Closed(DiscordClient client, SocketCloseEventArgs args)
                 {
-                    tcs.TrySetResult("The bot is missing [Presence Intent] and/or [Server Members Intent], you must enable them in the bot discord settings and then restart the bot, check the wiki if you are unsure how to do this");
+                    tcs.TrySetResult("The bot is missing [Presence Intent] and/or [Server Members Intent] and/or [Message Content Intent], you must enable them in the bot discord settings and then restart the bot, check the wiki if you are unsure how to do this");
                 }
 
                 discord.ClientErrored += ClientErrored;
