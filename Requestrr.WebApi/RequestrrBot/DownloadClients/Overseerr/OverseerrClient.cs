@@ -280,6 +280,39 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
+
+        /// <summary>
+        /// This gets all the movies that match the name and are found in the internal library
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="movieName"></param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
+        public async Task<IReadOnlyList<Movie>> SearchMovieLibraryAsync(MovieRequest request, string movieName)
+        {
+            try
+            {
+                var category = GetCurrentCategory(request, movieName);
+                var response = await HttpGetAsync($"{BaseURL}search/?query={Uri.EscapeDataString(movieName)}&page=1&language=en");
+                await response.ThrowIfNotSuccessfulAsync("OverseerrMovieSearch failed", x => x.error);
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+
+                var movies = JsonConvert.DeserializeObject<JSONSearchResult>(jsonResponse).Results
+                    .Where(x => x.MediaType == MediaTypes.MOVIE)
+                    .Where(x => x.MediaInfo != null)
+                    .ToArray();
+
+                return movies.Select(x => ConvertMovie(x, category.Is4K ? x.MediaInfo?.Status4k : x.MediaInfo?.Status)).ToArray();
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while searching for movies from Overseerr: " + ex.Message);
+                throw new System.Exception("An error occurred while searching for movies from Overseerr: " + ex.Message);
+            }
+        }
+
+
         public async Task<Movie> SearchMovieAsync(MovieRequest request, int theMovieDbId)
         {
             try

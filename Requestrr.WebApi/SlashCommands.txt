@@ -57,6 +57,7 @@ namespace Requestrr.WebApi.RequestrrBot
                 }
             }
 
+
             [TMDB_COMMAND_START]
             [SlashCommand("[REQUEST_MOVIE_TMDB_NAME]", "[REQUEST_MOVIE_TMDB_DESCRIPTION]")]
             [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
@@ -149,6 +150,40 @@ namespace Requestrr.WebApi.RequestrrBot
             catch (System.Exception ex)
             {
                 _logger.LogError(ex, "Error while sending help command: " + ex.Message);
+            }
+        }
+
+        
+        [SlashCommandGroup("issue", "This Reports an issue")]
+        public class ReportGroup : ApplicationCommandModule
+        {
+            private readonly IServiceProvider _serviceProvider;
+            private readonly ILogger _logger;
+
+            public ReportGroup(IServiceProvider serviceProvider)
+            {
+                _serviceProvider = serviceProvider;
+                _logger = _serviceProvider.Get<ILogger>();
+            }
+
+
+            [SlashCommand("movie", "Name of the movie with an issue")]
+            [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
+            [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
+            public async Task MovieByTitle[MOVIE_CATEGORY_ID](InteractionContext ctx, [Option("title", "title of the movie")] string movieTitle)
+            {
+                try
+                {
+                    var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
+
+                    var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateRequestingWorkflow(ctx.Interaction, [MOVIE_CATEGORY_ID]);
+                    await workFlow.SearchMovieLibraryAsync(movieTitle.Trim());
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, $"Error while searching movies with title {movieTitle} : " + ex.Message);
+                }
             }
         }
     }
