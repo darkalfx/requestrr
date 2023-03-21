@@ -62,7 +62,7 @@ class Auth extends React.Component {
         return (
           <Route
             path={prop.layout + prop.path}
-            component={prop.component}
+            children={prop.component}
             key={key}
           />
         );
@@ -137,10 +137,10 @@ class Auth extends React.Component {
                     {
                       !this.state.isLoading ?
                         this.props.isLoggedIn ?
-                          <Redirect from="*" to="/admin/" />
+                          <Route path="*" render={() => <Redirect to="/admin/" />} />
                           : this.props.hasRegistered ?
-                            <Redirect from="*" to="/auth/login" />
-                            : <Redirect from="*" to="/auth/register" />
+                            <Route path="*" render={() => <Redirect to="/auth/login" />} />
+                            : <Route path="*" render={() => <Redirect to="/auth/register" />} />
                         : null
                     }
                   </Switch>
