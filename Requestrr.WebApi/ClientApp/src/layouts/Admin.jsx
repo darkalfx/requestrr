@@ -60,7 +60,7 @@ class Admin extends React.Component {
         return (
           <Route
             path={prop.layout + prop.path}
-            component={prop.component}
+            children={prop.component}
             key={key}
           />
         );
@@ -106,8 +106,8 @@ class Admin extends React.Component {
             {
               !this.state.isLoading ?
                 this.props.isLoggedIn ?
-                  <Redirect from="*" to="/admin/chatclients" />
-                  : <Redirect from="*" to="/auth/" />
+                  <Route path="*" render={() => <Redirect to="/admin/chatclients" />} />
+                  : <Route path="*" render={() => <Redirect to="/auth/" />} />
                 : null
             }
             </Switch>

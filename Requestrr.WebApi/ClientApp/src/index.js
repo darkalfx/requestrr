@@ -18,7 +18,7 @@
 
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
+import { Switch, Route, Redirect, BrowserRouter } from "react-router-dom";
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import { configureStore } from "@reduxjs/toolkit";
@@ -86,9 +86,9 @@ fetch("../api/settings", {
       <Provider store={store}>
         <BrowserRouter basename={data.baseUrl}>
           <Switch>
-            <Route path="/admin" render={props => <AdminLayout {...props} />} />
-            <Route path="/auth" render={props => <AuthLayout {...props} />} />
-            <Redirect from="*" to="/auth/login" />
+            <Route path="/admin" children={props => <AdminLayout {...props} />} />
+            <Route path="/auth" children={props => <AuthLayout {...props} />} />
+            <Route path="*" render={() => <Redirect to="/auth/login" />} />
           </Switch>
         </BrowserRouter>
       </Provider>,
