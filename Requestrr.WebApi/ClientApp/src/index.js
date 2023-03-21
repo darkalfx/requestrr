@@ -20,6 +20,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
 import { Provider } from 'react-redux';
+import thunk from 'redux-thunk';
 import { configureStore } from "@reduxjs/toolkit";
 
 import "./assets/vendor/nucleo/css/nucleo.css";
@@ -62,7 +63,7 @@ function combinedTvShowsClientsReducer(state = {}, action) {
 }
 
 const store = configureStore({
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
   reducer: {
     user: UserReducer,
     chatClients: ChatClients,
