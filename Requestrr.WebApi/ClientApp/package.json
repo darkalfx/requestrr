@@ -1,5 +1,5 @@
 {
-  "name": "Requestrr",
+  "name": "requestrr",
   "version": "2.1.2.1",
   "description": "Requestrr is a server designed to faciliate the request of media through chat applications.",
   "main": "index.js",
@@ -48,8 +48,9 @@
   },
   "devDependencies": {
     "@types/react": "18.0.28",
+    "@typescript-eslint/parser": "^5.56.0",
     "gulp": "4.0.2",
     "gulp-append-prepend": "1.0.9",
-    "typescript": "4.8.2"
+    "typescript": "4.9.4"
   }
 }
