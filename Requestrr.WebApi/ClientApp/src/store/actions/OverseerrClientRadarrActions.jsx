@@ -189,7 +189,7 @@ export function loadRadarrServiceSettings(forceReload) {
                     return {
                         ok: true,
                         paths: data
-                    }
+                    };
                 })
                 .catch(err => {
                     dispatch(setRadarrServiceSettings({ ok: false, data: { radarrServices: [] } }));
@@ -232,7 +232,7 @@ export function testOverseerrMovieSettings(settings) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     };
 };
@@ -268,7 +268,7 @@ export function saveOverseerrMovieClient(saveModel) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     }
 };

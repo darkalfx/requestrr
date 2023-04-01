@@ -52,20 +52,18 @@ export default function MovieClientsReducer(state = {}, action) {
         areTagsValid: false,
         tags: [],
       },
-    }
-  }
-  else if (action.type === SET_DISABLED_CLIENT) {
+    };
+  } else if (action.type === SET_DISABLED_CLIENT) {
     return {
       ...state,
       client: "Disabled"
-    }
-  }
-  else if (action.type === SET_OMBI_CLIENT) {
+    };
+  } else if (action.type === SET_OMBI_CLIENT) {
     return {
       ...state,
       ombi: action.payload.ombi,
       client: "Ombi"
-    }
+    };
   }
 
   return { ...state };

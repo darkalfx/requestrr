@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+import { useEffect, useState } from "react";
 import { connect } from 'react-redux';
 import { Route, Switch, Redirect } from "react-router-dom";
 // reactstrap components
@@ -31,32 +31,28 @@ import { validateLogin } from "../store/actions/UserActions"
 import routes from "../routes.js";
 import requestrrLogo from "../assets/img/brand/requestrr.svg";
 
+function Auth(props) {
+  const [isLoading, setIsLoading] = useState(true);
 
-class Auth extends React.Component {
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      isLoading: true,
-    };
-
-    this.getRoutes = this.getRoutes.bind(this);
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     document.body.classList.add("bg-default");
 
-    this.props.validateRegistration()
+    props.validateRegistration()
       .then(data => {
-        this.props.validateLogin()
-          .then(data => this.setState({ isLoading: false }));
+        props.validateLogin()
+          .then(data => setIsLoading(false));
       });
-  }
 
-  componentWillUnmount() {
-    document.body.classList.remove("bg-default");
-  }
-  getRoutes = (routes, path) => {
+    return () => {
+      document.body.classList.remove("bg-default");
+    }
+  }, []);
+
+
+
+
+  const getRoutes = (routes, path) => {
     return routes.map((prop, key) => {
       if (prop.layout === "/auth" && prop.path === path) {
         return (
@@ -71,87 +67,88 @@ class Auth extends React.Component {
       }
     });
   };
-  render() {
-    return (
-      <>
-        <div className="main-content">
-          <AuthNavbar />
-          <div className="header bg-gradient-info py-7 py-lg-8">
-            <Container>
-              <div className="header-body text-center mb-6">
-                <Row className="justify-content-center">
-                  <Col lg="5" md="6">
+
+
+
+  return (
+    <>
+      <div className="main-content">
+        <AuthNavbar />
+        <div className="header bg-gradient-info py-7 py-lg-8">
+          <Container>
+            <div className="header-body text-center mb-6">
+              <Row className="justify-content-center">
+                <Col lg="5" md="6">
                   <p><img
-                      style={{ width: '100%' }}
-                      alt="requestrr logo"
-                      src={requestrrLogo}
-                    />
-                    </p>
-                    <p style={{ color: 'white' }} className="mt-4">
-                      Your favorite chatbot service for all your media needs
-                    </p>
-                  </Col>
-                </Row>
-              </div>
-            </Container>
-            <div className="separator separator-bottom separator-skew zindex-100">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                preserveAspectRatio="none"
-                version="1.1"
-                viewBox="0 0 2560 100"
-                x="0"
-                y="0"
-              >
-                <polygon
-                  className="fill-default"
-                  points="2560 0 2560 100 0 100"
-                />
-              </svg>
+                    style={{ width: '100%' }}
+                    alt="requestrr logo"
+                    src={requestrrLogo}
+                  />
+                  </p>
+                  <p style={{ color: 'white' }} className="mt-4">
+                    Your favorite chatbot service for all your media needs
+                  </p>
+                </Col>
+              </Row>
             </div>
-          </div>
-          {/* Page content */}
-          <Container className="mt--8 pb-5">
-            <Row className="justify-content-center">
-              {
-                this.state.isLoading
-                  ? (<Col className="text-center" lg="5" md="7">
-                    <Oval
-                      type="Triangle"
-                      color="#11cdef"
-                      height={300}
-                      width={300}
-                      wrapperClass="svg-centre"
-                    />
-                  </Col>)
-                  : <Switch>
-                    {
-                      !this.state.isLoading
-                        ? this.props.isLoggedIn
-                          ? null
-                          : this.props.hasRegistered
-                            ? this.getRoutes(routes, "/login")
-                            : this.getRoutes(routes, "/register")
-                        : null
-                    }
-                    {
-                      !this.state.isLoading ?
-                        this.props.isLoggedIn ?
-                          <Route path="*" render={() => <Redirect to="/admin/" />} />
-                          : this.props.hasRegistered ?
-                            <Route path="*" render={() => <Redirect to="/auth/login" />} />
-                            : <Route path="*" render={() => <Redirect to="/auth/register" />} />
-                        : null
-                    }
-                  </Switch>
-              }
-            </Row>
           </Container>
+          <div className="separator separator-bottom separator-skew zindex-100">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              preserveAspectRatio="none"
+              version="1.1"
+              viewBox="0 0 2560 100"
+              x="0"
+              y="0"
+            >
+              <polygon
+                className="fill-default"
+                points="2560 0 2560 100 0 100"
+              />
+            </svg>
+          </div>
         </div>
-        <AuthFooter />
-      </>
-    );
-  }
+        {/* Page content */}
+        <Container className="mt--8 pb-5">
+          <Row className="justify-content-center">
+            {
+              isLoading
+                ? (<Col className="text-center" lg="5" md="7">
+                  <Oval
+                    type="Triangle"
+                    color="#11cdef"
+                    height={300}
+                    width={300}
+                    wrapperClass="svg-centre"
+                  />
+                </Col>)
+                : <Switch>
+                  {
+                    !isLoading
+                      ? props.isLoggedIn
+                        ? null
+                        : props.hasRegistered
+                          ? getRoutes(routes, "/login")
+                          : getRoutes(routes, "/register")
+                      : null
+                  }
+                  {
+                    !isLoading ?
+                      props.isLoggedIn ?
+                        <Route path="*" render={() => <Redirect to="/admin/" />} />
+                        : props.hasRegistered ?
+                          <Route path="*" render={() => <Redirect to="/auth/login" />} />
+                          : <Route path="*" render={() => <Redirect to="/auth/register" />} />
+                      : null
+                  }
+                </Switch>
+            }
+          </Row>
+        </Container>
+      </div>
+      <AuthFooter />
+    </>
+  );
 }
 
 const mapPropsToState = state => {

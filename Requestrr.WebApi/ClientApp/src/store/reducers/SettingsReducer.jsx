@@ -6,7 +6,7 @@ export default function SettingsReducer(state = {}, action) {
       port: action.payload.port,
       baseUrl: action.payload.baseUrl,
       disableAuthentication: action.payload.disableAuthentication,
-    }
+    };
   }
 
   return { ...state };

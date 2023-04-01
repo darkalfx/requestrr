@@ -93,7 +93,7 @@ export function setOverseerrTvShowCategory(categoryId, field, data) {
                     category.is4K = data;
                 }
 
-                categories[index] = category
+                categories[index] = category;
             }
         }
 
@@ -235,7 +235,7 @@ export function testOverseerrTvShowSettings(settings) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     };
 };
@@ -272,7 +272,7 @@ export function saveOverseerrTvShowClient(saveModel) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     }
 };

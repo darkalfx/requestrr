@@ -15,18 +15,19 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+import { useEffect } from "react";
 import { connect } from 'react-redux';
 import { logout } from "../store/actions/UserActions"
 
-class Logout extends React.Component {
-  componentDidMount() {
-    this.props.logout();
-  };
 
-  render() {
-    return null;
-  }
+function Logout(props) {
+
+  useEffect(() => {
+    props.logout();
+  }, []);
+
+  
+  return null;
 };
 
 const mapPropsToAction = {

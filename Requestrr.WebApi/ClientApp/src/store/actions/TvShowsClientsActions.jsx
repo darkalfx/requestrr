@@ -45,7 +45,7 @@ export function getSettings() {
         })
             .then(data => data.json())
             .then(data => {
-                dispatch(setSettings(data));
+                return dispatch(setSettings(data));
             });
     };
 };
