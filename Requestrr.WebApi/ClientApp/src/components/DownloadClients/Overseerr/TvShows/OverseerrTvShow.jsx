@@ -1,4 +1,5 @@
-import React from "react";
+
+import { useEffect, useState } from "react";
 import { Oval } from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
@@ -15,326 +16,324 @@ import {
   Col
 } from "reactstrap";
 
-class OverseerrTvShow extends React.Component {
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      isTestingSettings: false,
-      testSettingsRequested: false,
-      testSettingsSuccess: false,
-      testSettingsError: "",
-      hostname: "",
-      isHostnameValid: false,
-      port: "7878",
-      isPortValid: false,
-      apiKey: "",
-      isApiKeyValid: false,
-      defaultApiUserID: "",
-      isDefaultApiUserIDValid: true,
-      useSSL: "",
-      apiVersion: "",
-    };
+function OverseerrTvShow(props) {
 
-    this.onTestSettings = this.onTestSettings.bind(this);
-    this.onUseSSLChanged = this.onUseSSLChanged.bind(this);
-    this.onValueChange = this.onValueChange.bind(this);
-    this.onValidate = this.onValidate.bind(this);
-    this.updateStateFromProps = this.updateStateFromProps.bind(this);
-    this.validateNonEmptyString = this.validateNonEmptyString.bind(this);
-    this.validatePort = this.validatePort.bind(this);
-    this.validateDefaultUserId = this.validateDefaultUserId.bind(this);
-  }
+  const [isTestingSettings, setIsTestingSettings] = useState(false);
+  const [testSettingsRequested, setTestSettingsRequested] = useState(false);
+  const [testSettingsSuccess, setTestSettingsSuccess] = useState(false);
+  const [testSettingsError, setTestSettingsError] = useState("");
+  const [hostname, setHostname] = useState("");
+  const [isHostnameValid, setIsHostnameValid] = useState(false);
+  const [port, setPort] = useState("7878");
+  const [isPortValid, setIsPortValid] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [isApiKeyValid, setIsApiKeyValid] = useState(false);
+  const [defaultApiUserID, setDefaultApiUserID] = useState("");
+  const [isDefaultApiUserIDValid, setIsDefaultApiUserIDValid] = useState(true);
+  const [useSSL, setUseSSL] = useState("");
+  const [apiVersion, setApiVersion] = useState("");
+  const [isValid, setIsValid] = useState(false);
 
-  componentDidMount() {
-    this.updateStateFromProps(this.props);
-  }
 
-  componentDidUpdate(prevProps) {
-    this.onValidate();
-  }
+  useEffect(() => {
+    updateStateFromProps(props);
+  }, []);
 
-  updateStateFromProps = props => {
-    this.setState({
-      isTestingSettings: false,
-      TestingSettings: false,
-      testSettingsRequested: false,
-      testSettingsSuccess: false,
-      testSettingsError: "",
-      hostname: props.settings.hostname,
-      isHostnameValid: false,
-      port: props.settings.port,
-      isPortValid: false,
-      apiKey: props.settings.apiKey,
-      isApiKeyValid: false,
-      defaultApiUserID: props.settings.defaultApiUserID,
-      isDefaultApiUserIDValid: true,
-      useSSL: props.settings.useSSL,
-      apiVersion: props.settings.version,
-      isValid: false,
-    }, this.onValueChange);
-  }
 
-  onUseSSLChanged = event => {
-    this.setState({
-      useSSL: !this.state.useSSL
-    }, this.onValueChange);
-  }
+  useEffect(() => {
+    onValueChange();
+  }, [apiVersion, apiKey, hostname, port, defaultApiUserID]);
 
-  validateNonEmptyString = value => {
+
+
+
+  const validateNonEmptyString = (value) => {
     return /\S/.test(value);
-  }
+  };
 
-  validatePort = value => {
+  const validatePort = (value) => {
     return /^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/.test(value);
-  }
+  };
 
-  validateDefaultUserId = value => {
+  const validateDefaultUserId = (value) => {
     return (!value || value.length === 0 || /^\s*$/.test(value)) || (/^[1-9]\d*$/).test(value);
-  }
+  };
 
-  onTestSettings = e => {
+
+
+  const updateStateFromProps = (props) => {
+    props.testSettings({
+      hostname: props.settings.hostname,
+      port: props.settings.port,
+      apiKey: props.settings.apiKey,
+      useSSL: props.settings.useSSL,
+      DefaultApiUserID: props.settings.defaultApiUserID,
+      version: props.settings.version,
+    });
+
+    setIsTestingSettings(false);
+    setTestSettingsRequested(false);
+    setTestSettingsSuccess(false);
+    setTestSettingsError("");
+    setHostname(props.settings.hostname);
+    setIsHostnameValid(false);
+    setPort(props.settings.port);
+    setIsPortValid(false);
+    setApiKey(props.settings.apiKey);
+    setIsApiKeyValid(false);
+    setDefaultApiUserID(props.settings.defaultApiUserID);
+    setIsDefaultApiUserIDValid(true);
+    setUseSSL(props.settings.useSSL);
+    setApiVersion(props.settings.version);
+    setIsValid(false);
+  };
+
+
+  const onTestSettings = (e) => {
     e.preventDefault();
 
-    if (!this.state.isTestingSettings
-      && this.state.isHostnameValid
-      && this.state.isPortValid
-      && this.state.isDefaultApiUserIDValid
-      && this.state.isApiKeyValid) {
-      this.setState({ isTestingSettings: true });
+    if (!isTestingSettings
+      && isHostnameValid
+      && isPortValid
+      && isDefaultApiUserIDValid
+      && isApiKeyValid) {
+      setIsTestingSettings(true);
 
-      this.props.testSettings({
-        hostname: this.state.hostname,
-        port: this.state.port,
-        apiKey: this.state.apiKey,
-        useSSL: this.state.useSSL,
-        DefaultApiUserID: this.state.DefaultApiUserID,
-        version: this.state.apiVersion,
+      props.testSettings({
+        hostname: hostname,
+        port: port,
+        apiKey: apiKey,
+        useSSL: useSSL,
+        DefaultApiUserID: defaultApiUserID,
+        version: apiVersion,
       })
         .then(data => {
-          this.setState({ isTestingSettings: false });
+          setIsTestingSettings(false);
 
           if (data.ok) {
-            this.setState({
-              testSettingsRequested: true,
-              testSettingsError: "",
-              testSettingsSuccess: true
-            });
-          }
-          else {
-            var error = "An unknown error occurred while testing the settings";
+            setTestSettingsRequested(true);
+            setTestSettingsError("");
+            setTestSettingsSuccess(true);
+          } else {
+            let error = "An unknown error occurred while testing the settings";
 
             if (typeof (data.error) === "string")
               error = data.error;
 
-            this.setState({
-              testSettingsRequested: true,
-              testSettingsError: error,
-              testSettingsSuccess: false
-            });
+            setTestSettingsRequested(true);
+            setTestSettingsError(error);
+            setTestSettingsSuccess(false);
           }
         });
     }
-  }
+  };
 
-  onValueChange() {
-    this.props.setConnectionSettings({
-      hostname: this.state.hostname,
-      port: this.state.port,
-      apiKey: this.state.apiKey,
-      useSSL: this.state.useSSL,
-      version: this.state.apiVersion,
+
+  const onUseSSLChanged = (event) => {
+    setUseSSL(!useSSL);
+  };
+
+  const onValueChange = () => {
+    props.setConnectionSettings({
+      hostname: hostname,
+      port: port,
+      apiKey: apiKey,
+      useSSL: useSSL,
+      version: apiVersion,
     });
 
-    this.props.onChange({
-      client: this.state.client,
-      hostname: this.state.hostname,
-      port: this.state.port,
-      apiKey: this.state.apiKey,
-      defaultApiUserID: this.state.defaultApiUserID,
-      useSSL: this.state.useSSL,
-      version: this.state.apiVersion,
+    props.onChange({
+      hostname: hostname,
+      port: port,
+      apiKey: apiKey,
+      defaultApiUserID: defaultApiUserID,
+      useSSL: useSSL,
+      version: apiVersion,
     });
 
-    this.onValidate();
-  }
+    onValidate();
+  };
 
-  onValidate() {
-    let isValid = this.state.isApiKeyValid
-      && this.state.isHostnameValid
-      && this.state.isPortValid
-      && this.state.isDefaultApiUserIDValid
-      && (this.props.settings.categories.length === 0 || (this.props.settings.categories.every(x => this.validateCategory(x)) && this.props.settings.isSonarrServiceSettingsValid));
+  const onValidate = () => {
+    let newIsValid = isApiKeyValid
+      && isHostnameValid
+      && isPortValid
+      && isDefaultApiUserIDValid
+      && (props.settings.categories.length === 0 || (props.settings.categories.every(x => validateCategory(x)) && props.settings.isSonarrServiceSettingsValid));
 
-    if (isValid !== this.state.isValid) {
-      this.setState({ isValid: isValid },
-        () => this.props.onValidate(isValid));
+    if (newIsValid !== isValid) {
+      setIsValid(newIsValid);
+      props.onValidate(newIsValid);
     }
-  }
+  };
 
-  validateCategory(category) {
+
+  const validateCategory = (category) => {
     if (!/\S/.test(category.name)) {
       return false;
-    }
-    else if (/^[\w-]{1,32}$/.test(category.name)) {
-      var names = this.props.settings.categories.map(x => x.name);
+    } else if (/^[\w-]{1,32}$/.test(category.name)) {
+      let names = props.settings.categories.map(x => x.name);
 
       if (new Set(names).size !== names.length) {
         return false;
-      }
-      else if (this.props.settings.sonarrServiceSettings.sonarrServices.every(x => x.id !== category.serviceId)) {
+      } else if (props.settings.sonarrServiceSettings.sonarrServices.every(x => x.id !== category.serviceId)) {
         return false;
-      }
-      else {
-        var sonarrService = this.props.settings.sonarrServiceSettings.sonarrServices.filter(x => x.id === category.serviceId)[0];
+      } else {
+        let sonarrService = props.settings.sonarrServiceSettings.sonarrServices.filter(x => x.id === category.serviceId)[0];
 
         if (sonarrService.profiles.length === 0 || sonarrService.rootPaths.length === 0) {
           return false;
         }
       }
-    }
-    else {
+    } else {
       return false;
     }
     return true;
-  }
+  };
 
-  render() {
-    return (
-      <>
-        <div>
-          <h6 className="heading-small text-muted mb-4">
-            Overseerr Connection Settings
-          </h6>
-        </div>
-        <div className="pl-lg-4">
-          <Row>
-            <Col lg="6">
-              <Dropdown
-                name="API"
-                value={this.state.apiVersion}
-                items={[{ name: "Version 1", value: "1" }]}
-                onChange={newApiVersion => this.setState({ apiVersion: newApiVersion }, this.onValueChange)} />
-            </Col>
-            <Col lg="6">
-              <ValidatedTextbox
-                name="API Key"
-                placeholder="Enter api key"
-                alertClassName="mt-3"
-                errorMessage="api key is required."
-                isSubmitted={this.props.isSubmitted}
-                value={this.state.apiKey}
-                validation={this.validateNonEmptyString}
-                onChange={newApiKey => this.setState({ apiKey: newApiKey }, this.onValueChange)}
-                onValidate={isValid => this.setState({ isApiKeyValid: isValid }, this.onValidate)} />
-            </Col>
-          </Row>
-          <Row>
-            <Col lg="6">
-              <ValidatedTextbox
-                name="Host or IP"
-                placeholder="Enter host or ip"
-                alertClassName="mt-3 mb-0"
-                errorMessage="Hostname is required."
-                isSubmitted={this.props.isSubmitted}
-                value={this.state.hostname}
-                validation={this.validateNonEmptyString}
-                onChange={newHostname => this.setState({ hostname: newHostname }, this.onValueChange)}
-                onValidate={isValid => this.setState({ isHostnameValid: isValid }, this.onValidate)} />
-            </Col>
-            <Col lg="6">
-              <ValidatedTextbox
-                name="Port"
-                placeholder="Enter port"
-                alertClassName="mt-3 mb-0"
-                errorMessage="Please enter a valid port."
-                isSubmitted={this.props.isSubmitted}
-                value={this.state.port}
-                validation={this.validatePort}
-                onChange={newPort => this.setState({ port: newPort }, this.onValueChange)}
-                onValidate={isValid => this.setState({ isPortValid: isValid }, this.onValidate)} />
-            </Col>
-          </Row>
-          <Row>
-            <Col lg="6">
-              <ValidatedTextbox
-                name="Default Overseerr User ID for requests"
-                placeholder="Enter default user ID (Optional)"
-                alertClassName="mt-3 mb-0"
-                errorMessage="The user id must be a number."
-                isSubmitted={this.props.isSubmitted}
-                value={this.state.defaultApiUserID}
-                validation={this.validateDefaultUserId}
-                onChange={newDefaultApiUserID => this.setState({ defaultApiUserID: newDefaultApiUserID }, this.onValueChange)}
-                onValidate={isValid => this.setState({ isDefaultApiUserIDValid: isValid }, this.onValidate)} />
-            </Col>
-            <Col lg="6"></Col>
-          </Row>
-          <Row>
-            <Col lg="6">
-              <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
-                <Input
-                  className="custom-control-input"
-                  id="useSSL"
-                  type="checkbox"
-                  onChange={this.onUseSSLChanged}
-                  checked={this.state.useSSL}
-                />
-                <label
-                  className="custom-control-label"
-                  htmlFor="useSSL">
-                  <span className="text-muted">Use SSL</span>
-                </label>
-              </FormGroup>
-            </Col>
-            <Col lg="6">
-              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank" rel="noreferrer">Click here to view how configure Overseerr permissions with the bot</a>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <FormGroup className="mt-4">
-                {
-                  this.state.testSettingsRequested && !this.state.isTestingSettings ?
-                    !this.state.testSettingsSuccess ? (
-                      <Alert className="text-center" color="danger">
-                        <strong>{this.state.testSettingsError}</strong>
-                      </Alert>)
-                      : <Alert className="text-center" color="success">
-                        <strong>The specified settings are valid.</strong>
-                      </Alert>
-                    : null
-                }
-              </FormGroup>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <FormGroup className="text-right">
-                <button onClick={this.onTestSettings} disabled={!this.state.isHostnameValid || !this.state.isPortValid || !this.state.isApiKeyValid || !this.state.isDefaultApiUserIDValid} className="btn btn-icon btn-3 btn-default" type="button">
-                  <span className="btn-inner--icon">
-                    {
-                      this.state.isTestingSettings ? (
-                        <Oval
-                          wrapperClass="loader"
-                          type="Oval"
-                          color="#11cdef"
-                          height={19}
-                          width={19}
-                        />)
-                        : (<i className="fas fa-cogs"></i>)
-                    }</span>
-                  <span className="btn-inner--text">Test Settings</span>
-                </button>
-              </FormGroup>
-            </Col>
-          </Row>
-        </div>
-        <OverseerrTvShowCategoryList isSubmitted={this.props.isSubmitted} isSaving={this.props.isSaving} apiVersion={this.state.apiVersion} canConnect={this.state.isHostnameValid && this.state.isPortValid && this.state.isApiKeyValid} />
-      </>
-    );
-  }
+
+
+  onValidate();
+
+
+
+  return (
+    <>
+      <div>
+        <h6 className="heading-small text-muted mb-4">
+          Overseerr Connection Settings
+        </h6>
+      </div>
+      <div className="pl-lg-4">
+        <Row>
+          <Col lg="6">
+            <Dropdown
+              name="API"
+              value={apiVersion}
+              items={[{ name: "Version 1", value: "1" }]}
+              onChange={newApiVersion => setApiVersion(newApiVersion)} />
+          </Col>
+          <Col lg="6">
+            <ValidatedTextbox
+              name="API Key"
+              placeholder="Enter api key"
+              alertClassName="mt-3"
+              errorMessage="api key is required."
+              isSubmitted={props.isSubmitted}
+              value={apiKey}
+              validation={validateNonEmptyString}
+              onChange={newApiKey => setApiKey(newApiKey)}
+              onValidate={valid => setIsApiKeyValid(valid)} />
+          </Col>
+        </Row>
+        <Row>
+          <Col lg="6">
+            <ValidatedTextbox
+              name="Host or IP"
+              placeholder="Enter host or ip"
+              alertClassName="mt-3 mb-0"
+              errorMessage="Hostname is required."
+              isSubmitted={props.isSubmitted}
+              value={hostname}
+              validation={validateNonEmptyString}
+              onChange={newHostname => setHostname(newHostname)}
+              onValidate={valid => setIsHostnameValid(valid)} />
+          </Col>
+          <Col lg="6">
+            <ValidatedTextbox
+              name="Port"
+              placeholder="Enter port"
+              alertClassName="mt-3 mb-0"
+              errorMessage="Please enter a valid port."
+              isSubmitted={props.isSubmitted}
+              value={port}
+              validation={validatePort}
+              onChange={newPort => setPort(newPort)}
+              onValidate={valid => setIsPortValid(valid)} />
+          </Col>
+        </Row>
+        <Row>
+          <Col lg="6">
+            <ValidatedTextbox
+              name="Default Overseerr User ID for requests"
+              placeholder="Enter default user ID (Optional)"
+              alertClassName="mt-3 mb-0"
+              errorMessage="The user id must be a number."
+              isSubmitted={props.isSubmitted}
+              value={defaultApiUserID}
+              validation={validateDefaultUserId}
+              onChange={newDefaultApiUserID => setDefaultApiUserID(newDefaultApiUserID)}
+              onValidate={valid => setIsDefaultApiUserIDValid(valid)} />
+          </Col>
+          <Col lg="6"></Col>
+        </Row>
+        <Row>
+          <Col lg="6">
+            <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+              <Input
+                className="custom-control-input"
+                id="useSSL"
+                type="checkbox"
+                onChange={onUseSSLChanged}
+                checked={useSSL}
+              />
+              <label
+                className="custom-control-label"
+                htmlFor="useSSL">
+                <span className="text-muted">Use SSL</span>
+              </label>
+            </FormGroup>
+          </Col>
+          <Col lg="6">
+            <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank" rel="noreferrer">Click here to view how configure Overseerr permissions with the bot</a>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <FormGroup className="mt-4">
+              {
+                testSettingsRequested && !isTestingSettings ?
+                  !testSettingsSuccess ? (
+                    <Alert className="text-center" color="danger">
+                      <strong>{testSettingsError}</strong>
+                    </Alert>)
+                    : <Alert className="text-center" color="success">
+                      <strong>The specified settings are valid.</strong>
+                    </Alert>
+                  : null
+              }
+            </FormGroup>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <FormGroup className="text-right">
+              <button onClick={onTestSettings} disabled={!isHostnameValid || !isPortValid || !isApiKeyValid || !isDefaultApiUserIDValid} className="btn btn-icon btn-3 btn-default" type="button">
+                <span className="btn-inner--icon">
+                  {
+                    isTestingSettings ? (
+                      <Oval
+                        wrapperClass="loader"
+                        type="Oval"
+                        color="#11cdef"
+                        height={19}
+                        width={19}
+                      />)
+                      : (<i className="fas fa-cogs"></i>)
+                  }</span>
+                <span className="btn-inner--text">Test Settings</span>
+              </button>
+            </FormGroup>
+          </Col>
+        </Row>
+      </div>
+      <OverseerrTvShowCategoryList isSubmitted={props.isSubmitted} isSaving={props.isSaving} apiVersion={apiVersion} canConnect={isHostnameValid && isPortValid && isApiKeyValid} />
+    </>
+  );
 }
+
+
 
 const mapPropsToState = state => {
   return {

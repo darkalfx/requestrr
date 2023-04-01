@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+import { useEffect, useRef, useState } from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 import { connect } from 'react-redux';
 // reactstrap components
@@ -29,32 +29,29 @@ import routes from "../routes.js";
 import requestrrLogo from "../assets/img/brand/requestrr_black.svg";
 
 
-class Admin extends React.Component {
-  constructor(props) {
-    super(props);
+function Admin(props) {
+  const [isLoading, setIsLoading] = useState(true);
+  const mainContent = useRef(null);
 
-    this.state = {
-      isLoading: true,
-    };
+
+
+  useEffect(() => {
+    props.validateLogin()
+      .then(data => setIsLoading(false));
+  }, []);
+
+  
+
+  document.documentElement.scrollTop = 0;
+  document.scrollingElement.scrollTop = 0;
+
+  if (!isLoading) {
+    mainContent.scrollTop = 0;
   }
 
-  componentDidMount() {
-    this.props.validateLogin()
-      .then(data => this.setState({ isLoading: false }));
-  }
+  props.validateLogin();
 
-  componentDidUpdate(e) {
-    document.documentElement.scrollTop = 0;
-    document.scrollingElement.scrollTop = 0;
-
-    if (!this.state.isLoading) {
-      this.refs.mainContent.scrollTop = 0;
-    }
-
-    this.props.validateLogin();
-  }
-
-  getRoutes = routes => {
+  const getRoutes = routes => {
     return routes.map((prop, key) => {
       if (prop.layout === "/admin") {
         return (
@@ -69,58 +66,46 @@ class Admin extends React.Component {
       }
     });
   };
-  getBrandText = path => {
-    for (let i = 0; i < routes.length; i++) {
-      if (
-        this.props.location.pathname.indexOf(
-          routes[i].layout + routes[i].path
-        ) !== -1
-      ) {
-        return routes[i].name;
-      }
-    }
-    return "Brand";
-  };
-  render() {
-    if (!this.state.isLoading) {
-      return (
-        <>
-          <Sidebar
-            {...this.props}
-            routes={routes}
-            logo={{
-              innerLink: "/admin/",
-              imgSrc: requestrrLogo,
-              imgAlt: "Requestrr Logo"
-            }}
-          />
-          <div className="main-content" ref="mainContent">
-            <Switch>
+
+  
+  if (!isLoading) {
+    return (
+      <>
+        <Sidebar
+          {...props}
+          routes={routes}
+          logo={{
+            innerLink: "/admin/",
+            imgSrc: requestrrLogo,
+            imgAlt: "Requestrr Logo"
+          }}
+        />
+        <div className="main-content" ref={mainContent}>
+          <Switch>
             {
-              !this.state.isLoading
-                ? this.props.isLoggedIn
-                  ? this.getRoutes(routes)
+              !isLoading
+                ? props.isLoggedIn
+                  ? getRoutes(routes)
                   : null
                 : null
             }
             {
-              !this.state.isLoading ?
-                this.props.isLoggedIn ?
+              !isLoading ?
+                props.isLoggedIn ?
                   <Route path="*" render={() => <Redirect to="/admin/chatclients" />} />
                   : <Route path="*" render={() => <Redirect to="/auth/" />} />
                 : null
             }
-            </Switch>
-            <Container fluid>
-              <AdminFooter />
-            </Container>
-          </div>
-        </>
-      );
-    }
-
-    return null;
+          </Switch>
+          <Container fluid>
+            <AdminFooter />
+          </Container>
+        </div>
+      </>
+    );
   }
+
+  return null;
 }
 
 const mapPropsToState = state => {

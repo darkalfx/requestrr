@@ -57,21 +57,19 @@ export default function TvShowsClientsReducer(state = {}, action) {
         languages: [],
       },
       restrictions: action.payload.restrictions
-    }
-  }
-  else if (action.type === SET_DISABLED_CLIENT) {
+    };
+  } else if (action.type === SET_DISABLED_CLIENT) {
     return {
       ...state,
       client: "Disabled"
-    }
-  }
-  else if (action.type === SET_OMBI_CLIENT) {
+    };
+  } else if (action.type === SET_OMBI_CLIENT) {
     return {
       ...state,
       ombi: action.payload.ombi,
       restrictions: action.payload.restrictions,
       client: "Ombi"
-    }
+    };
   }
 
   return { ...state };

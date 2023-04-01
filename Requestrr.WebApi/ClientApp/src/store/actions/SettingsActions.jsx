@@ -19,7 +19,7 @@ export function getSettings() {
         })
             .then(data => data.json())
             .then(data => {
-                dispatch(setSettings(data));
+                return dispatch(setSettings(data));
             });
     };
 };
@@ -52,7 +52,7 @@ export function saveSettings(saveModel) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     }
 };
