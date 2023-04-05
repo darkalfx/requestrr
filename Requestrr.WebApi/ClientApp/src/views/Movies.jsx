@@ -16,13 +16,13 @@
 
 */
 import { useEffect, useState } from "react";
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
 import { getSettings } from "../store/actions/MovieClientsActions"
 import { saveDisabledClient } from "../store/actions/MovieClientsActions"
 import { saveRadarrClient } from "../store/actions/RadarrClientActions"
 import { saveOmbiClient } from "../store/actions/MovieClientsActions"
-import { saveOverseerrMovieClient } from "../store/actions/OverseerrClientRadarrActions"
+import { saveOverseerrMovieClient as saveOverseerrClient } from "../store/actions/OverseerrClientRadarrActions"
 import Dropdown from "../components/Inputs/Dropdown"
 import Radarr from "../components/DownloadClients/Radarr/Radarr"
 import Ombi from "../components/DownloadClients/Ombi"
@@ -60,11 +60,16 @@ function Movies(props) {
   const [isOverseerrValid, setIsOverseerrValid] = useState(false);
 
 
+  const reduxState = useSelector((state) => {
+    return {
+      settings: state.movies
+    }
+  });
+  const dispatch = useDispatch();
 
 
-  
   useEffect(() => {
-    props.getSettings()
+    dispatch(getSettings())
       .then(data => {
         setIsLoading(false);
         setClient(data.payload.client);
@@ -93,22 +98,22 @@ function Movies(props) {
         let saveAction = null;
 
         if (client === "Disabled") {
-          saveAction = props.saveDisabledClient();
+          saveAction = dispatch(saveDisabledClient());
         }
         else if (client === "Ombi") {
-          saveAction = props.saveOmbiClient({
+          saveAction = dispatch(saveOmbiClient({
             ombi: ombi,
-          });
+          }));
         }
         else if (client === "Overseerr") {
-          saveAction = props.saveOverseerrClient({
+          saveAction = dispatch(saveOverseerrClient({
             overseerr: overseerr,
-          });
+          }));
         }
         else if (client === "Radarr") {
-          saveAction = props.saveRadarrClient({
+          saveAction = dispatch(saveRadarrClient({
             radarr: radarr,
-          });
+          }));
         }
 
         saveAction.then(data => {
@@ -138,7 +143,7 @@ function Movies(props) {
       }
     }
   }, [isSubmitted]);
-  
+
 
 
 
@@ -148,9 +153,9 @@ function Movies(props) {
 
 
   const onClientChange = () => {
-    setRadarr(props.settings.radarr);
-    setOmbi(props.settings.ombi);
-    setOverseerr(props.settings.overseerr);
+    setRadarr(reduxState.settings.radarr);
+    setOmbi(reduxState.settings.ombi);
+    setOverseerr(reduxState.settings.overseerr);
     setSaveAttempted(false);
     setIsSubmitted(false);
   }
@@ -205,7 +210,7 @@ function Movies(props) {
                     <Row>
                       <Col lg="6">
                         {
-                          props.settings.client !== client && props.settings.client !== "Disabled" ?
+                          reduxState.settings.client !== client && reduxState.settings.client !== "Disabled" ?
                             <Alert className="text-center" color="warning">
                               <strong>Changing the download client will delete all pending movie notifications.</strong>
                             </Alert>
@@ -221,21 +226,21 @@ function Movies(props) {
                         {
                           client === "Ombi"
                             ? <>
-                              <Ombi settings={ombi} onChange={newOmbi => setOmbi(newOmbi)} onValidate={isOmbiValid => setIsOmbiValid(isOmbiValid)} isSubmitted={isSubmitted} />
+                              <Ombi settings={ombi} onChange={newOmbi => setOmbi(newOmbi)} onValidate={newIsOmbiValid => setIsOmbiValid(newIsOmbiValid)} isSubmitted={isSubmitted} />
                             </>
                             : null
                         }
                         {
                           client === "Overseerr"
                             ? <>
-                              <Overseerr onChange={newOverseerr => setOverseerr(newOverseerr)} onValidate={isOverseerrValid => setIsOverseerrValid(isOverseerrValid)} isSubmitted={isSubmitted} isSaving={isSaving} />
+                              <Overseerr onChange={newOverseerr => setOverseerr(newOverseerr)} onValidate={newIsOverseerrValid => setIsOverseerrValid(newIsOverseerrValid)} isSubmitted={isSubmitted} isSaving={isSaving} />
                             </>
                             : null
                         }
                         {
                           client === "Radarr"
                             ? <>
-                              <Radarr onChange={newRadarr => setRadarr(newRadarr)} onValidate={isRadarrValid => setIsRadarrValid(isRadarrValid)} isSubmitted={isSubmitted} isSaving={isSaving} />
+                              <Radarr onChange={newRadarr => setRadarr(newRadarr)} onValidate={newIsRadarrValid => setIsRadarrValid(newIsRadarrValid)} isSubmitted={isSubmitted} isSaving={isSaving} />
                             </>
                             : null
                         }
@@ -277,18 +282,4 @@ function Movies(props) {
   );
 }
 
-const mapPropsToState = state => {
-  return {
-    settings: state.movies
-  }
-};
-
-const mapPropsToAction = {
-  getSettings: getSettings,
-  saveDisabledClient: saveDisabledClient,
-  saveRadarrClient: saveRadarrClient,
-  saveOmbiClient: saveOmbiClient,
-  saveOverseerrClient: saveOverseerrMovieClient,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(Movies);
+export default Movies;

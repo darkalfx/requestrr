@@ -17,8 +17,8 @@
 */
 
 import React from "react";
-import ReactDOM from "react-dom";
-import { Switch, Route, Redirect, BrowserRouter } from "react-router-dom";
+import ReactDOM from 'react-dom/client';
+import { Routes, Route, Navigate, BrowserRouter, redirect } from "react-router-dom";
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import { configureStore } from "@reduxjs/toolkit";
@@ -41,11 +41,9 @@ import TvShowsClients from './store/reducers/TvShowsClientsReducer';
 function combinedMovieClientsReducer(state = {}, action) {
   if (action.type.includes("radarr")) {
     return RadarrClients(state, action);
-  }
-  else if (action.type.includes("overseerr")) {
+  } else if (action.type.includes("overseerr")) {
     return OverseerrClients(state, action);
-  }
-  else {
+  } else {
     return MovieClients(state, action);
   }
 }
@@ -53,11 +51,9 @@ function combinedMovieClientsReducer(state = {}, action) {
 function combinedTvShowsClientsReducer(state = {}, action) {
   if (action.type.includes("sonarr")) {
     return SonarrClients(state, action);
-  }
-  else if (action.type.includes("overseerr")) {
+  } else if (action.type.includes("overseerr")) {
     return OverseerrClients(state, action);
-  }
-  else {
+  } else {
     return TvShowsClients(state, action);
   }
 }
@@ -73,6 +69,8 @@ const store = configureStore({
   }
 });
 
+const root = ReactDOM.createRoot(document.getElementById("root"));
+
 fetch("../api/settings", {
   method: 'GET',
   headers: {
@@ -82,16 +80,15 @@ fetch("../api/settings", {
 })
   .then(data => data.json())
   .then(data => {
-    ReactDOM.render(
+    root.render(
       <Provider store={store}>
         <BrowserRouter basename={data.baseUrl}>
-          <Switch>
-            <Route path="/admin" children={props => <AdminLayout {...props} />} />
-            <Route path="/auth" children={props => <AuthLayout {...props} />} />
-            <Route path="*" render={() => <Redirect to="/auth/login" />} />
-          </Switch>
+          <Routes>
+            <Route path="/admin/*" element={<AdminLayout />} />
+            <Route path="/auth/*" element={<AuthLayout />} />
+            <Route path="*" element={() => <Navigate to="/auth/login" />} />
+          </Routes>
         </BrowserRouter>
-      </Provider>,
-      document.getElementById("root")
+      </Provider>
     );
   });

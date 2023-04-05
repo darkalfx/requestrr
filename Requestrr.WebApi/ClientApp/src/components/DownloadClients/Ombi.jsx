@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Alert } from "reactstrap";
-import { testOmbiSettings } from "../../store/actions/MovieClientsActions"
+import { testOmbiSettings as testSettings } from "../../store/actions/MovieClientsActions"
 import ValidatedTextbox from "../Inputs/ValidatedTextbox"
 import Textbox from "../Inputs/Textbox"
 import Dropdown from "../Inputs/Dropdown"
@@ -31,8 +31,9 @@ function Ombi(props) {
   const [apiVersion, setApiVersion] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
 
+  const dispatch = useDispatch();
 
-  
+
   useEffect(() => {
     updateStateFromProps(props);
   }, []);
@@ -46,7 +47,7 @@ function Ombi(props) {
   useEffect(() => {
     onValidate();
   }, [isApiKeyValid, isHostnameValid, isPortValid]);
-  
+
 
 
   const validateNonEmptyString = (value) => {
@@ -91,14 +92,14 @@ function Ombi(props) {
       && isApiKeyValid) {
       setIsTestingSettings(true);
 
-      props.testSettings({
+      dispatch(testSettings({
         hostname: hostname,
         baseUrl: baseUrl,
         port: port,
         apiKey: apiKey,
         useSSL: useSSL,
         version: apiVersion,
-      })
+      }))
         .then(data => {
           setIsTestingSettings(false);
 
@@ -161,7 +162,7 @@ function Ombi(props) {
               name="API"
               value={apiVersion}
               items={[{ name: "Version 3-4", value: "3" }]}
-              onChange={newApiVersion => setApiVersion(newApiVersion) } />
+              onChange={newApiVersion => setApiVersion(newApiVersion)} />
           </Col>
           <Col lg="6">
             <ValidatedTextbox
@@ -172,8 +173,8 @@ function Ombi(props) {
               isSubmitted={props.isSubmitted}
               value={apiKey}
               validation={validateNonEmptyString}
-              onChange={newApiKey => setApiKey(newApiKey) }
-              onValidate={isValid => setIsApiKeyValid(isValid) } />
+              onChange={newApiKey => setApiKey(newApiKey)}
+              onValidate={isValid => setIsApiKeyValid(isValid)} />
           </Col>
         </Row>
         <Row>
@@ -186,8 +187,8 @@ function Ombi(props) {
               isSubmitted={props.isSubmitted}
               value={hostname}
               validation={validateNonEmptyString}
-              onChange={newHostname => setHostname(newHostname) }
-              onValidate={isValid => setIsHostnameValid(isValid) } />
+              onChange={newHostname => setHostname(newHostname)}
+              onValidate={isValid => setIsHostnameValid(isValid)} />
           </Col>
           <Col lg="6">
             <ValidatedTextbox
@@ -198,8 +199,8 @@ function Ombi(props) {
               isSubmitted={props.isSubmitted}
               value={port}
               validation={validatePort}
-              onChange={newPort => setPort(newPort) }
-              onValidate={isValid => setIsPortValid(isValid) } />
+              onChange={newPort => setPort(newPort)}
+              onValidate={isValid => setIsPortValid(isValid)} />
           </Col>
         </Row>
         <Row>
@@ -208,14 +209,14 @@ function Ombi(props) {
               name="Base Url"
               placeholder="Enter base url configured in Ombi, leave empty if none configured."
               value={baseUrl}
-              onChange={newBaseUrl => setBaseUrl(newBaseUrl) } />
+              onChange={newBaseUrl => setBaseUrl(newBaseUrl)} />
           </Col>
           <Col lg="6">
             <Textbox
               name="Default Ombi Username"
               placeholder="Enter api username (Optional)"
               value={apiUsername}
-              onChange={newApiUsername => setApiUsername(newApiUsername) } />
+              onChange={newApiUsername => setApiUsername(newApiUsername)} />
           </Col>
         </Row>
         <Row>
@@ -270,7 +271,7 @@ function Ombi(props) {
                         height={19}
                         width={19}
                       />)
-                       : (<i className="fas fa-cogs"></i>)
+                      : (<i className="fas fa-cogs"></i>)
                   }</span>
                 <span className="btn-inner--text">Test Settings</span>
               </button>
@@ -284,8 +285,4 @@ function Ombi(props) {
 }
 
 
-const mapPropsToAction = {
-  testSettings: testOmbiSettings,
-};
-
-export default connect(null, mapPropsToAction)(Ombi);
+export default Ombi;

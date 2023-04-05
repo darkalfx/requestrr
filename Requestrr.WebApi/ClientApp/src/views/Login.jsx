@@ -16,9 +16,9 @@
 
 */
 import { useState, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Alert } from "reactstrap";
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { login } from "../store/actions/UserActions"
 
 // reactstrap components
@@ -48,10 +48,10 @@ function Login(props) {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [loginError, setLoginError] = useState("");
 
-  const history = useHistory();
+  const history = useNavigate();
+  const dispatch = useDispatch();
 
 
-  
   useEffect(() => {
     if (usernameChanged)
       triggerUsernameValidation();
@@ -72,7 +72,7 @@ function Login(props) {
   const validatePassword = () => {
     return /\S/.test(password);
   };
-  
+
 
 
   const triggerUsernameValidation = () => {
@@ -111,14 +111,15 @@ function Login(props) {
       && validatePassword()) {
       setIsLoading(true);
 
-      props.login({
-        username: username,
-        password: password,
-        rememberMe: rememberMe
-      })
+      dispatch(
+        login({
+          username: username,
+          password: password,
+          rememberMe: rememberMe
+        }))
         .then(data => {
           if (data.ok) {
-            history.push('/admin/');
+            history('/admin/');
           } else {
             setIsLoading(false);
             let error = "An unknown error occurred while logging in.";
@@ -223,9 +224,4 @@ function Login(props) {
   );
 }
 
-const mapPropsToAction = {
-  login: login,
-};
-
-
-export default connect(null, mapPropsToAction)(Login);
+export default Login;

@@ -1,5 +1,5 @@
 
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import React from "react";
 import { addRadarrCategory } from "../../../store/actions/RadarrClientActions"
 import RadarrCategory from "./RadarrCategory";
@@ -12,10 +12,18 @@ import {
 
 function RadarrCategoryList(props) {
 
+  const reduxState = useSelector((state) => {
+    return {
+      categories: state.movies.radarr.categories
+    }
+  });
+  const dispatch = useDispatch();
+
+
   const createRadarrCategory = () => {
     let newId = Math.floor((Math.random() * 900) + 1);
 
-    while (props.categories.map(x => x.id).includes(newId)) {
+    while (reduxState.categories.map(x => x.id).includes(newId)) {
       newId = Math.floor((Math.random() * 900) + 1);
     }
 
@@ -29,7 +37,7 @@ function RadarrCategoryList(props) {
       wasCreated: true
     };
 
-    props.addRadarrCategory(newCategory);
+    dispatch(addRadarrCategory(newCategory));
   }
 
 
@@ -49,7 +57,7 @@ function RadarrCategoryList(props) {
               </tr>
             </thead>
             <tbody class="list">
-              {props.categories.map((category, key) => {
+              {reduxState.categories.map((category, key) => {
                 return (
                   <React.Fragment key={category.id}>
                     <RadarrCategory key={category.id} isSubmitted={props.isSubmitted} isSaving={props.isSaving} canConnect={props.canConnect} apiVersion={props.apiVersion} category={{ ...category }} />
@@ -74,16 +82,4 @@ function RadarrCategoryList(props) {
   );
 }
 
-
-
-const mapPropsToState = state => {
-  return {
-    categories: state.movies.radarr.categories
-  }
-};
-
-const mapPropsToAction = {
-  addRadarrCategory: addRadarrCategory
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(RadarrCategoryList);
+export default RadarrCategoryList;

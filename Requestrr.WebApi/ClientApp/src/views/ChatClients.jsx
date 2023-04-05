@@ -17,7 +17,7 @@
 */
 import { useEffect, useState } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Alert } from "reactstrap";
 import { testSettings } from "../store/actions/ChatClientsActions"
 import { getSettings } from "../store/actions/ChatClientsActions"
@@ -74,10 +74,11 @@ function ChatClients(props) {
   const [language, setLanguage] = useState("english");
   const [availableLanguages, setAvailableLanguages] = useState([]);
 
+  const dispatch = useDispatch();
 
 
   useEffect(() => {
-    props.getSettings(props.token)
+    dispatch(getSettings(props.token))
       .then(data => {
         setIsLoading(false);
         setChatClient(data.payload.client);
@@ -117,7 +118,7 @@ function ChatClients(props) {
 
 
 
-  
+
   const validateChatClient = () => {
     return /\S/.test(chatClient);
   };
@@ -166,7 +167,7 @@ function ChatClients(props) {
   };
 
 
-  
+
   const onSaving = (e) => {
     e.preventDefault();
 
@@ -180,7 +181,7 @@ function ChatClients(props) {
         && validateClientId()) {
         setIsSaving(true);
 
-        props.save({
+        dispatch(save({
           client: chatClient,
           clientId: clientId,
           botToken: botToken,
@@ -194,7 +195,7 @@ function ChatClients(props) {
           notificationChannels: notificationChannels,
           automaticallyPurgeCommandMessages: automaticallyPurgeCommandMessages,
           language: language,
-        })
+        }))
           .then(data => {
             setIsSaving(false);
 
@@ -234,11 +235,11 @@ function ChatClients(props) {
       && validateClientId()) {
       setIsTestingSettings(true);
 
-      props.testSettings({
+      dispatch(testSettings({
         chatClient: chatClient,
         clientId: clientId,
         botToken: botToken,
-      })
+      }))
         .then(data => {
           setIsTestingSettings(false);
 
@@ -489,7 +490,7 @@ function ChatClients(props) {
                                   dropdownHandle={false}
                                   selectedItems={notificationChannels.map(x => { return { name: x, id: x } })}
                                   items={notificationChannels.map(x => { return { name: x, id: x } })}
-                                  onChange={newNotificationChannels => setNotificationChannels(newNotificationChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-'))) } />
+                                  onChange={newNotificationChannels => setNotificationChannels(newNotificationChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')))} />
                               </FormGroup>
                             </>
                             : null
@@ -660,16 +661,4 @@ function ChatClients(props) {
   );
 }
 
-const mapPropsToState = state => {
-  return {
-    settings: state.chatClients
-  }
-};
-
-const mapPropsToAction = {
-  testSettings: testSettings,
-  getSettings: getSettings,
-  save: save
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(ChatClients);
+export default ChatClients;

@@ -16,8 +16,8 @@
 
 */
 import { useEffect, useRef, useState } from "react";
-import { Route, Switch, Redirect } from "react-router-dom";
-import { connect } from 'react-redux';
+import { Route, Routes, Navigate } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
 // reactstrap components
 import { Container } from "reactstrap";
 // core components
@@ -34,30 +34,32 @@ function Admin(props) {
   const mainContent = useRef(null);
 
 
+  const reduxState = useSelector((state) => {
+    return {
+      isLoggedIn: state.user.isLoggedIn
+    }
+  });
+  const dispatch = useDispatch();
+
 
   useEffect(() => {
-    props.validateLogin()
+    dispatch(validateLogin())
       .then(data => setIsLoading(false));
   }, []);
 
-  
-
-  document.documentElement.scrollTop = 0;
-  document.scrollingElement.scrollTop = 0;
 
   if (!isLoading) {
     mainContent.scrollTop = 0;
   }
 
-  props.validateLogin();
 
   const getRoutes = routes => {
     return routes.map((prop, key) => {
       if (prop.layout === "/admin") {
         return (
           <Route
-            path={prop.layout + prop.path}
-            children={prop.component}
+            path={prop.path}
+            element={prop.component}
             key={key}
           />
         );
@@ -67,7 +69,6 @@ function Admin(props) {
     });
   };
 
-  
   if (!isLoading) {
     return (
       <>
@@ -81,22 +82,22 @@ function Admin(props) {
           }}
         />
         <div className="main-content" ref={mainContent}>
-          <Switch>
+          <Routes>
             {
               !isLoading
-                ? props.isLoggedIn
+                ? reduxState.isLoggedIn
                   ? getRoutes(routes)
                   : null
                 : null
             }
             {
               !isLoading ?
-                props.isLoggedIn ?
-                  <Route path="*" render={() => <Redirect to="/admin/chatclients" />} />
-                  : <Route path="*" render={() => <Redirect to="/auth/" />} />
+                reduxState.isLoggedIn ?
+                  <Route path="*" element={<Navigate to="/admin/chatclients" />} />
+                  : <Route path="*" element={<Navigate to="/auth/" />} />
                 : null
             }
-          </Switch>
+          </Routes>
           <Container fluid>
             <AdminFooter />
           </Container>
@@ -108,14 +109,4 @@ function Admin(props) {
   return null;
 }
 
-const mapPropsToState = state => {
-  return {
-    isLoggedIn: state.user.isLoggedIn
-  }
-};
-
-const mapPropsToAction = {
-  validateLogin: validateLogin
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(Admin);
+export default Admin;

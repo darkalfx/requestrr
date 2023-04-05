@@ -17,7 +17,7 @@
 */
 
 import { useEffect, useState } from "react";
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Alert } from "reactstrap";
 import { getSettings } from "../store/actions/SettingsActions"
 import { saveSettings } from "../store/actions/SettingsActions"
@@ -40,7 +40,7 @@ import {
 import UserHeader from "../components/Headers/UserHeader.jsx";
 
 
-function Settings(props) {
+function Settings() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -53,12 +53,11 @@ function Settings(props) {
   const [isBaseUrlValid, setIsBaseUrlValid] = useState(false);
   const [disableAuthentication, setDisableAuthentication] = useState(false);
 
+  const dispatch = useDispatch();
 
 
-
-  
   useEffect(() => {
-    props.getSettings()
+    dispatch(getSettings())
       .then(data => {
 
         setIsLoading(false);
@@ -70,15 +69,15 @@ function Settings(props) {
 
 
   useEffect(() => {
-    if(!isSaving)
+    if (!isSaving)
       return;
 
     if (isPortValid && isBaseUrlValid) {
-      props.saveSettings({
+      dispatch(saveSettings({
         'port': port,
         'baseUrl': baseUrl,
         'disableAuthentication': disableAuthentication
-      })
+      }))
         .then(data => {
           setIsSaving(false);
 
@@ -105,7 +104,7 @@ function Settings(props) {
     }
   }, [isSaving]);
 
-  
+
 
 
   const validatePort = value => {
@@ -245,15 +244,4 @@ function Settings(props) {
   );
 }
 
-const mapPropsToState = state => {
-  return {
-    settings: state.settings
-  }
-};
-
-const mapPropsToAction = {
-  getSettings: getSettings,
-  saveSettings: saveSettings,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(Settings);
+export default Settings;

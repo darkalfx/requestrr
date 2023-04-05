@@ -1,11 +1,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
-import { loadSonarrServiceSettings } from "../../../../store/actions/OverseerrClientSonarrActions"
-import { setOverseerrTvShowCategory } from "../../../../store/actions/OverseerrClientSonarrActions"
-import { removeOverseerrTvShowCategory } from "../../../../store/actions/OverseerrClientSonarrActions"
+import { loadSonarrServiceSettings as loadServiceSettings } from "../../../../store/actions/OverseerrClientSonarrActions"
+import { setOverseerrTvShowCategory as setOverseerrCategory } from "../../../../store/actions/OverseerrClientSonarrActions"
+import { removeOverseerrTvShowCategory as removeOverseerrCategory } from "../../../../store/actions/OverseerrClientSonarrActions"
 import ValidatedTextbox from "../../../Inputs/ValidatedTextbox"
 import Dropdown from "../../../Inputs/Dropdown"
 import MultiDropdown from "../../../Inputs/MultiDropdown"
@@ -26,6 +26,12 @@ function OverseerrTvShowCategory(props) {
 
   const propRef = useRef();
 
+  const reduxState = useSelector((state) => {
+    return {
+      overseerr: state.tvShows.overseerr
+    }
+  });
+  const dispatch = useDispatch();
 
 
   useEffect(() => {
@@ -33,23 +39,25 @@ function OverseerrTvShowCategory(props) {
       setIsOpen(true);
 
     if (props.canConnect)
-      props.loadServiceSettings(false);
+      dispatch(loadServiceSettings(false));
   }, []);
 
 
   useEffect(() => {
+    const prevState = propRef?.pastState;
+    propRef.pastState = reduxState;
     const prevProps = propRef?.past;
     propRef.past = props;
 
-    let previousNames = prevProps === undefined ? [] : prevProps.overseerr.categories.map(x => x.name);
-    let currentNames = props.overseerr.categories.map(x => x.name);
+    let previousNames = prevState === undefined ? [] : prevState.overseerr.categories.map(x => x.name);
+    let currentNames = reduxState.overseerr.categories.map(x => x.name);
 
     if (!(previousNames.length === currentNames.length && currentNames.every((value, index) => previousNames[index] === value))) {
       validateName(props.category.name)
     }
 
     if (props.canConnect) {
-      props.loadServiceSettings(false);
+      dispatch(loadServiceSettings(false));
     }
 
     if (prevProps?.isSaving !== props.isSaving) {
@@ -72,7 +80,7 @@ function OverseerrTvShowCategory(props) {
       newNameErrorMessage = "A category name is required.";
       newIsNameValid = false;
     } else if (/^[\w-]{1,32}$/.test(value)) {
-      if (props.overseerr.categories.map(x => x.id).includes(props.category.id) && props.overseerr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
+      if (reduxState.overseerr.categories.map(x => x.id).includes(props.category.id) && reduxState.overseerr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
         newNameErrorMessage = "All categories must have different names.";
         newIsNameValid = false;
       }
@@ -82,7 +90,7 @@ function OverseerrTvShowCategory(props) {
     }
 
     setIsNameValid(newIsNameValid);
-    if(newNameErrorMessage !== undefined)
+    if (newNameErrorMessage !== undefined)
       setNameErrorMessage(newNameErrorMessage);
 
     return newIsNameValid;
@@ -91,12 +99,12 @@ function OverseerrTvShowCategory(props) {
 
 
   const setCategory = (fieldChanged, data) => {
-    props.setOverseerrCategory(props.category.id, fieldChanged, data);
+    dispatch(setOverseerrCategory(props.category.id, fieldChanged, data));
   };
 
   const deleteCategory = () => {
     setIsOpen(false);
-    setTimeout(() => props.removeOverseerrCategory(props.category.id), 150);
+    setTimeout(() => dispatch(removeOverseerrCategory(props.category.id), 150));
   };
 
 
@@ -111,7 +119,7 @@ function OverseerrTvShowCategory(props) {
           </div>
         </th>
         <td class="text-right">
-          <button onClick={() => setIsOpen(!isOpen)} disabled={isOpen && (!isNameValid || !props.overseerr.isSonarrServiceSettingsValid)} className="btn btn-icon btn-3 btn-info" type="button">
+          <button onClick={() => setIsOpen(!isOpen)} disabled={isOpen && (!isNameValid || !reduxState.overseerr.isSonarrServiceSettingsValid)} className="btn btn-icon btn-3 btn-info" type="button">
             <span className="btn-inner--icon"><i class="fas fa-edit"></i></span>
             <span className="btn-inner--text">Edit</span>
           </button>
@@ -139,12 +147,12 @@ function OverseerrTvShowCategory(props) {
                     <Dropdown
                       name="Sonarr Instance"
                       value={props.category.serviceId}
-                      items={props.overseerr.sonarrServiceSettings.sonarrServices.map(x => { return { name: x.name, value: x.id } })}
+                      items={reduxState.overseerr.sonarrServiceSettings.sonarrServices.map(x => { return { name: x.name, value: x.id } })}
                       onChange={newServiceId => setCategory("serviceId", newServiceId)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadServiceSettings(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadServiceSettings(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.overseerr.isLoadinSonarrServiceSettings ? (
+                          reduxState.overseerr.isLoadinSonarrServiceSettings ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -158,7 +166,7 @@ function OverseerrTvShowCategory(props) {
                     </button>
                   </div>
                   {
-                    props.overseerr.sonarrServiceSettings.sonarrServices.length === 0 ? (
+                    reduxState.overseerr.sonarrServiceSettings.sonarrServices.length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any sonarr instances.</strong>
                       </Alert>)
@@ -172,12 +180,12 @@ function OverseerrTvShowCategory(props) {
                     <Dropdown
                       name="Path"
                       value={props.category.rootFolder}
-                      items={props.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].rootPaths.map(x => { return { name: x.name, value: x.name } }) : []}
+                      items={reduxState.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].rootPaths.map(x => { return { name: x.name, value: x.name } }) : []}
                       onChange={newRootFolder => setCategory("rootFolder", newRootFolder)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadServiceSettings(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadServiceSettings(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.overseerr.isLoadinSonarrServiceSettings ? (
+                          reduxState.overseerr.isLoadinSonarrServiceSettings ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -191,7 +199,7 @@ function OverseerrTvShowCategory(props) {
                     </button>
                   </div>
                   {
-                    (props.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].rootPaths.map(x => { return { name: x.name, value: x.name } }) : []).length === 0 ? (
+                    (reduxState.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].rootPaths.map(x => { return { name: x.name, value: x.name } }) : []).length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any paths.</strong>
                       </Alert>)
@@ -203,12 +211,12 @@ function OverseerrTvShowCategory(props) {
                     <Dropdown
                       name="Profile"
                       value={props.category.profileId}
-                      items={props.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].profiles.map(x => { return { name: x.name, value: x.id } }) : []}
+                      items={reduxState.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].profiles.map(x => { return { name: x.name, value: x.id } }) : []}
                       onChange={newProfileId => setCategory("profileId", newProfileId)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadServiceSettings(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadServiceSettings(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.overseerr.isLoadinSonarrServiceSettings ? (
+                          reduxState.overseerr.isLoadinSonarrServiceSettings ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -222,7 +230,7 @@ function OverseerrTvShowCategory(props) {
                     </button>
                   </div>
                   {
-                    (props.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].profiles.map(x => { return { name: x.name, value: x.id } }) : []).length === 0 ? (
+                    (reduxState.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].profiles.map(x => { return { name: x.name, value: x.id } }) : []).length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any profiles.</strong>
                       </Alert>)
@@ -236,12 +244,12 @@ function OverseerrTvShowCategory(props) {
                     <Dropdown
                       name="Language"
                       value={props.category.languageProfileId}
-                      items={props.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].languageProfiles.map(x => { return { name: x.name, value: x.id } }) : []}
+                      items={reduxState.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].languageProfiles.map(x => { return { name: x.name, value: x.id } }) : []}
                       onChange={newLanguageId => setCategory("languageProfileId", newLanguageId)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadServiceSettings(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadServiceSettings(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.overseerr.isLoadinSonarrServiceSettings ? (
+                          reduxState.overseerr.isLoadinSonarrServiceSettings ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -255,7 +263,7 @@ function OverseerrTvShowCategory(props) {
                     </button>
                   </div>
                   {
-                    (props.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].languageProfiles.map(x => { return { name: x.name, value: x.id } }) : []).length === 0 ? (
+                    (reduxState.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].languageProfiles.map(x => { return { name: x.name, value: x.id } }) : []).length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any languages.</strong>
                       </Alert>)
@@ -267,13 +275,13 @@ function OverseerrTvShowCategory(props) {
                     <MultiDropdown
                       name="Tags"
                       placeholder=""
-                      selectedItems={(props.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].tags : []).filter(x => props.category.tags.includes(x.id))}
-                      items={props.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].tags : []}
+                      selectedItems={(reduxState.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].tags : []).filter(x => props.category.tags.includes(x.id))}
+                      items={reduxState.overseerr.sonarrServiceSettings.sonarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.sonarrServiceSettings.sonarrServices.filter(x => x.id === props.category.serviceId)[0].tags : []}
                       onChange={newTags => setCategory("tags", newTags.map(x => x.id))} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadServiceSettings(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadServiceSettings(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.overseerr.isLoadinSonarrServiceSettings ? (
+                          reduxState.overseerr.isLoadinSonarrServiceSettings ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -287,7 +295,7 @@ function OverseerrTvShowCategory(props) {
                     </button>
                   </div>
                   {
-                    !props.overseerr.isSonarrServiceSettingsValid ? (
+                    !reduxState.overseerr.isSonarrServiceSettingsValid ? (
                       <Alert className="mt-3 mb-4 text-wrap " color="warning">
                         <strong>Could not load tags, cannot reach Overseerr.</strong>
                       </Alert>)
@@ -329,16 +337,4 @@ function OverseerrTvShowCategory(props) {
   );
 }
 
-const mapPropsToState = state => {
-  return {
-    overseerr: state.tvShows.overseerr
-  }
-};
-
-const mapPropsToAction = {
-  loadServiceSettings: loadSonarrServiceSettings,
-  setOverseerrCategory: setOverseerrTvShowCategory,
-  removeOverseerrCategory: removeOverseerrTvShowCategory,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(OverseerrTvShowCategory);
+export default OverseerrTvShowCategory;

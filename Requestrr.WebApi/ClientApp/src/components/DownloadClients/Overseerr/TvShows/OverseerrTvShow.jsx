@@ -1,10 +1,10 @@
 
 import { useEffect, useState } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
-import { testOverseerrTvShowSettings } from "../../../../store/actions/OverseerrClientSonarrActions"
-import { setOverseerrTvShowConnectionSettings } from "../../../../store/actions/OverseerrClientSonarrActions"
+import { testOverseerrTvShowSettings as testSettings } from "../../../../store/actions/OverseerrClientSonarrActions"
+import { setOverseerrTvShowConnectionSettings as setConnectionSettings } from "../../../../store/actions/OverseerrClientSonarrActions"
 import ValidatedTextbox from "../../../Inputs/ValidatedTextbox"
 import Dropdown from "../../../Inputs/Dropdown"
 import OverseerrTvShowCategoryList from "./OverseerrTvShowCategoryList"
@@ -35,9 +35,16 @@ function OverseerrTvShow(props) {
   const [apiVersion, setApiVersion] = useState("");
   const [isValid, setIsValid] = useState(false);
 
+  const reduxState = useSelector((state) => {
+    return {
+      settings: state.tvShows.overseerr
+    }
+  });
+  const dispatch = useDispatch();
+
 
   useEffect(() => {
-    updateStateFromProps(props);
+    updateStateFromProps();
   }, []);
 
 
@@ -62,30 +69,21 @@ function OverseerrTvShow(props) {
 
 
 
-  const updateStateFromProps = (props) => {
-    props.testSettings({
-      hostname: props.settings.hostname,
-      port: props.settings.port,
-      apiKey: props.settings.apiKey,
-      useSSL: props.settings.useSSL,
-      DefaultApiUserID: props.settings.defaultApiUserID,
-      version: props.settings.version,
-    });
-
+  const updateStateFromProps = () => {
     setIsTestingSettings(false);
     setTestSettingsRequested(false);
     setTestSettingsSuccess(false);
     setTestSettingsError("");
-    setHostname(props.settings.hostname);
+    setHostname(reduxState.settings.hostname);
     setIsHostnameValid(false);
-    setPort(props.settings.port);
+    setPort(reduxState.settings.port);
     setIsPortValid(false);
-    setApiKey(props.settings.apiKey);
+    setApiKey(reduxState.settings.apiKey);
     setIsApiKeyValid(false);
-    setDefaultApiUserID(props.settings.defaultApiUserID);
+    setDefaultApiUserID(reduxState.settings.defaultApiUserID);
     setIsDefaultApiUserIDValid(true);
-    setUseSSL(props.settings.useSSL);
-    setApiVersion(props.settings.version);
+    setUseSSL(reduxState.settings.useSSL);
+    setApiVersion(reduxState.settings.version);
     setIsValid(false);
   };
 
@@ -100,14 +98,14 @@ function OverseerrTvShow(props) {
       && isApiKeyValid) {
       setIsTestingSettings(true);
 
-      props.testSettings({
+      dispatch(testSettings({
         hostname: hostname,
         port: port,
         apiKey: apiKey,
         useSSL: useSSL,
         DefaultApiUserID: defaultApiUserID,
         version: apiVersion,
-      })
+      }))
         .then(data => {
           setIsTestingSettings(false);
 
@@ -135,13 +133,13 @@ function OverseerrTvShow(props) {
   };
 
   const onValueChange = () => {
-    props.setConnectionSettings({
+    dispatch(setConnectionSettings({
       hostname: hostname,
       port: port,
       apiKey: apiKey,
       useSSL: useSSL,
       version: apiVersion,
-    });
+    }));
 
     props.onChange({
       hostname: hostname,
@@ -160,7 +158,7 @@ function OverseerrTvShow(props) {
       && isHostnameValid
       && isPortValid
       && isDefaultApiUserIDValid
-      && (props.settings.categories.length === 0 || (props.settings.categories.every(x => validateCategory(x)) && props.settings.isSonarrServiceSettingsValid));
+      && (reduxState.settings.categories.length === 0 || (reduxState.settings.categories.every(x => validateCategory(x)) && reduxState.settings.isSonarrServiceSettingsValid));
 
     if (newIsValid !== isValid) {
       setIsValid(newIsValid);
@@ -173,14 +171,14 @@ function OverseerrTvShow(props) {
     if (!/\S/.test(category.name)) {
       return false;
     } else if (/^[\w-]{1,32}$/.test(category.name)) {
-      let names = props.settings.categories.map(x => x.name);
+      let names = reduxState.settings.categories.map(x => x.name);
 
       if (new Set(names).size !== names.length) {
         return false;
-      } else if (props.settings.sonarrServiceSettings.sonarrServices.every(x => x.id !== category.serviceId)) {
+      } else if (reduxState.settings.sonarrServiceSettings.sonarrServices.every(x => x.id !== category.serviceId)) {
         return false;
       } else {
-        let sonarrService = props.settings.sonarrServiceSettings.sonarrServices.filter(x => x.id === category.serviceId)[0];
+        let sonarrService = reduxState.settings.sonarrServiceSettings.sonarrServices.filter(x => x.id === category.serviceId)[0];
 
         if (sonarrService.profiles.length === 0 || sonarrService.rootPaths.length === 0) {
           return false;
@@ -333,17 +331,4 @@ function OverseerrTvShow(props) {
   );
 }
 
-
-
-const mapPropsToState = state => {
-  return {
-    settings: state.tvShows.overseerr
-  }
-};
-
-const mapPropsToAction = {
-  testSettings: testOverseerrTvShowSettings,
-  setConnectionSettings: setOverseerrTvShowConnectionSettings,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(OverseerrTvShow);
+export default OverseerrTvShow;

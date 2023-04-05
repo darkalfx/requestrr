@@ -1,11 +1,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
-import { loadRadarrProfiles } from "../../../store/actions/RadarrClientActions"
-import { loadRadarrRootPaths } from "../../../store/actions/RadarrClientActions"
-import { loadRadarrTags } from "../../../store/actions/RadarrClientActions"
+import { loadRadarrProfiles as loadProfiles } from "../../../store/actions/RadarrClientActions"
+import { loadRadarrRootPaths as loadRootPaths } from "../../../store/actions/RadarrClientActions"
+import { loadRadarrTags as loadTags } from "../../../store/actions/RadarrClientActions"
 import { setRadarrCategory } from "../../../store/actions/RadarrClientActions"
 import { removeRadarrCategory } from "../../../store/actions/RadarrClientActions"
 import ValidatedTextbox from "../../Inputs/ValidatedTextbox"
@@ -26,6 +26,12 @@ function RadarrCategory(props) {
 
   const propRef = useRef();
 
+  const reduxState = useSelector((state) => {
+    return {
+      radarr: state.movies.radarr
+    }
+  });
+  const dispatch = useDispatch();
 
 
   useEffect(() => {
@@ -33,33 +39,35 @@ function RadarrCategory(props) {
       setIsOpen(true);
 
     if (props.canConnect) {
-      props.loadProfiles(false);
-      props.loadRootPaths(false);
-      props.loadTags(false);
+      dispatch(loadProfiles(false));
+      dispatch(loadRootPaths(false));
+      dispatch(loadTags(false));
     }
   }, []);
 
 
   useEffect(() => {
-    let prevProps = propRef.past;
+    const prevState = propRef.pastState;
+    propRef.pastState = reduxState;
+    const prevProps = propRef.past;
     propRef.past = props;
 
-    let previousNames = prevProps === undefined ? [] : prevProps.radarr.categories.map(x => x.name);
-    let currentNames = props.radarr.categories.map(x => x.name);
+    let previousNames = prevState === undefined ? [] : prevState.radarr.categories.map(x => x.name);
+    let currentNames = reduxState.radarr.categories.map(x => x.name);
 
     if (!(previousNames.length === currentNames.length && currentNames.every((value, index) => previousNames[index] === value)))
       validateName(props.category.name)
 
     if (props.canConnect) {
-      props.loadProfiles(false);
-      props.loadRootPaths(false);
-      props.loadTags(false);
+      dispatch(loadProfiles(false));
+      dispatch(loadRootPaths(false));
+      dispatch(loadTags(false));
     }
 
     if (prevProps?.isSaving !== props.isSaving)
       setIsOpen(false)
   });
-  
+
 
 
 
@@ -75,7 +83,7 @@ function RadarrCategory(props) {
       newNameErrorMessage = "A category name is required.";
       newIsNameValid = false;
     } else if (/^[\w-]{1,32}$/.test(value)) {
-      if (props.radarr.categories.map(x => x.id).includes(props.category.id) && props.radarr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
+      if (reduxState.radarr.categories.map(x => x.id).includes(props.category.id) && reduxState.radarr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
         newNameErrorMessage = "All categories must have different names.";
         newIsNameValid = false;
       }
@@ -91,21 +99,21 @@ function RadarrCategory(props) {
     return newIsNameValid;
   };
 
-  
+
 
 
   const setCategory = (fieldChanged, data) => {
-    props.setRadarrCategory(props.category.id, fieldChanged, data);
+    dispatch(setRadarrCategory(props.category.id, fieldChanged, data));
   };
 
 
   const deleteCategory = () => {
     setIsOpen(false);
-    setTimeout(() => props.removeRadarrCategory(props.category.id), 150);
+    setTimeout(() => dispatch(removeRadarrCategory(props.category.id), 150));
   };
 
 
-  
+
 
   return (
     <>
@@ -118,7 +126,7 @@ function RadarrCategory(props) {
           </div>
         </th>
         <td class="text-right">
-          <button onClick={() => setIsOpen(!isOpen)} disabled={isOpen && (!isNameValid || !props.radarr.arePathsValid || !props.radarr.areProfilesValid || !props.radarr.areTagsValid)} className="btn btn-icon btn-3 btn-info" type="button">
+          <button onClick={() => setIsOpen(!isOpen)} disabled={isOpen && (!isNameValid || !reduxState.radarr.arePathsValid || !reduxState.radarr.areProfilesValid || !reduxState.radarr.areTagsValid)} className="btn btn-icon btn-3 btn-info" type="button">
             <span className="btn-inner--icon"><i class="fas fa-edit"></i></span>
             <span className="btn-inner--text">Edit</span>
           </button>
@@ -148,12 +156,12 @@ function RadarrCategory(props) {
                     <Dropdown
                       name="Path"
                       value={props.category.rootFolder}
-                      items={props.radarr.paths.map(x => { return { name: x.path, value: x.path } })}
+                      items={reduxState.radarr.paths.map(x => { return { name: x.path, value: x.path } })}
                       onChange={newPath => setCategory("rootFolder", newPath)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadRootPaths(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadRootPaths(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.radarr.isLoadingPaths ? (
+                          reduxState.radarr.isLoadingPaths ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -167,14 +175,14 @@ function RadarrCategory(props) {
                     </button>
                   </div>
                   {
-                    !props.radarr.arePathsValid ? (
+                    !reduxState.radarr.arePathsValid ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any paths.</strong>
                       </Alert>)
                       : null
                   }
                   {
-                    props.isSubmitted && props.radarr.paths.length === 0 ? (
+                    props.isSubmitted && reduxState.radarr.paths.length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>A path is required.</strong>
                       </Alert>)
@@ -186,12 +194,12 @@ function RadarrCategory(props) {
                     <Dropdown
                       name="Profile"
                       value={props.category.profileId}
-                      items={props.radarr.profiles.map(x => { return { name: x.name, value: x.id } })}
+                      items={reduxState.radarr.profiles.map(x => { return { name: x.name, value: x.id } })}
                       onChange={newProfile => setCategory("profileId", newProfile)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadProfiles(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadProfiles(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.radarr.isLoadingProfiles ? (
+                          reduxState.radarr.isLoadingProfiles ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -205,14 +213,14 @@ function RadarrCategory(props) {
                     </button>
                   </div>
                   {
-                    !props.radarr.areProfilesValid ? (
+                    !reduxState.radarr.areProfilesValid ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any profiles.</strong>
                       </Alert>)
                       : null
                   }
                   {
-                    props.isSubmitted && props.radarr.profiles.length === 0 ? (
+                    props.isSubmitted && reduxState.radarr.profiles.length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>A profile is required.</strong>
                       </Alert>)
@@ -239,13 +247,13 @@ function RadarrCategory(props) {
                             labelField="name"
                             valueField="id"
                             ignoreEmptyItems={true}
-                            selectedItems={props.radarr.tags.filter(x => props.category.tags.includes(x.id))}
-                            items={props.radarr.tags}
+                            selectedItems={reduxState.radarr.tags.filter(x => props.category.tags.includes(x.id))}
+                            items={reduxState.radarr.tags}
                             onChange={newTags => setCategory("tags", newTags.map(x => x.id))} />
-                          <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadTags(true)} disabled={!props.canConnect} type="button">
+                          <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadTags(true))} disabled={!props.canConnect} type="button">
                             <span className="btn-inner--icon">
                               {
-                                props.radarr.isLoadingTags ? (
+                                reduxState.radarr.isLoadingTags ? (
                                   <Oval
                                     wrapperClass="loader"
                                     type="Oval"
@@ -259,7 +267,7 @@ function RadarrCategory(props) {
                           </button>
                         </div>
                         {
-                          !props.radarr.areTagsValid ? (
+                          !reduxState.radarr.areTagsValid ? (
                             <Alert className="mt-3 mb-4 text-wrap " color="warning">
                               <strong>Could not load tags, cannot reach Radarr.</strong>
                             </Alert>)
@@ -271,7 +279,7 @@ function RadarrCategory(props) {
                 }
               </Row>
               {
-                props.radarr.categories.length > 1
+                reduxState.radarr.categories.length > 1
                   ? <Row>
                     <Col lg="12" className="text-right">
                       <button onClick={() => deleteCategory()} className="btn btn-icon btn-3 btn-danger" type="button">
@@ -290,19 +298,4 @@ function RadarrCategory(props) {
   );
 }
 
-
-const mapPropsToState = state => {
-  return {
-    radarr: state.movies.radarr
-  }
-};
-
-const mapPropsToAction = {
-  loadProfiles: loadRadarrProfiles,
-  loadRootPaths: loadRadarrRootPaths,
-  loadTags: loadRadarrTags,
-  setRadarrCategory: setRadarrCategory,
-  removeRadarrCategory: removeRadarrCategory,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(RadarrCategory);
+export default RadarrCategory;

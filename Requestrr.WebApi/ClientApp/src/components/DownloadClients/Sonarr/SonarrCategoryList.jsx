@@ -1,6 +1,6 @@
 
 import React from "react";
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addSonarrCategory } from "../../../store/actions/SonarrClientActions"
 import SonarrCategory from "./SonarrCategory";
 
@@ -10,11 +10,18 @@ import {
 } from "reactstrap";
 
 function SonarrCategoryList(props) {
-  
+
+  const reduxState = useSelector((state) => {
+    return {
+      categories: state.tvShows.sonarr.categories
+    }
+  });
+  const dispatch = useDispatch();
+
   const createSonarrCategory = () => {
     let newId = Math.floor((Math.random() * 900) + 1);
 
-    while (props.categories.map(x => x.id).includes(newId)) {
+    while (reduxState.categories.map(x => x.id).includes(newId)) {
       newId = Math.floor((Math.random() * 900) + 1);
     }
 
@@ -30,7 +37,7 @@ function SonarrCategoryList(props) {
       wasCreated: true
     };
 
-    props.addSonarrCategory(newCategory);
+    dispatch(addSonarrCategory(newCategory));
   };
 
   return (
@@ -49,7 +56,7 @@ function SonarrCategoryList(props) {
               </tr>
             </thead>
             <tbody class="list">
-              {props.categories.map((category, key) => {
+              {reduxState.categories.map((category, key) => {
                 return (
                   <React.Fragment key={category.id}>
                     <SonarrCategory key={category.id} isSubmitted={props.isSubmitted} isSaving={props.isSaving} canConnect={props.canConnect} apiVersion={props.apiVersion} category={{ ...category }} />
@@ -74,14 +81,4 @@ function SonarrCategoryList(props) {
   );
 }
 
-const mapPropsToState = state => {
-  return {
-    categories: state.tvShows.sonarr.categories
-  }
-};
-
-const mapPropsToAction = {
-  addSonarrCategory: addSonarrCategory,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(SonarrCategoryList);
+export default SonarrCategoryList;
