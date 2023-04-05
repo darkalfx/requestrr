@@ -26,13 +26,13 @@
     "not op_mini all"
   ],
   "dependencies": {
-    "@fortawesome/fontawesome-free": "5.15.3",
+    "@fortawesome/fontawesome-free": "5.15.4",
     "@reduxjs/toolkit": "1.9.3",
     "bootstrap": "4.6.0",
     "chart.js": "4.2.1",
-    "classnames": "2.3.1",
+    "classnames": "2.3.2",
     "moment": "2.29.4",
-    "nouislider": "15.2.0",
+    "nouislider": "15.7.0",
     "react": "18.2.0",
     "react-chartjs-2": "5.2.0",
     "react-copy-to-clipboard": "5.1.0",
@@ -41,16 +41,16 @@
     "react-dropdown-select": "4.9.3",
     "react-loader-spinner": "5.3.4",
     "react-redux": "8.0.5",
-    "react-router-dom": "^6.10.0",
+    "react-router-dom": "6.10.0",
     "react-scripts": "5.0.1",
     "reactstrap": "8.9.0",
-    "sass": "1.54.5"
+    "sass": "1.60.0"
   },
   "devDependencies": {
-    "@types/react": "18.0.28",
-    "@typescript-eslint/parser": "^5.56.0",
+    "@types/react": "18.0.31",
+    "@typescript-eslint/parser": "5.57.0",
     "gulp": "4.0.2",
     "gulp-append-prepend": "1.0.9",
-    "typescript": "4.9.4"
+    "typescript": "4.9.5"
   }
 }
