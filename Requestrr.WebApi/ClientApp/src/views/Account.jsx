@@ -16,7 +16,7 @@
 
 */
 import { useEffect, useState } from "react";
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Alert } from "reactstrap";
 import { changePassword } from "../store/actions/UserActions"
 
@@ -36,8 +36,8 @@ import {
 // core components
 import UserHeader from "../components/Headers/UserHeader.jsx";
 
-// class Account extends React.Component {
-function Account(props) {
+
+function Account() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveAttempted, setSaveAttempted] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -53,13 +53,13 @@ function Account(props) {
   const [isNewPasswordConfirmationInvalid, setIsNewPasswordConfirmationInvalid] = useState(false);
   const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState(false);
 
+  const dispatch = useDispatch();
 
-
-  
   useEffect(() => {
-    if (hasPasswordChanged)
+    if (hasPasswordChanged) {
       triggerPasswordValidation();
-  }, [hasPasswordChanged]);
+    }
+  }, [password]);
 
 
   useEffect(() => {
@@ -67,7 +67,7 @@ function Account(props) {
       triggerNewPasswordValidation();
       triggerPasswordMatchValidation();
     }
-  }, [hasNewPasswordChanged]);
+  }, [newPassword]);
 
 
   useEffect(() => {
@@ -75,9 +75,9 @@ function Account(props) {
       triggerNewPasswordConfirmationValidation();
       triggerPasswordMatchValidation();
     }
-  }, [hasNewPasswordConfirmationChanged]);
+  }, [newPasswordConfirmation]);
 
-  
+
 
 
   const validateNewPassword = () => {
@@ -118,7 +118,7 @@ function Account(props) {
   };
 
   const onNewPasswordConfirmationChange = (event) => {
-    setNnewPasswordConfirmation(event.target.value);
+    setNewPasswordConfirmation(event.target.value);
     setHasNewPasswordConfirmationChanged(true);
   };
 
@@ -146,11 +146,11 @@ function Account(props) {
         && validatePasswordMatch()) {
         setIsSaving(true);
 
-        props.changePassword({
+        dispatch(changePassword({
           'password': password,
           'newPassword': newPassword,
           'newPasswordConfirmation': newPasswordConfirmation,
-        })
+        }))
           .then(data => {
             setIsSaving(false);
 
@@ -178,7 +178,7 @@ function Account(props) {
   };
 
 
-  
+
   return (
     <>
       <UserHeader title="Account" description="This page is for configuring your admin account" />
@@ -328,8 +328,4 @@ function Account(props) {
   );
 }
 
-const mapPropsToAction = {
-  changePassword: changePassword
-};
-
-export default connect(null, mapPropsToAction)(Account);
+export default Account;

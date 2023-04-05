@@ -1,12 +1,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
-import { loadSonarrProfiles } from "../../../store/actions/SonarrClientActions"
-import { loadSonarrRootPaths } from "../../../store/actions/SonarrClientActions"
-import { loadSonarrTags } from "../../../store/actions/SonarrClientActions"
-import { loadSonarrLanguages } from "../../../store/actions/SonarrClientActions"
+import { loadSonarrProfiles as loadProfiles } from "../../../store/actions/SonarrClientActions"
+import { loadSonarrRootPaths as loadRootPaths } from "../../../store/actions/SonarrClientActions"
+import { loadSonarrTags as loadTags } from "../../../store/actions/SonarrClientActions"
+import { loadSonarrLanguages as loadLanguages } from "../../../store/actions/SonarrClientActions"
 import { setSonarrCategory } from "../../../store/actions/SonarrClientActions"
 import { removeSonarrCategory } from "../../../store/actions/SonarrClientActions"
 import ValidatedTextbox from "../../Inputs/ValidatedTextbox"
@@ -30,8 +30,14 @@ function SonarrCategory(props) {
 
   const refPrevProps = useRef();
 
+  const reduxState = useSelector((state) => {
+    return {
+      sonarr: state.tvShows.sonarr
+    }
+  });
+  const dispatch = useDispatch();
 
-  
+
   useEffect(() => {
     if (props.category.wasCreated)
       setIsOpen(true);
@@ -39,26 +45,28 @@ function SonarrCategory(props) {
 
 
   useEffect(() => {
-    const prevProps = refPrevProps.past;
-    refPrevProps.past = props;
+    const prevReduxState = refPrevProps.pastState;
+    refPrevProps.pastState = reduxState;
+    const prevProps = refPrevProps.pastProp;
+    refPrevProps.pastProp = props;
 
-    let previousNames = prevProps === undefined ? [] : prevProps.sonarr.categories.map(x => x.name);
-    let currentNames = props === undefined ? [] : props.sonarr.categories.map(x => x.name);
+    let previousNames = prevReduxState === undefined ? [] : prevReduxState.sonarr.categories.map(x => x.name);
+    let currentNames = reduxState === undefined ? [] : reduxState.sonarr.categories.map(x => x.name);
 
     if (!(previousNames.length === currentNames.length && currentNames.every((value, index) => previousNames[index] === value)))
       validateName(props.category.name);
 
     if (props !== undefined && props.canConnect) {
-      props.loadProfiles(false);
-      props.loadRootPaths(false);
-      props.loadTags(false);
-      props.loadLanguages(false);
+      dispatch(loadProfiles(false));
+      dispatch(loadRootPaths(false));
+      dispatch(loadTags(false));
+      dispatch(loadLanguages(false));
     }
 
     if ((prevProps !== undefined && prevProps.isSaving) !== (props !== undefined && props.isSaving))
       setIsOpen(false);
   });
-  
+
 
 
   const validateName = (value) => {
@@ -69,7 +77,7 @@ function SonarrCategory(props) {
       newNameErrorMessage = "A category name is required.";
       newIsNameValid = false;
     } else if (/^[\w-]{1,32}$/.test(value)) {
-      if (props.sonarr.categories.map(x => x.id).includes(props.category.id) && props.sonarr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
+      if (reduxState.sonarr.categories.map(x => x.id).includes(props.category.id) && reduxState.sonarr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
         newNameErrorMessage = "All categories must have different names.";
         newIsNameValid = false;
       }
@@ -87,12 +95,12 @@ function SonarrCategory(props) {
 
 
   const setCategory = (fieldChanged, data) => {
-    props.setSonarrCategory(props.category.id, fieldChanged, data);
+    dispatch(setSonarrCategory(props.category.id, fieldChanged, data));
   };
 
   const deleteCategory = () => {
     setIsOpen(false);
-    setTimeout(() => props.removeSonarrCategory(props.category.id), 150);
+    setTimeout(() => dispatch(removeSonarrCategory(props.category.id), 150));
   };
 
 
@@ -110,7 +118,7 @@ function SonarrCategory(props) {
           </div>
         </th>
         <td class="text-right">
-          <button onClick={() => setIsOpen(!isOpen)} disabled={isOpen && (!isNameValid || !props.sonarr.areLanguagesValid || !props.sonarr.arePathsValid || !props.sonarr.areProfilesValid || !props.sonarr.areTagsValid)} className="btn btn-icon btn-3 btn-info" type="button">
+          <button onClick={() => setIsOpen(!isOpen)} disabled={isOpen && (!isNameValid || !reduxState.sonarr.areLanguagesValid || !reduxState.sonarr.arePathsValid || !reduxState.sonarr.areProfilesValid || !reduxState.sonarr.areTagsValid)} className="btn btn-icon btn-3 btn-info" type="button">
             <span className="btn-inner--icon"><i class="fas fa-edit"></i></span>
             <span className="btn-inner--text">Edit</span>
           </button>
@@ -140,12 +148,12 @@ function SonarrCategory(props) {
                     <Dropdown
                       name="Path"
                       value={props.category.rootFolder}
-                      items={props.sonarr.paths.map(x => { return { name: x.path, value: x.path } })}
+                      items={reduxState.sonarr.paths.map(x => { return { name: x.path, value: x.path } })}
                       onChange={newPath => setCategory("rootFolder", newPath)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadRootPaths(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadRootPaths(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.sonarr.isLoadingPaths ? (
+                          reduxState.sonarr.isLoadingPaths ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -159,14 +167,14 @@ function SonarrCategory(props) {
                     </button>
                   </div>
                   {
-                    !props.sonarr.arePathsValid ? (
+                    !reduxState.sonarr.arePathsValid ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any paths.</strong>
                       </Alert>)
                       : null
                   }
                   {
-                    props.isSubmitted && props.sonarr.paths.length === 0 ? (
+                    props.isSubmitted && reduxState.sonarr.paths.length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>A path is required.</strong>
                       </Alert>)
@@ -178,12 +186,12 @@ function SonarrCategory(props) {
                     <Dropdown
                       name="Profile"
                       value={props.category.profileId}
-                      items={props.sonarr.profiles.map(x => { return { name: x.name, value: x.id } })}
+                      items={reduxState.sonarr.profiles.map(x => { return { name: x.name, value: x.id } })}
                       onChange={newProfile => setCategory("profileId", newProfile)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadProfiles(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadProfiles(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.sonarr.isLoadingProfiles ? (
+                          reduxState.sonarr.isLoadingProfiles ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -197,14 +205,14 @@ function SonarrCategory(props) {
                     </button>
                   </div>
                   {
-                    !props.sonarr.areProfilesValid ? (
+                    !reduxState.sonarr.areProfilesValid ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any profiles.</strong>
                       </Alert>)
                       : null
                   }
                   {
-                    props.isSubmitted && props.sonarr.profiles.length === 0 ? (
+                    props.isSubmitted && reduxState.sonarr.profiles.length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>A profile is required.</strong>
                       </Alert>)
@@ -221,12 +229,12 @@ function SonarrCategory(props) {
                           <Dropdown
                             name="Language"
                             value={props.category.languageId}
-                            items={props.sonarr.languages.map(x => { return { name: x.name, value: x.id } })}
+                            items={reduxState.sonarr.languages.map(x => { return { name: x.name, value: x.id } })}
                             onChange={newLanguage => setCategory("languageId", newLanguage)} />
-                          <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadLanguages(true)} disabled={!props.canConnect} type="button">
+                          <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadLanguages(true))} disabled={!props.canConnect} type="button">
                             <span className="btn-inner--icon">
                               {
-                                props.sonarr.isLoadingLanguages ? (
+                                reduxState.sonarr.isLoadingLanguages ? (
                                   <Oval
                                     wrapperClass="loader"
                                     type="Oval"
@@ -240,14 +248,14 @@ function SonarrCategory(props) {
                           </button>
                         </div>
                         {
-                          !props.sonarr.areLanguagesValid ? (
+                          !reduxState.sonarr.areLanguagesValid ? (
                             <Alert className="mt-3 mb-4 text-wrap " color="warning">
                               <strong>Could not find any languages.</strong>
                             </Alert>)
                             : null
                         }
                         {
-                          props.isSubmitted && props.sonarr.languages.length === 0 ? (
+                          props.isSubmitted && reduxState.sonarr.languages.length === 0 ? (
                             <Alert className="mt-3 mb-4 text-wrap " color="warning">
                               <strong>A language is required.</strong>
                             </Alert>)
@@ -262,13 +270,13 @@ function SonarrCategory(props) {
                             labelField="name"
                             valueField="id"
                             ignoreEmptyItems={true}
-                            selectedItems={props.sonarr.tags.filter(x => props.category.tags.includes(x.id))}
-                            items={props.sonarr.tags}
+                            selectedItems={reduxState.sonarr.tags.filter(x => props.category.tags.includes(x.id))}
+                            items={reduxState.sonarr.tags}
                             onChange={newTags => setCategory("tags", newTags.map(x => x.id))} />
-                          <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadTags(true)} disabled={!props.canConnect} type="button">
+                          <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadTags(true))} disabled={!props.canConnect} type="button">
                             <span className="btn-inner--icon">
                               {
-                                props.sonarr.isLoadingTags ? (
+                                reduxState.sonarr.isLoadingTags ? (
                                   <Oval
                                     wrapperClass="loader"
                                     type="Oval"
@@ -282,7 +290,7 @@ function SonarrCategory(props) {
                           </button>
                         </div>
                         {
-                          !props.sonarr.areTagsValid ? (
+                          !reduxState.sonarr.areTagsValid ? (
                             <Alert className="mt-3 mb-4 text-wrap " color="warning">
                               <strong>Could not load tags, cannot reach Sonarr.</strong>
                             </Alert>)
@@ -321,7 +329,7 @@ function SonarrCategory(props) {
                 </Col>
               </Row>
               {
-                props.sonarr.categories.length > 1
+                reduxState.sonarr.categories.length > 1
                   ? <Row>
                     <Col lg="12" className="text-right">
                       <button onClick={() => deleteCategory()} className="btn btn-icon btn-3 btn-danger" type="button">
@@ -340,20 +348,4 @@ function SonarrCategory(props) {
   );
 }
 
-
-const mapPropsToState = state => {
-  return {
-    sonarr: state.tvShows.sonarr
-  }
-};
-
-const mapPropsToAction = {
-  loadProfiles: loadSonarrProfiles,
-  loadRootPaths: loadSonarrRootPaths,
-  loadTags: loadSonarrTags,
-  loadLanguages: loadSonarrLanguages,
-  setSonarrCategory: setSonarrCategory,
-  removeSonarrCategory: removeSonarrCategory,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(SonarrCategory);
+export default SonarrCategory;

@@ -1,10 +1,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
-import { testRadarrSettings } from "../../../store/actions/RadarrClientActions"
-import { setRadarrConnectionSettings } from "../../../store/actions/RadarrClientActions"
+import { testRadarrSettings as testSettings } from "../../../store/actions/RadarrClientActions"
+import { setRadarrConnectionSettings as setConnectionSettings } from "../../../store/actions/RadarrClientActions"
 import ValidatedTextbox from "../../Inputs/ValidatedTextbox"
 import Textbox from "../../Inputs/Textbox"
 import Dropdown from "../../Inputs/Dropdown"
@@ -37,21 +37,28 @@ function Radarr(props) {
 
   const propRef = useRef();
 
+  const reduxState = useSelector((state) => {
+    return {
+      settings: state.movies.radarr
+    }
+  });
+  const dispatch = useDispatch();
+
 
   useEffect(() => {
-    updateStateFromProps(props)
+    updateStateFromProps()
   }, []);
 
 
   useEffect(() => {
-    const prevProps = propRef.past;
-    propRef.past = props;
+    const prevState = propRef.pastState;
+    propRef.pastState = reduxState;
 
-    let previousNames = prevProps === undefined ? [] : prevProps.settings.categories.map(x => x.name);
-    let currentNames = props.settings.categories.map(x => x.name);
+    let previousNames = prevState === undefined ? [] : prevState.settings.categories.map(x => x.name);
+    let currentNames = reduxState.settings.categories.map(x => x.name);
 
-    if (!(prevProps?.settings?.profiles?.length === props.settings.profiles.length && prevProps?.settings?.profiles?.reduce((a, b, i) => a && props.settings.profiles[i], true))
-      || !(prevProps?.settings?.paths?.length === props.settings.paths.length && prevProps?.settings?.paths?.reduce((a, b, i) => a && props.settings.paths[i], true))
+    if (!(prevState?.settings?.profiles?.length === reduxState.settings.profiles.length && prevState?.settings?.profiles?.reduce((a, b, i) => a && reduxState.settings.profiles[i], true))
+      || !(prevState?.settings?.paths?.length === reduxState.settings.paths.length && prevState?.settings?.paths?.reduce((a, b, i) => a && reduxState.settings.paths[i], true))
       || !(previousNames.length === currentNames.length && currentNames.every((value, index) => previousNames[index] === value))) {
       onValueChange();
     }
@@ -64,7 +71,7 @@ function Radarr(props) {
   }, [apiVersion, apiKey, hostname, port, baseUrl, monitorNewRequests, searchNewRequests]);
 
 
-  
+
   const validateNonEmptyString = (value) => {
     return /\S/.test(value);
   };
@@ -77,7 +84,7 @@ function Radarr(props) {
     if (!/\S/.test(value)) {
       return false;
     } else if (/^[\w-]{1,32}$/.test(value)) {
-      let names = props.settings.categories.map(x => x.name);
+      let names = reduxState.settings.categories.map(x => x.name);
 
       if (new Set(names).size !== names.length) {
         return false;
@@ -89,33 +96,24 @@ function Radarr(props) {
   };
 
 
-  
 
-  const updateStateFromProps = (props) => {
-    props.testSettings({
-      hostname: props.settings.hostname,
-      baseUrl: props.settings.baseUrl,
-      port: props.settings.port,
-      apiKey: props.settings.apiKey,
-      useSSL: props.settings.useSSL,
-      version: props.settings.apiVersion,
-    });
 
+  const updateStateFromProps = () => {
     setIsTestingSettings(false);
     setTestSettingsRequested(false);
     setTestSettingsSuccess(false);
     setTestSettingsError("");
-    setHostname(props.settings.hostname);
+    setHostname(reduxState.settings.hostname);
     setIsHostnameValid(false);
-    setPort(props.settings.port);
+    setPort(reduxState.settings.port);
     setIsPortValid(false);
-    setApiKey(props.settings.apiKey);
+    setApiKey(reduxState.settings.apiKey);
     setIsApiKeyValid(false);
-    setUseSSL(props.settings.useSSL);
-    setApiVersion(props.settings.version);
-    setBaseUrl(props.settings.baseUrl);
-    setSearchNewRequests(props.settings.searchNewRequests);
-    setMonitorNewRequests(props.settings.monitorNewRequests);
+    setUseSSL(reduxState.settings.useSSL);
+    setApiVersion(reduxState.settings.version);
+    setBaseUrl(reduxState.settings.baseUrl);
+    setSearchNewRequests(reduxState.settings.searchNewRequests);
+    setMonitorNewRequests(reduxState.settings.monitorNewRequests);
   };
 
   const onUseSSLChanged = (event) => {
@@ -133,14 +131,14 @@ function Radarr(props) {
       && isApiKeyValid) {
       setIsTestingSettings(true);
 
-      props.testSettings({
+      dispatch(testSettings({
         hostname: hostname,
         baseUrl: baseUrl,
         port: port,
         apiKey: apiKey,
         useSSL: useSSL,
         version: apiVersion,
-      })
+      }))
         .then(data => {
           if (data.ok) {
             setTestSettingsRequested(true);
@@ -163,23 +161,14 @@ function Radarr(props) {
   }
 
   const onValueChange = () => {
-    props.testSettings({
+    dispatch(setConnectionSettings({
       hostname: hostname,
       baseUrl: baseUrl,
       port: port,
       apiKey: apiKey,
       useSSL: useSSL,
       version: apiVersion,
-    });
-
-    props.setConnectionSettings({
-      hostname: hostname,
-      baseUrl: baseUrl,
-      port: port,
-      apiKey: apiKey,
-      useSSL: useSSL,
-      version: apiVersion,
-    });
+    }));
 
     props.onChange({
       hostname: hostname,
@@ -200,9 +189,9 @@ function Radarr(props) {
       isApiKeyValid
       && isHostnameValid
       && isPortValid
-      && props.settings.categories.every(x => validateCategoryName(x.name))
-      && props.settings.areProfilesValid
-      && props.settings.arePathsValid);
+      && reduxState.settings.categories.every(x => validateCategoryName(x.name))
+      && reduxState.settings.areProfilesValid
+      && reduxState.settings.arePathsValid);
   };
 
 
@@ -377,17 +366,4 @@ function Radarr(props) {
   );
 }
 
-
-
-const mapPropsToState = state => {
-  return {
-    settings: state.movies.radarr
-  }
-};
-
-const mapPropsToAction = {
-  testSettings: testRadarrSettings,
-  setConnectionSettings: setRadarrConnectionSettings,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(Radarr);
+export default Radarr;

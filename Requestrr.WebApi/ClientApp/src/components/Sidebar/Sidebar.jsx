@@ -17,7 +17,7 @@
 */
 /*eslint-disable*/
 import { useEffect, useState } from "react";
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { NavLink as NavLinkRRD, Link } from "react-router-dom";
 // nodejs library to set properties for components
 import { PropTypes } from "prop-types";
@@ -43,11 +43,10 @@ function Sidebar(props) {
   const [disableAuthentication, setDisableAuthentication] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const dispatch = useDispatch();
 
-
-  
   useEffect(() => {
-    props.getSettings()
+    dispatch(getSettings())
       .then(data => {
         setIsLoading(false);
         setDisableAuthentication(data.payload.disableAuthentication);
@@ -98,11 +97,13 @@ function Sidebar(props) {
       return (
         !disableAuthentication || (disableAuthentication && prop.supportsAnonymousUser) ?
           <NavItem key={key}>
+            {/* <NavLink */}
             <NavLink
               to={prop.layout + prop.path}
               tag={NavLinkRRD}
               onClick={closeCollapse}
-              activeClassName="active">
+              activeclassname="active"
+            >
               <i className={prop.icon} />
               {prop.name}
             </NavLink>
@@ -220,16 +221,4 @@ Sidebar.propTypes = {
 };
 
 
-const mapPropsToState = state => {
-  return {
-    settings: state.settings
-  }
-};
-
-
-const mapPropsToAction = {
-  getSettings: getSettings,
-};
-
-
-export default connect(mapPropsToState, mapPropsToAction)(Sidebar);
+export default Sidebar;

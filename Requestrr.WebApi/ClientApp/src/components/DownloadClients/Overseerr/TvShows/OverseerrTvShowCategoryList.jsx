@@ -1,7 +1,7 @@
 
 import React from "react";
-import { connect } from 'react-redux';
-import { addOverseerrTvShowCategory } from "../../../../store/actions/OverseerrClientSonarrActions"
+import { useDispatch, useSelector } from 'react-redux';
+import { addOverseerrTvShowCategory as addOverseerrCategory } from "../../../../store/actions/OverseerrClientSonarrActions"
 import OverseerrTvShowCategory from "./OverseerrTvShowCategory";
 
 // reactstrap components
@@ -12,25 +12,32 @@ import {
 
 function OverseerrTvShowCategoryList(props) {
 
+  const reduxState = useSelector((state) => {
+    return {
+      overseerr: state.tvShows.overseerr
+    }
+  });
+  const dispatch = useDispatch();
+
 
   const createOverseerrCategory = () => {
     let newId = Math.floor((Math.random() * 900) + 1);
 
-    while (props.overseerr.categories.map(x => x.id).includes(newId)) {
+    while (reduxState.overseerr.categories.map(x => x.id).includes(newId)) {
       newId = Math.floor((Math.random() * 900) + 1);
     }
 
     let newCategory = {
       id: newId,
       name: "new-category",
-      serviceId: props.overseerr.sonarrServiceSettings.sonarrServices.length > 0 ? props.overseerr.sonarrServiceSettings.sonarrServices[0].id : -1,
+      serviceId: reduxState.overseerr.sonarrServiceSettings.sonarrServices.length > 0 ? reduxState.overseerr.sonarrServiceSettings.sonarrServices[0].id : -1,
       profileId: -1,
       rootFolder: "",
       tags: [],
       wasCreated: true
     };
 
-    props.addOverseerrCategory(newCategory);
+    dispatch(addOverseerrCategory(newCategory));
   };
 
   
@@ -51,7 +58,7 @@ function OverseerrTvShowCategoryList(props) {
               </tr>
             </thead>
             <tbody class="list">
-              {props.overseerr.categories.map((category, key) => {
+              {reduxState.overseerr.categories.map((category, key) => {
                 return (
                   <React.Fragment key={category.id}>
                     <OverseerrTvShowCategory key={category.id} isSubmitted={props.isSubmitted} isSaving={props.isSaving} canConnect={props.canConnect} apiVersion={props.apiVersion} category={{ ...category }} />
@@ -76,14 +83,4 @@ function OverseerrTvShowCategoryList(props) {
   );
 }
 
-const mapPropsToState = state => {
-  return {
-    overseerr: state.tvShows.overseerr
-  }
-};
-
-const mapPropsToAction = {
-  addOverseerrCategory: addOverseerrTvShowCategory,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(OverseerrTvShowCategoryList);
+export default OverseerrTvShowCategoryList;

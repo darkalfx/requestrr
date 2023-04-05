@@ -1,7 +1,7 @@
 
 import React from "react";
-import { connect } from 'react-redux';
-import { addOverseerrMovieCategory } from "../../../../store/actions/OverseerrClientRadarrActions"
+import { useDispatch, useSelector } from 'react-redux';
+import { addOverseerrMovieCategory as addOverseerrCategory } from "../../../../store/actions/OverseerrClientRadarrActions"
 import OverseerrMovieCategory from "./OverseerrMovieCategory";
 
 // reactstrap components
@@ -12,25 +12,32 @@ import {
 
 function OverseerrMovieCategoryList(props) {
 
+  const reduxState = useSelector((state) => {
+    return {
+      overseerr: state.movies.overseerr
+    }
+  });
+  const dispatch = useDispatch();
+
 
   const createOverseerrCategory = () => {
     let newId = Math.floor((Math.random() * 900) + 1);
 
-    while (props.overseerr.categories.map(x => x.id).includes(newId)) {
+    while (reduxState.overseerr.categories.map(x => x.id).includes(newId)) {
       newId = Math.floor((Math.random() * 900) + 1);
     }
 
     let newCategory = {
       id: newId,
       name: "new-category",
-      serviceId: props.overseerr.radarrServiceSettings.radarrServices.length > 0 ? props.overseerr.radarrServiceSettings.radarrServices[0].id : -1,
+      serviceId: reduxState.overseerr.radarrServiceSettings.radarrServices.length > 0 ? reduxState.overseerr.radarrServiceSettings.radarrServices[0].id : -1,
       profileId: -1,
       rootFolder: "",
       tags: [],
       wasCreated: true
     };
 
-    props.addOverseerrCategory(newCategory);
+    dispatch(addOverseerrCategory(newCategory));
   };
 
 
@@ -40,17 +47,17 @@ function OverseerrMovieCategoryList(props) {
       <h6 className="heading-small text-muted">
         Overseerr Category Settings
       </h6>
-      <div class="table-responsive mt-4 overflow-visible">
+      <div className="table-responsive mt-4 overflow-visible">
         <div>
-          <table class="table align-items-center">
-            <thead class="thead-dark">
+          <table className="table align-items-center">
+            <thead className="thead-dark">
               <tr>
-                <th scope="col" class="sort" data-sort="name">Category</th>
-                <th scope="col" class="text-right">Actions</th>
+                <th scope="col" className="sort" data-sort="name">Category</th>
+                <th scope="col" className="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="list">
-              {props.overseerr.categories.map((category, key) => {
+            <tbody className="list">
+              {reduxState.overseerr.categories.map((category, key) => {
                 return (
                   <React.Fragment key={category.id}>
                     <OverseerrMovieCategory key={category.id} isSubmitted={props.isSubmitted} isSaving={props.isSaving} canConnect={props.canConnect} apiVersion={props.apiVersion} category={{ ...category }} />
@@ -75,15 +82,4 @@ function OverseerrMovieCategoryList(props) {
   );
 }
 
-
-const mapPropsToState = state => {
-  return {
-    overseerr: state.movies.overseerr
-  }
-};
-
-const mapPropsToAction = {
-  addOverseerrCategory: addOverseerrMovieCategory,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(OverseerrMovieCategoryList);
+export default OverseerrMovieCategoryList;

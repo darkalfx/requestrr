@@ -1,10 +1,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Oval } from 'react-loader-spinner';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
-import { testSonarrSettings } from "../../../store/actions/SonarrClientActions";
-import { setSonarrConnectionSettings } from "../../../store/actions/SonarrClientActions";
+import { testSonarrSettings as testSettings } from "../../../store/actions/SonarrClientActions";
+import { setSonarrConnectionSettings as setConnectionSettings } from "../../../store/actions/SonarrClientActions";
 import ValidatedTextbox from "../../Inputs/ValidatedTextbox";
 import Textbox from "../../Inputs/Textbox";
 import Dropdown from "../../Inputs/Dropdown";
@@ -35,24 +35,30 @@ function Sonarr(props) {
   const [searchNewRequests, setSearchNewRequests] = useState(true);
   const [monitorNewRequests, setMonitorNewRequests] = useState(true);
 
-  const propRef = useRef();
+  const pastState = useRef();
+
+  const reduxState = useSelector((state) => {
+    return {
+      settings: state.tvShows.sonarr
+    }
+  });
+  const dispatch = useDispatch();
 
 
-  
   useEffect(() => {
-    updateStateFromProps(props);
+    updateStateFromProps();
   }, []);
 
 
   useEffect(() => {
-    const prevProps = propRef.past;
-    propRef.past = props;
+    const prevState = pastState.past;
+    pastState.past = reduxState;
 
-    let previousNames = prevProps === undefined ? [] : prevProps.settings.categories.map(x => x.name);
-    let currentNames = props.settings.categories.map(x => x.name);
+    let previousNames = prevState === undefined ? [] : prevState.settings.categories.map(x => x.name);
+    let currentNames = reduxState.settings.categories.map(x => x.name);
 
-    if (!(prevProps?.settings?.profiles?.length === props.settings.profiles.length && prevProps?.settings?.profiles?.reduce((a, b, i) => a && props.settings.profiles[i], true))
-      || !(prevProps?.settings?.paths?.length === props.settings.paths.length && prevProps?.settings?.paths?.reduce((a, b, i) => a && props.settings.paths[i], true))
+    if (!(prevState?.settings?.profiles?.length === reduxState.settings.profiles.length && prevState?.settings?.profiles?.reduce((a, b, i) => a && reduxState.settings.profiles[i], true))
+      || !(prevState?.settings?.paths?.length === reduxState.settings.paths.length && prevState?.settings?.paths?.reduce((a, b, i) => a && reduxState.settings.paths[i], true))
       || !(previousNames.length === currentNames.length && currentNames.every((value, index) => previousNames[index] === value))) {
       onValueChange();
     }
@@ -61,7 +67,7 @@ function Sonarr(props) {
 
   useEffect(() => {
     onValueChange();
-  }, [apiVersion, apiKey, hostname, port, baseUrl, monitorNewRequests, searchNewRequests, useSSL, props.settings.areLanguagesValid]);
+  }, [apiVersion, apiKey, hostname, port, baseUrl, monitorNewRequests, searchNewRequests, useSSL, reduxState.settings.areLanguagesValid]);
 
 
 
@@ -79,7 +85,7 @@ function Sonarr(props) {
     if (!/\S/.test(value)) {
       return false;
     } else if (/^[\w-]{1,32}$/.test(value)) {
-      const names = props.settings.categories.map((x) => x.name);
+      const names = reduxState.settings.categories.map((x) => x.name);
 
       if (new Set(names).size !== names.length)
         return false;
@@ -93,31 +99,22 @@ function Sonarr(props) {
 
 
 
-  const updateStateFromProps = (props) => {
-    props.testSettings({
-      hostname: props.settings.hostname,
-      baseUrl: props.settings.baseUrl,
-      port: props.settings.port,
-      apiKey: props.settings.apiKey,
-      useSSL: props.settings.useSSL,
-      version: props.settings.version,
-    });
-
+  const updateStateFromProps = () => {
     setIsTestingSettings(false);
     setTestSettingsRequested(false);
     setTestSettingsSuccess(false);
     setTestSettingsError("");
-    setHostname(props.settings.hostname);
-    setIsHostnameValid(validateNonEmptyString(props.settings.hostname));
-    setPort(props.settings.port);
-    setIsPortValid(validatePort(props.settings.port));
-    setApiKey(props.settings.apiKey);
-    setIsApiKeyValid(validateNonEmptyString(props.settings.apiKey));
-    setUseSSL(props.settings.useSSL);
-    setApiVersion(props.settings.version);
-    setBaseUrl(props.settings.baseUrl);
-    setSearchNewRequests(props.settings.searchNewRequests);
-    setMonitorNewRequests(props.settings.monitorNewRequests);
+    setHostname(reduxState.settings.hostname);
+    setIsHostnameValid(validateNonEmptyString(reduxState.settings.hostname));
+    setPort(reduxState.settings.port);
+    setIsPortValid(validatePort(reduxState.settings.port));
+    setApiKey(reduxState.settings.apiKey);
+    setIsApiKeyValid(validateNonEmptyString(reduxState.settings.apiKey));
+    setUseSSL(reduxState.settings.useSSL);
+    setApiVersion(reduxState.settings.version);
+    setBaseUrl(reduxState.settings.baseUrl);
+    setSearchNewRequests(reduxState.settings.searchNewRequests);
+    setMonitorNewRequests(reduxState.settings.monitorNewRequests);
   };
 
 
@@ -136,14 +133,14 @@ function Sonarr(props) {
       && isApiKeyValid) {
       setIsTestingSettings(true);
 
-      props.testSettings({
+      dispatch(testSettings({
         hostname: hostname,
         baseUrl: baseUrl,
         port: port,
         apiKey: apiKey,
         useSSL: useSSL,
         version: apiVersion,
-      })
+      }))
         .then(data => {
           if (data.ok) {
             setTestSettingsRequested(true);
@@ -168,23 +165,14 @@ function Sonarr(props) {
 
 
   const onValueChange = () => {
-    props.testSettings({
+    dispatch(setConnectionSettings({
       hostname: hostname,
       baseUrl: baseUrl,
       port: port,
       apiKey: apiKey,
       useSSL: useSSL,
       version: apiVersion,
-    });
-
-    props.setConnectionSettings({
-      hostname: hostname,
-      baseUrl: baseUrl,
-      port: port,
-      apiKey: apiKey,
-      useSSL: useSSL,
-      version: apiVersion,
-    });
+    }));
 
 
     props.onChange({
@@ -203,14 +191,14 @@ function Sonarr(props) {
 
 
   const onValidate = () => {
-    const isLanguageValid = apiVersion !== "2" ? props.settings.areLanguagesValid : true;
+    const isLanguageValid = apiVersion !== "2" ? reduxState.settings.areLanguagesValid : true;
     props.onValidate(
       isApiKeyValid &&
       isHostnameValid &&
       isPortValid &&
-      props.settings.areProfilesValid &&
-      props.settings.arePathsValid &&
-      props.settings.categories.every((x) => validateCategoryName(x.name)) &&
+      reduxState.settings.areProfilesValid &&
+      reduxState.settings.arePathsValid &&
+      reduxState.settings.categories.every((x) => validateCategoryName(x.name)) &&
       isLanguageValid
     );
   }
@@ -386,16 +374,4 @@ function Sonarr(props) {
   );
 }
 
-
-const mapPropsToState = state => {
-  return {
-    settings: state.tvShows.sonarr
-  }
-};
-
-const mapPropsToAction = {
-  testSettings: testSonarrSettings,
-  setConnectionSettings: setSonarrConnectionSettings,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(Sonarr);
+export default Sonarr;

@@ -16,8 +16,8 @@
 
 */
 import { useEffect, useState } from "react";
-import { connect } from 'react-redux';
-import { Route, Switch, Redirect } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
+import { Route, Routes, Navigate } from "react-router-dom";
 // reactstrap components
 import { Container, Row, Col } from "reactstrap";
 import { Oval } from 'react-loader-spinner'
@@ -25,22 +25,30 @@ import { Oval } from 'react-loader-spinner'
 // core components
 import AuthNavbar from "../components/Navbars/AuthNavbar.jsx";
 import AuthFooter from "../components/Footers/AuthFooter.jsx";
-import { hasRegistered } from "../store/actions/UserActions"
+import { hasRegistered as validateRegistration } from "../store/actions/UserActions"
 import { validateLogin } from "../store/actions/UserActions"
 
 import routes from "../routes.js";
 import requestrrLogo from "../assets/img/brand/requestrr.svg";
 
-function Auth(props) {
+function Auth() {
   const [isLoading, setIsLoading] = useState(true);
+
+  const reduxState = useSelector((state) => {
+    return {
+      isLoggedIn: state.user.isLoggedIn,
+      hasRegistered: state.user.hasRegistered,
+    }
+  });
+  const dispatch = useDispatch();
 
 
   useEffect(() => {
     document.body.classList.add("bg-default");
 
-    props.validateRegistration()
+    dispatch(validateRegistration())
       .then(data => {
-        props.validateLogin()
+        dispatch(validateLogin())
           .then(data => setIsLoading(false));
       });
 
@@ -57,8 +65,8 @@ function Auth(props) {
       if (prop.layout === "/auth" && prop.path === path) {
         return (
           <Route
-            path={prop.layout + prop.path}
-            children={prop.component}
+            path={prop.path}
+            element={prop.component}
             key={key}
           />
         );
@@ -122,26 +130,26 @@ function Auth(props) {
                     wrapperClass="svg-centre"
                   />
                 </Col>)
-                : <Switch>
+                : <Routes>
                   {
                     !isLoading
-                      ? props.isLoggedIn
+                      ? reduxState.isLoggedIn
                         ? null
-                        : props.hasRegistered
+                        : reduxState.hasRegistered
                           ? getRoutes(routes, "/login")
                           : getRoutes(routes, "/register")
                       : null
                   }
                   {
                     !isLoading ?
-                      props.isLoggedIn ?
-                        <Route path="*" render={() => <Redirect to="/admin/" />} />
-                        : props.hasRegistered ?
-                          <Route path="*" render={() => <Redirect to="/auth/login" />} />
-                          : <Route path="*" render={() => <Redirect to="/auth/register" />} />
+                      reduxState.isLoggedIn ?
+                        <Route path="*" element={<Navigate to="/admin" />} />
+                        : reduxState.hasRegistered ?
+                          <Route path="*" element={<Navigate to="/auth/login" />} />
+                          : <Route path="*" element={<Navigate to="/auth/register" />} />
                       : null
                   }
-                </Switch>
+                </Routes>
             }
           </Row>
         </Container>
@@ -151,16 +159,4 @@ function Auth(props) {
   );
 }
 
-const mapPropsToState = state => {
-  return {
-    isLoggedIn: state.user.isLoggedIn,
-    hasRegistered: state.user.hasRegistered,
-  }
-};
-
-const mapPropsToAction = {
-  validateLogin: validateLogin,
-  validateRegistration: hasRegistered
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(Auth);
+export default Auth;

@@ -17,13 +17,13 @@
 */
 
 import { useEffect, useState } from "react";
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
 import { getSettings } from "../store/actions/TvShowsClientsActions"
 import { saveDisabledClient } from "../store/actions/TvShowsClientsActions"
 import { saveSonarrClient } from "../store/actions/SonarrClientActions"
 import { saveOmbiClient } from "../store/actions/TvShowsClientsActions"
-import { saveOverseerrTvShowClient } from "../store/actions/OverseerrClientSonarrActions"
+import { saveOverseerrTvShowClient as saveOverseerrClient } from "../store/actions/OverseerrClientSonarrActions"
 import Dropdown from "../components/Inputs/Dropdown"
 import Sonarr from "../components/DownloadClients/Sonarr/Sonarr"
 import Ombi from "../components/DownloadClients/Ombi"
@@ -45,7 +45,7 @@ import {
 import UserHeader from "../components/Headers/UserHeader.jsx";
 
 
-function TvShows(props) {
+function TvShows() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -62,10 +62,16 @@ function TvShows(props) {
   const [isOverseerrValid, setIsOverseerrValid] = useState(false);
 
 
-  
-  
+  const reduxState = useSelector((state) => {
+    return {
+      settings: state.tvShows
+    }
+  });
+  const dispatch = useDispatch();
+
+
   useEffect(() => {
-    props.getSettings()
+    dispatch(getSettings())
       .then((data) => {
         setIsLoading(false);
         setClient(data.payload.client);
@@ -92,25 +98,25 @@ function TvShows(props) {
         let saveAction = null;
 
         if (client === "Disabled") {
-          saveAction = props.saveDisabledClient();
+          saveAction = dispatch(saveDisabledClient());
         }
         else if (client === "Ombi") {
-          saveAction = props.saveOmbiClient({
+          saveAction = dispatch(saveOmbiClient({
             ombi: ombi,
             restrictions: restrictions
-          });
+          }));
         }
         else if (client === "Overseerr") {
-          saveAction = props.saveOverseerrClient({
+          saveAction = dispatch(saveOverseerrClient({
             overseerr: overseerr,
             restrictions: restrictions
-          });
+          }));
         }
         else if (client === "Sonarr") {
-          saveAction = props.saveSonarrClient({
+          saveAction = dispatch(saveSonarrClient({
             sonarr: sonarr,
             restrictions: restrictions
-          });
+          }));
         }
 
         saveAction.then(data => {
@@ -150,16 +156,16 @@ function TvShows(props) {
 
 
 
-  
+
   // const validateNonEmptyString = value => {
   //   return /\S/.test(value);
   // }
 
 
   const onClientChange = () => {
-    setSonarr(props.settings.sonarr);
-    setOmbi(props.settings.ombi);
-    setOverseerr(props.settings.overseerr);
+    setSonarr(reduxState.settings.sonarr);
+    setOmbi(reduxState.settings.ombi);
+    setOverseerr(reduxState.settings.overseerr);
     setSaveAttempted(false);
     setIsSubmitted(false);
   };
@@ -228,7 +234,7 @@ function TvShows(props) {
                     <Row>
                       <Col lg="6">
                         {
-                          props.settings.client !== client && props.settings.client !== "Disabled" ?
+                          reduxState.settings.client !== client && reduxState.settings.client !== "Disabled" ?
                             <Alert className="text-center" color="warning">
                               <strong>Changing the download client will delete all pending tv notifications.</strong>
                             </Alert>
@@ -244,21 +250,21 @@ function TvShows(props) {
                         {
                           client === "Ombi"
                             ? <>
-                              <Ombi settings={ombi} onChange={newOmbi => { setOmbi(newOmbi) }} onValidate={isOmbiValid => setIsOmbiValid(isOmbiValid)} isSubmitted={isSubmitted} />
+                              <Ombi settings={ombi} onChange={newOmbi => { setOmbi(newOmbi) }} onValidate={newIsOmbiValid => setIsOmbiValid(newIsOmbiValid)} isSubmitted={isSubmitted} />
                             </>
                             : null
                         }
                         {
                           client === "Overseerr"
                             ? <>
-                              <Overseerr onChange={newOverseerr => setOverseerr(newOverseerr)} onValidate={isOverseerrValid => setIsOverseerrValid(isOverseerrValid)} isSubmitted={isSubmitted} isSaving={isSaving} />
+                              <Overseerr onChange={newOverseerr => setOverseerr(newOverseerr)} onValidate={newIsOverseerrValid => setIsOverseerrValid(newIsOverseerrValid)} isSubmitted={isSubmitted} isSaving={isSaving} />
                             </>
                             : null
                         }
                         {
                           client === "Sonarr"
                             ? <>
-                              <Sonarr onChange={newSonarr => setSonarr(newSonarr)} onValidate={isSonarrValid => setIsSonarrValid(isSonarrValid)} isSubmitted={isSubmitted} isSaving={isSaving} />
+                              <Sonarr onChange={newSonarr => setSonarr(newSonarr)} onValidate={newIsSonarrValid => setIsSonarrValid(newIsSonarrValid)} isSubmitted={isSubmitted} isSaving={isSaving} />
                             </>
                             : null
                         }
@@ -300,20 +306,4 @@ function TvShows(props) {
   );
 }
 
-
-const mapPropsToState = state => {
-  return {
-    settings: state.tvShows
-  }
-};
-
-
-const mapPropsToAction = {
-  getSettings: getSettings,
-  saveDisabledClient: saveDisabledClient,
-  saveSonarrClient: saveSonarrClient,
-  saveOmbiClient: saveOmbiClient,
-  saveOverseerrClient: saveOverseerrTvShowClient,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(TvShows);
+export default TvShows;

@@ -16,22 +16,20 @@
 
 */
 import { useEffect } from "react";
-import { connect } from 'react-redux';
-import { logout } from "../store/actions/UserActions"
+import { Navigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { logout } from "../store/actions/UserActions";
 
 
-function Logout(props) {
+function Logout() {
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    props.logout();
+    dispatch(logout());
   }, []);
 
-  
-  return null;
+
+  return <Navigate to="/auth/" />;
 };
 
-const mapPropsToAction = {
-  logout: logout
-};
-
-export default connect(null, mapPropsToAction)(Logout);
+export default Logout;

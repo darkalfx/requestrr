@@ -1,10 +1,10 @@
 
 import { useEffect, useState } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
-import { testOverseerrMovieSettings } from "../../../../store/actions/OverseerrClientRadarrActions"
-import { setOverseerrMovieConnectionSettings } from "../../../../store/actions/OverseerrClientRadarrActions"
+import { testOverseerrMovieSettings as testSettings } from "../../../../store/actions/OverseerrClientRadarrActions"
+import { setOverseerrMovieConnectionSettings as setConnectionSettings } from "../../../../store/actions/OverseerrClientRadarrActions"
 import ValidatedTextbox from "../../../Inputs/ValidatedTextbox"
 import Dropdown from "../../../Inputs/Dropdown"
 import OverseerrMovieCategoryList from "./OverseerrMovieCategoryList"
@@ -34,6 +34,12 @@ function OverseerrMovie(props) {
   const [apiVersion, setApiVersion] = useState("");
   const [isValid, setIsValid] = useState(false);
 
+  const reduxState = useSelector((state) => {
+    return {
+      settings: state.movies.overseerr
+    }
+  });
+  const dispatch = useDispatch();
 
 
   useEffect(() => {
@@ -62,29 +68,20 @@ function OverseerrMovie(props) {
 
 
   const updateStateFromProps = (props) => {
-    props.testSettings({
-      hostname: props.settings.hostname,
-      port: props.settings.port,
-      apiKey: props.settings.apiKey,
-      useSSL: props.settings.useSSL,
-      DefaultApiUserID: props.settings.defaultApiUserID,
-      version: props.settings.version,
-    })
-
     setIsTestingSettings(false);
     setTestSettingsRequested(false);
     setTestSettingsSuccess(false);
     setTestSettingsError("");
-    setHostname(props.settings.hostname);
+    setHostname(reduxState.settings.hostname);
     setIsHostnameValid(false);
-    setPort(props.settings.port);
+    setPort(reduxState.settings.port);
     setIsPortValid(false);
-    setApiKey(props.settings.apiKey);
+    setApiKey(reduxState.settings.apiKey);
     setIsApiKeyValid(false);
-    setDefaultApiUserID(props.settings.defaultApiUserID);
+    setDefaultApiUserID(reduxState.settings.defaultApiUserID);
     setIsDefaultApiUserIDValid(true);
-    setUseSSL(props.settings.useSSL);
-    setApiVersion(props.settings.version);
+    setUseSSL(reduxState.settings.useSSL);
+    setApiVersion(reduxState.settings.version);
     setIsValid(false);
   };
 
@@ -102,14 +99,14 @@ function OverseerrMovie(props) {
       && isApiKeyValid) {
       setIsTestingSettings(true);
 
-      props.testSettings({
+      dispatch(testSettings({
         hostname: hostname,
         port: port,
         apiKey: apiKey,
         useSSL: useSSL,
         DefaultApiUserID: defaultApiUserID,
         version: apiVersion,
-      })
+      }))
         .then(data => {
           setIsTestingSettings(false);
 
@@ -132,13 +129,13 @@ function OverseerrMovie(props) {
   };
 
   const onValueChange = () => {
-    props.setConnectionSettings({
+    dispatch(setConnectionSettings({
       hostname: hostname,
       port: port,
       apiKey: apiKey,
       useSSL: useSSL,
       version: apiVersion,
-    });
+    }));
 
     props.onChange({
       hostname: hostname,
@@ -157,7 +154,7 @@ function OverseerrMovie(props) {
       && isHostnameValid
       && isPortValid
       && isDefaultApiUserIDValid
-      && (props.settings.categories.length === 0 || (props.settings.categories.every(x => validateCategory(x)) && props.settings.isRadarrServiceSettingsValid));
+      && (reduxState.settings.categories.length === 0 || (reduxState.settings.categories.every(x => validateCategory(x)) && reduxState.settings.isRadarrServiceSettingsValid));
 
     if (newIsValid !== isValid) {
       setIsValid(newIsValid);
@@ -169,14 +166,14 @@ function OverseerrMovie(props) {
     if (!/\S/.test(category.name)) {
       return false;
     } else if (/^[\w-]{1,32}$/.test(category.name)) {
-      let names = props.settings.categories.map(x => x.name);
+      let names = reduxState.settings.categories.map(x => x.name);
 
       if (new Set(names).size !== names.length) {
         return false;
-      } else if (props.settings.radarrServiceSettings.radarrServices.every(x => x.id !== category.serviceId)) {
+      } else if (reduxState.settings.radarrServiceSettings.radarrServices.every(x => x.id !== category.serviceId)) {
         return false;
       } else {
-        let radarrService = props.settings.radarrServiceSettings.radarrServices.filter(x => x.id === category.serviceId)[0];
+        let radarrService = reduxState.settings.radarrServiceSettings.radarrServices.filter(x => x.id === category.serviceId)[0];
 
         if (radarrService.profiles.length === 0 || radarrService.rootPaths.length === 0) {
           return false;
@@ -328,16 +325,4 @@ function OverseerrMovie(props) {
   );
 }
 
-
-const mapPropsToState = state => {
-  return {
-    settings: state.movies.overseerr
-  }
-};
-
-const mapPropsToAction = {
-  testSettings: testOverseerrMovieSettings,
-  setConnectionSettings: setOverseerrMovieConnectionSettings,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(OverseerrMovie);
+export default OverseerrMovie;

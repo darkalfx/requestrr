@@ -1,11 +1,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from "reactstrap";
-import { loadRadarrServiceSettings } from "../../../../store/actions/OverseerrClientRadarrActions"
-import { setOverseerrMovieCategory } from "../../../../store/actions/OverseerrClientRadarrActions"
-import { removeOverseerrMovieCategory } from "../../../../store/actions/OverseerrClientRadarrActions"
+import { loadRadarrServiceSettings as loadServiceSettings } from "../../../../store/actions/OverseerrClientRadarrActions"
+import { setOverseerrMovieCategory as setOverseerrCategory } from "../../../../store/actions/OverseerrClientRadarrActions"
+import { removeOverseerrMovieCategory as removeOverseerrCategory } from "../../../../store/actions/OverseerrClientRadarrActions"
 import ValidatedTextbox from "../../../Inputs/ValidatedTextbox"
 import Dropdown from "../../../Inputs/Dropdown"
 import MultiDropdown from "../../../Inputs/MultiDropdown"
@@ -26,30 +26,39 @@ function OverseerrMovieCategory(props) {
 
   const propsRef = useRef();
 
+  const reduxState = useSelector((state) => {
+    return {
+      overseerr: state.movies.overseerr
+    }
+  });
+  const dispatch = useDispatch();
+
 
   useEffect(() => {
     if (props.category.wasCreated)
       setIsOpen(true);
 
     if (props.canConnect)
-      props.loadServiceSettings(false);
+      dispatch(loadServiceSettings(false));
   }, []);
 
 
 
   useEffect(() => {
+    const prevState = propsRef?.pastState;
+    propsRef.pastState = reduxState;
     const prevProps = propsRef?.past;
     propsRef.past = props;
 
-    let previousNames = prevProps === undefined ? [] : prevProps.overseerr.categories.map(x => x.name);
-    let currentNames = props.overseerr.categories.map(x => x.name);
+    let previousNames = prevState === undefined ? [] : prevState.overseerr.categories.map(x => x.name);
+    let currentNames = reduxState.overseerr.categories.map(x => x.name);
 
     if (props !== undefined && !(previousNames.length === currentNames.length && currentNames.every((value, index) => previousNames[index] === value))) {
       validateName(props.category.name)
     }
 
     if (props !== undefined && props?.canConnect) {
-      props.loadServiceSettings(false);
+      dispatch(loadServiceSettings(false));
     }
 
     if (prevProps?.isSaving !== props?.isSaving && props !== undefined) {
@@ -71,7 +80,7 @@ function OverseerrMovieCategory(props) {
       newNameErrorMessage = "A category name is required.";
       newIsNameValid = false;
     } else if (/^[\w-]{1,32}$/.test(value)) {
-      if (props.overseerr.categories.map(x => x.id).includes(props.category.id) && props.overseerr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
+      if (reduxState.overseerr.categories.map(x => x.id).includes(props.category.id) && reduxState.overseerr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
         newNameErrorMessage = "All categories must have different names.";
         newIsNameValid = false;
       }
@@ -81,7 +90,7 @@ function OverseerrMovieCategory(props) {
     }
 
     setIsNameValid(newIsNameValid);
-    if(newNameErrorMessage !== undefined)
+    if (newNameErrorMessage !== undefined)
       setNameErrorMessage(newNameErrorMessage);
 
     return newIsNameValid;
@@ -89,12 +98,12 @@ function OverseerrMovieCategory(props) {
 
 
   const setCategory = (fieldChanged, data) => {
-    props.setOverseerrCategory(props.category.id, fieldChanged, data);
+    dispatch(setOverseerrCategory(props.category.id, fieldChanged, data));
   }
 
   const deleteCategory = () => {
     setIsOpen(false);
-    setTimeout(() => props.removeOverseerrCategory(props.category.id), 150);
+    setTimeout(() => dispatch(removeOverseerrCategory(props.category.id), 150));
   }
 
   return (
@@ -108,7 +117,7 @@ function OverseerrMovieCategory(props) {
           </div>
         </th>
         <td class="text-right">
-          <button onClick={() => setIsOpen(!isOpen)} disabled={isOpen && (!isNameValid || !props.overseerr.isRadarrServiceSettingsValid)} className="btn btn-icon btn-3 btn-info" type="button">
+          <button onClick={() => setIsOpen(!isOpen)} disabled={isOpen && (!isNameValid || !reduxState.overseerr.isRadarrServiceSettingsValid)} className="btn btn-icon btn-3 btn-info" type="button">
             <span className="btn-inner--icon"><i class="fas fa-edit"></i></span>
             <span className="btn-inner--text">Edit</span>
           </button>
@@ -136,12 +145,12 @@ function OverseerrMovieCategory(props) {
                     <Dropdown
                       name="Radarr Instance"
                       value={props.category.serviceId}
-                      items={props.overseerr.radarrServiceSettings.radarrServices.map(x => { return { name: x.name, value: x.id } })}
+                      items={reduxState.overseerr.radarrServiceSettings.radarrServices.map(x => { return { name: x.name, value: x.id } })}
                       onChange={newServiceId => setCategory("serviceId", newServiceId)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadServiceSettings(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadServiceSettings(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.overseerr.isLoadinRadarrServiceSettings ? (
+                          reduxState.overseerr.isLoadinRadarrServiceSettings ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -155,7 +164,7 @@ function OverseerrMovieCategory(props) {
                     </button>
                   </div>
                   {
-                    props.overseerr.radarrServiceSettings.radarrServices.length === 0 ? (
+                    reduxState.overseerr.radarrServiceSettings.radarrServices.length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any radarr instances.</strong>
                       </Alert>)
@@ -169,12 +178,12 @@ function OverseerrMovieCategory(props) {
                     <Dropdown
                       name="Path"
                       value={props.category.rootFolder}
-                      items={props.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].rootPaths.map(x => { return { name: x.name, value: x.name } }) : []}
+                      items={reduxState.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].rootPaths.map(x => { return { name: x.name, value: x.name } }) : []}
                       onChange={newRootFolder => setCategory("rootFolder", newRootFolder)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadServiceSettings(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadServiceSettings(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.overseerr.isLoadinRadarrServiceSettings ? (
+                          reduxState.overseerr.isLoadinRadarrServiceSettings ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -188,7 +197,7 @@ function OverseerrMovieCategory(props) {
                     </button>
                   </div>
                   {
-                    (props.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].rootPaths.map(x => { return { name: x.name, value: x.name } }) : []).length === 0 ? (
+                    (reduxState.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].rootPaths.map(x => { return { name: x.name, value: x.name } }) : []).length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any paths.</strong>
                       </Alert>)
@@ -200,12 +209,12 @@ function OverseerrMovieCategory(props) {
                     <Dropdown
                       name="Profile"
                       value={props.category.profileId}
-                      items={props.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].profiles.map(x => { return { name: x.name, value: x.id } }) : []}
+                      items={reduxState.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].profiles.map(x => { return { name: x.name, value: x.id } }) : []}
                       onChange={newProfileId => setCategory("profileId", newProfileId)} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadServiceSettings(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadServiceSettings(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.overseerr.isLoadinRadarrServiceSettings ? (
+                          reduxState.overseerr.isLoadinRadarrServiceSettings ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -219,7 +228,7 @@ function OverseerrMovieCategory(props) {
                     </button>
                   </div>
                   {
-                    (props.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].profiles.map(x => { return { name: x.name, value: x.id } }) : []).length === 0 ? (
+                    (reduxState.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].profiles.map(x => { return { name: x.name, value: x.id } }) : []).length === 0 ? (
                       <Alert className="mt-3 mb-0 text-wrap " color="warning">
                         <strong>Could not find any profiles.</strong>
                       </Alert>)
@@ -233,13 +242,13 @@ function OverseerrMovieCategory(props) {
                     <MultiDropdown
                       name="Tags"
                       placeholder=""
-                      selectedItems={(props.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].tags : []).filter(x => props.category.tags.includes(x.id))}
-                      items={props.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? props.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].tags : []}
+                      selectedItems={(reduxState.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].tags : []).filter(x => props.category.tags.includes(x.id))}
+                      items={reduxState.overseerr.radarrServiceSettings.radarrServices.some(x => x.id === props.category.serviceId) ? reduxState.overseerr.radarrServiceSettings.radarrServices.filter(x => x.id === props.category.serviceId)[0].tags : []}
                       onChange={newTags => setCategory("tags", newTags.map(x => x.id))} />
-                    <button className="btn btn-icon btn-3 btn-default" onClick={() => props.loadServiceSettings(true)} disabled={!props.canConnect} type="button">
+                    <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadServiceSettings(true))} disabled={!props.canConnect} type="button">
                       <span className="btn-inner--icon">
                         {
-                          props.overseerr.isLoadinRadarrServiceSettings ? (
+                          reduxState.overseerr.isLoadinRadarrServiceSettings ? (
                             <Oval
                               wrapperClass="loader"
                               type="Oval"
@@ -253,7 +262,7 @@ function OverseerrMovieCategory(props) {
                     </button>
                   </div>
                   {
-                    !props.overseerr.isRadarrServiceSettingsValid ? (
+                    !reduxState.overseerr.isRadarrServiceSettingsValid ? (
                       <Alert className="mt-3 mb-4 text-wrap " color="warning">
                         <strong>Could not load tags, cannot reach Overseerr.</strong>
                       </Alert>)
@@ -295,17 +304,4 @@ function OverseerrMovieCategory(props) {
   );
 }
 
-
-const mapPropsToState = state => {
-  return {
-    overseerr: state.movies.overseerr
-  }
-};
-
-const mapPropsToAction = {
-  loadServiceSettings: loadRadarrServiceSettings,
-  setOverseerrCategory: setOverseerrMovieCategory,
-  removeOverseerrCategory: removeOverseerrMovieCategory,
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(OverseerrMovieCategory);
+export default OverseerrMovieCategory;

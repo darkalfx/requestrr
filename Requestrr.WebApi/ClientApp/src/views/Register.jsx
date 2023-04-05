@@ -16,8 +16,8 @@
 
 */
 import { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
-import { connect } from 'react-redux';
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
 import { Alert } from "reactstrap";
 import { register } from "../store/actions/UserActions"
 
@@ -35,7 +35,7 @@ import {
 } from "reactstrap";
 
 
-function Register(props) {
+function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [usernameChanged, setUsernameChanged] = useState(false);
@@ -52,8 +52,8 @@ function Register(props) {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
 
-  const history = useHistory();
-
+  const history = useNavigate();
+  const dispatch = useDispatch();
 
 
   useEffect(() => {
@@ -141,15 +141,15 @@ function Register(props) {
 
       setIsLoading(true);
 
-      props.register({
+      dispatch(register({
         username: username,
         password: password,
         passwordConfirmation: passwordConfirmation,
         rememberMe: rememberMe
-      })
+      }))
         .then(data => {
           if (data.ok) {
-            history.push('/admin/');
+            history('/admin/');
           }
           else {
             setIsLoading(false);
@@ -165,8 +165,6 @@ function Register(props) {
         });
     }
   };
-
-
 
 
 
@@ -279,8 +277,4 @@ function Register(props) {
   );
 }
 
-const mapPropsToAction = {
-  register: register,
-};
-
-export default connect(null, mapPropsToAction)(Register);
+export default Register;
