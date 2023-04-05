@@ -57,18 +57,24 @@ function Register() {
 
 
   useEffect(() => {
-    triggerUsernameValidation();
+    if (usernameChanged) {
+      triggerUsernameValidation();
+    }
   }, [usernameChanged]);
 
 
   useEffect(() => {
-    triggerPasswordValidation();
-    triggerPasswordMatchValidation();
+    if (passwordChanged) {
+      triggerPasswordValidation();
+      triggerPasswordMatchValidation();
+    }
   }, [passwordChanged]);
 
   useEffect(() => {
-    triggerPasswordConfirmationValidation();
-    triggerPasswordMatchValidation();
+    if (passwordConfirmationChanged) {
+      triggerPasswordConfirmationValidation();
+      triggerPasswordMatchValidation();
+    }
   }, [passwordConfirmationChanged]);
 
 
@@ -107,6 +113,7 @@ function Register() {
 
   const triggerPasswordValidation = () => {
     setPasswordInvalid(!validatePassword());
+    setPasswordChanged(false);
   };
 
   const onPasswordConfirmationChange = event => {
@@ -116,6 +123,7 @@ function Register() {
 
   const triggerPasswordConfirmationValidation = () => {
     setPasswordConfirmationInvalid(!validatePasswordConfirmation());
+    setPasswordConfirmationChanged(false);
   };
 
   const triggerPasswordMatchValidation = () => {
@@ -177,7 +185,7 @@ function Register() {
               <small>Use the form below to create the admin account</small>
             </div>
             <Form role="form">
-              <FormGroup className={usernameInvalid ? "has-danger" : usernameChanged ? "has-success" : ""}>
+              <FormGroup className={usernameInvalid ? "has-danger" : username !== "" ? "has-success" : ""}>
                 <InputGroup className="input-group-alternative mb-3">
                   <InputGroupAddon addonType="prepend">
                     <InputGroupText>
