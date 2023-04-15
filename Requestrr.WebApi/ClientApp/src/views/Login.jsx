@@ -35,7 +35,7 @@ import {
 } from "reactstrap";
 
 
-function Login(props) {
+function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [username, setUsername] = useState("");
