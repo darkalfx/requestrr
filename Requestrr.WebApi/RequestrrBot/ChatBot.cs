@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,7 @@ using Requestrr.WebApi.RequestrrBot.Notifications;
 using Requestrr.WebApi.RequestrrBot.Notifications.Movies;
 using Requestrr.WebApi.RequestrrBot.Notifications.TvShows;
 using Requestrr.WebApi.RequestrrBot.TvShows;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Requestrr.WebApi.RequestrrBot
 {
@@ -64,7 +66,7 @@ namespace Requestrr.WebApi.RequestrrBot
 
         public async void Start()
         {
-            Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
                 while (true)
                 {
@@ -118,6 +120,7 @@ namespace Requestrr.WebApi.RequestrrBot
                         await _client.DisconnectAsync();
                         _client.Ready -= Connected;
                         _client.ComponentInteractionCreated -= DiscordComponentInteractionCreatedHandler;
+                        _client.ModalSubmitted -= DiscordModalSubmittedHandler;
                         _client.Dispose();
                     }
 
@@ -153,6 +156,7 @@ namespace Requestrr.WebApi.RequestrrBot
 
                     _client.Ready += Connected;
                     _client.ComponentInteractionCreated += DiscordComponentInteractionCreatedHandler;
+                    _client.ModalSubmitted += DiscordModalSubmittedHandler;
 
                     _currentGuilds = new HashSet<ulong>();
                     await _client.ConnectAsync();
@@ -258,11 +262,37 @@ namespace Requestrr.WebApi.RequestrrBot
             }
         }
 
+
+        /// <summary>
+        /// Handles any Modal inputs form the user
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private async Task DiscordModalSubmittedHandler(DiscordClient client, ModalSubmitEventArgs e)
+        {
+            try
+            {
+                if(e.Values.FirstOrDefault().Key.ToLower().StartsWith("mir"))
+                {
+                    await HandleMovieIssueModalAsync(e);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "Error while handling interaction: " + ex.Message);
+                await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent(Language.Current.Error));
+            }
+        }
+
+
+
         private async Task DiscordComponentInteractionCreatedHandler(DiscordClient client, ComponentInteractionCreateEventArgs e)
         {
             try
             {
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
+                if (!e.Id.ToLower().Contains("modal"))
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
 
                 var authorId = ulong.Parse(e.Id.Split("/").Skip(1).First());
 
@@ -271,6 +301,10 @@ namespace Requestrr.WebApi.RequestrrBot
                     if (e.Id.ToLower().StartsWith("mr"))
                     {
                         await HandleMovieRequestAsync(e);
+                    }
+                    else if (e.Id.ToLower().StartsWith("mir"))
+                    {
+                        await HandleMovieIssueAsync(e);
                     }
                     else if (e.Id.ToLower().StartsWith("mnr"))
                     {
@@ -341,6 +375,61 @@ namespace Requestrr.WebApi.RequestrrBot
             }
         }
 
+
+        /// <summary>
+        /// Handles the request back to the user for an issue
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private async Task HandleMovieIssueAsync(ComponentInteractionCreateEventArgs e)
+        {
+            if (e.Id.ToLower().StartsWith("mirs"))
+            {
+                if (e.Values != null && e.Values.Any())
+                {
+                    string[] values = e.Values.Single().Split("/");
+                    string category = values[0];
+                    string movie = values[1];
+                    string issue = values.Length >= 3 ? values[2] : string.Empty;
+
+                    await CreateMovieIssueWorkFlow(e, int.Parse(category))
+                        .HandleIssueMovieSelectionAsync(int.Parse(movie), issue);
+                }
+            }
+            else if (e.Id.ToLower().StartsWith("mirb"))
+            {
+                //Pull out the details form the message link
+                string[] values = e.Id.Split("/");
+                string category = values[2];
+                string movie = values[3];
+                string issue = values[4];
+
+                await CreateMovieIssueWorkFlow(e, int.Parse(category))
+                    .HandleIssueMovieSendModalAsync(int.Parse(movie), issue);
+            }
+        }
+
+
+        /// <summary>
+        /// Handle the modal input form the user connected to issues
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private async Task HandleMovieIssueModalAsync(ModalSubmitEventArgs e)
+        {
+            KeyValuePair<string, string> firstTextbox = e.Values.FirstOrDefault();
+
+            if (firstTextbox.Key.ToLower().StartsWith("mirc"))
+            {
+                string[] values = firstTextbox.Key.Split("/");
+                string category = values[2];
+
+                await CreateMovieIssueWorkFlow(e, int.Parse(category))
+                    .SubmitIssueMovieModalReadAsync(firstTextbox);
+            }
+        }
+
+
         private async Task HandleTvRequestAsync(ComponentInteractionCreateEventArgs e)
         {
             if (e.Id.ToLower().StartsWith("trs"))
@@ -381,6 +470,27 @@ namespace Requestrr.WebApi.RequestrrBot
             return _movieWorkflowFactory
                 .CreateRequestingWorkflow(e.Interaction, categoryId);
         }
+
+
+        /// <summary>
+        /// Used to connect the movie issue workflow
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="categoryId"></param>
+        /// <returns></returns>
+        private MovieIssueWorkflow CreateMovieIssueWorkFlow(ComponentInteractionCreateEventArgs e, int categoryId)
+        {
+            return _movieWorkflowFactory
+                .CreateIssueWorkflow(e.Interaction, categoryId);
+        }
+
+
+        private MovieIssueWorkflow CreateMovieIssueWorkFlow(ModalSubmitEventArgs e, int categoryId)
+        {
+            return _movieWorkflowFactory
+                .CreateIssueWorkflow(e.Interaction, categoryId);
+        }
+
 
         private IMovieNotificationWorkflow CreateMovieNotificationWorkflow(ComponentInteractionCreateEventArgs e)
         {

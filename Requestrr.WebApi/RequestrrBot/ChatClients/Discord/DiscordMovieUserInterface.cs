@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
+using Microsoft.Extensions.Options;
 using Requestrr.WebApi.RequestrrBot.Locale;
 using Requestrr.WebApi.RequestrrBot.Movies;
 
@@ -25,11 +28,24 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
 
         public async Task ShowMovieSelection(MovieRequest request, IReadOnlyList<Movie> movies)
         {
+            await MovieSelection("MRS", request, movies);
+        }
+
+
+        public async Task ShowMovieIssueSelection(MovieRequest request, IReadOnlyList<Movie> movies)
+        {
+            await MovieSelection("MIRS", request, movies);
+        }
+
+
+        private async Task MovieSelection(string customId, MovieRequest request, IReadOnlyList<Movie> movies)
+        {
             var options = movies.Take(15).Select(x => new DiscordSelectComponentOption(GetFormatedMovieTitle(x), $"{request.CategoryId}/{x.TheMovieDbId}")).ToList();
-            var select = new DiscordSelectComponent($"MRS/{_interactionContext.User.Id}/{request.CategoryId}", Language.Current.DiscordCommandMovieRequestHelpDropdown, options);
+            var select = new DiscordSelectComponent($"{customId}/{_interactionContext.User.Id}/{request.CategoryId}", Language.Current.DiscordCommandMovieRequestHelpDropdown, options);
 
             await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddComponents(select).WithContent(Language.Current.DiscordCommandMovieRequestHelp));
         }
+
 
         private string GetFormatedMovieTitle(Movie movie)
         {
@@ -74,6 +90,79 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             var builder = (await AddPreviousDropdownsAsync(movie, new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher)))).AddComponents(requestButton).WithContent(message);
             await _interactionContext.EditOriginalResponseAsync(builder);
         }
+
+
+        /// <summary>
+        /// Used to generate response for user to fill in the issues of the movie
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="movie"></param>
+        /// <returns></returns>
+        public async Task DisplayMovieIssueDetailsAsync(MovieRequest request, Movie movie, string issue = "")
+        {
+            //Validate that the movie searcher allow for issues to be reported
+            if (_movieSearcher is not IMovieIssueSearcher)
+            {
+                await WarnNoMovieFoundAsync(movie.Title);
+                return;
+            }
+
+            string message = Language.Current.DiscordCommandMovieIssueSelect;
+
+            //Setup the dropdown of issues
+            var options = ((IMovieIssueSearcher)_movieSearcher).IssueTypes.Select(x => new DiscordSelectComponentOption(x, $"{request.CategoryId}/{movie.TheMovieDbId}/{x}", null, x == issue)).ToList();
+            DiscordSelectComponent select = new DiscordSelectComponent($"MIRS/{_interactionContext.User.Id}/{request.CategoryId}/{movie.TheMovieDbId}", Language.Current.DiscordCommandMovieIssueHelpDropdown, options);
+
+            DiscordWebhookBuilder builder = new DiscordWebhookBuilder().AddEmbed(await GenerateMovieDetailsAsync(movie, _movieSearcher));
+            if ((await _interactionContext.GetOriginalResponseAsync()).Components.Where(x => x.Components.Where(y => y.GetType() == typeof(DiscordSelectComponent)).ToList().Count > 0).ToList().Count > 1)
+            {
+                builder = await AddPreviousDropdownsAsync(movie, builder);
+            }
+
+            builder.AddComponents(select);
+
+            //If issue has been selected, add submit issue button to propmt for description
+            if (issue != string.Empty)
+            {
+                DiscordButtonComponent button = new DiscordButtonComponent(ButtonStyle.Primary, $"MIRB/{_interactionContext.User.Id}/{request.CategoryId}/{movie.TheMovieDbId}/{issue}/Modal", Language.Current.DiscordCommandIssueButton, false, null);
+                builder.AddComponents(button);
+            }
+
+            builder.WithContent(message);
+            await _interactionContext.EditOriginalResponseAsync(builder);
+        }
+
+        public async Task DisplayMovieIssueModalAsync(MovieRequest request, Movie movie, string issue)
+        {
+            DiscordInteractionResponseBuilder builder = new DiscordInteractionResponseBuilder();
+
+            TextInputComponent textBox = new TextInputComponent(
+                $"Description of '{issue}' issue",
+                $"MIRC/{_interactionContext.User.Id}/{request.CategoryId}/{movie.TheMovieDbId}/{issue}",
+                "Description",
+                string.Empty,
+                true,
+                TextInputStyle.Paragraph,
+                0,
+                null
+            );
+
+            builder.AddComponents(textBox);
+            builder.WithCustomId("MIRC");
+            builder.WithTitle($"Report Issue for '{movie.Title}'");
+
+            await _interactionContext.CreateResponseAsync(InteractionResponseType.Modal, builder);
+        }
+
+
+        public async Task CompleteMovieIssueModalRequestAsync(Movie movie, bool success)
+        {
+            await _interactionContext.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder()
+                .WithContent(success ? Language.Current.DiscordCommandMovieIssueSuccess.ReplaceTokens(movie) : Language.Current.DiscordCommandMovieIssueFailed.ReplaceTokens(movie))
+            );
+        }
+
+
 
         public static async Task<DiscordEmbed> GenerateMovieDetailsAsync(Movie movie, IMovieSearcher movieSearcher = null)
         {

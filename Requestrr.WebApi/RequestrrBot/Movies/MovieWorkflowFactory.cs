@@ -55,14 +55,14 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         /// <param name="interaction"></param>
         /// <param name="categoryId"></param>
         /// <returns></returns>
-        public MovieRequestingWorkflow CreateIssueWorkflow(DiscordInteraction interaction, int categoryId)
+        public MovieIssueWorkflow CreateIssueWorkflow(DiscordInteraction interaction, int categoryId)
         {
             var settings = _settingsProvider.Provide();
 
             if (settings.MovieDownloadClient != DownloadClient.Overseerr)
                 return null;
 
-            return new MovieRequestingWorkflow(new MovieUserRequester(interaction.User.Id.ToString(), interaction.User.Username),
+            return new MovieIssueWorkflow(new MovieUserRequester(interaction.User.Id.ToString(), interaction.User.Username),
                                                 categoryId,
                                                 GetMovieClient<IMovieSearcher>(settings),
                                                 GetMovieClient<IMovieRequester>(settings),

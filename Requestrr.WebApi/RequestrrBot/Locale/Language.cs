@@ -341,5 +341,20 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
 
         [JsonProperty("Discord.Embed.Tv.WatchNow")]
         public string DiscordEmbedTvWatchNow { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Issue.Select")]
+        public string DiscordCommandMovieIssueSelect { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Issue.Help.Dropdown")]
+        public string DiscordCommandMovieIssueHelpDropdown { get; set; }
+
+        [JsonProperty("Discord.Command.IssueButton")]
+        public string DiscordCommandIssueButton { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Issue.Success")]
+        public string DiscordCommandMovieIssueSuccess { get; set; }
+
+        [JsonProperty("Discord.Command.Movie.Issue.Failed")]
+        public string DiscordCommandMovieIssueFailed { get; set; }
     }
 }
