@@ -1,5 +1,4 @@
-﻿using Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,29 +49,6 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         }
 
 
-        /// <summary>
-        /// Searchs for movies in the library
-        /// </summary>
-        /// <param name="movieName"></param>
-        /// <returns></returns>
-        public async Task SearchMovieLibraryAsync(string movieName)
-        {
-            var movies = await SearchMoviesLibraryAsync(movieName);
-
-            if (movies.Any())
-            {
-                if (movies.Count > 1)
-                {
-                    await _userInterface.ShowMovieSelection(new MovieRequest(_user, _categoryId), movies);
-                }
-                else if (movies.Count == 1)
-                {
-                    var movie = movies.Single();
-                    await HandleMovieSelectionAsync(movie);
-                }
-            }
-        }
-
 
         public async Task SearchMovieAsync(int theMovieDbId)
         {
@@ -93,30 +69,6 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
             movieName = movieName.Replace(".", " ");
             movies = await _searcher.SearchMovieAsync(new MovieRequest(_user, _categoryId), movieName);
-
-            if (!movies.Any())
-            {
-                await _userInterface.WarnNoMovieFoundAsync(movieName);
-            }
-
-            return movies;
-        }
-
-
-
-        /// <summary>
-        /// This handles the checking of movies in library against whats in library
-        /// </summary>
-        /// <param name="movieName">Name of the movie to search for</param>
-        /// <returns></returns>
-        private async Task<IReadOnlyList<Movie>> SearchMoviesLibraryAsync(string movieName)
-        {
-            IReadOnlyList<Movie> movies = Array.Empty<Movie>();
-            if(_searcher is not OverseerrClient)
-                return movies;
-
-            movieName = movieName.Replace(".", " ");
-            movies = await ((OverseerrClient)_searcher).SearchMovieLibraryAsync(new MovieRequest(_user, _categoryId), movieName);
 
             if (!movies.Any())
             {
