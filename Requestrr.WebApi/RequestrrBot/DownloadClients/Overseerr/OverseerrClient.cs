@@ -284,7 +284,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
 
 
         /// <summary>
-        /// This gets all the movies that match the name and are found in the internal library
+        /// This gets all the movies that match the name and are found in the internal library that are avalible
         /// </summary>
         /// <param name="request">Movie request</param>
         /// <param name="movieName">Name of the movie to look for</param>
@@ -303,6 +303,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 var movies = JsonConvert.DeserializeObject<JSONSearchResult>(jsonResponse).Results
                     .Where(x => x.MediaType == MediaTypes.MOVIE)
                     .Where(x => x.MediaInfo != null)
+                    .Where(x => x.MediaInfo.Status == MediaStatus.AVAILABLE || x.MediaInfo.Status4k == MediaStatus.AVAILABLE)
                     .ToArray();
 
                 return movies.Select(x => ConvertMovie(x, category.Is4K ? x.MediaInfo?.Status4k : x.MediaInfo?.Status)).ToArray();
