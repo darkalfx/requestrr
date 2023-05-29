@@ -21,19 +21,19 @@ class ValidatedTextbox extends React.Component {
   }
 
   componentDidMount() {
-    if (this.state.value != this.props.value) {
+    if (this.state.value !== this.props.value) {
       this.setState({ value: this.props.value },
         () => this.triggerValueValidation());
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.state.value != nextProps.value) {
+    if (this.state.value !== nextProps.value) {
       this.setState({ value: nextProps.value },
         () => this.triggerValueValidation());
     }
 
-    if (this.props.isSubmitted != nextProps.isSubmitted) {
+    if (this.props.isSubmitted !== nextProps.isSubmitted) {
       this.triggerValueValidation();
     }
   }

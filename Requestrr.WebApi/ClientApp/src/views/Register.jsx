@@ -16,18 +16,13 @@
 
 */
 import React from "react";
-import Loader from 'react-loader-spinner'
-import { Redirect } from 'react-router-dom'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { register } from "../store/actions/UserActions"
-import { hasRegistered } from "../store/actions/UserActions"
 
 // reactstrap components
 import {
-  Button,
   Card,
-  CardHeader,
   CardBody,
   FormGroup,
   Form,
@@ -35,7 +30,6 @@ import {
   InputGroupAddon,
   InputGroupText,
   InputGroup,
-  Row,
   Col
 } from "reactstrap";
 

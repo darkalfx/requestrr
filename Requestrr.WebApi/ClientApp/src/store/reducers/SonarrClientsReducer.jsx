@@ -9,6 +9,9 @@ import { SONARR_LOAD_LANGUAGES } from "../actions/SonarrClientActions"
 import { SONARR_SET_LANGUAGES } from "../actions/SonarrClientActions"
 
 export default function SonarrClientsReducer(state = {}, action) {
+  var newState;
+  var newSonarr;
+
   if (action.type === SONARR_SET_CLIENT) {
     return {
       ...state,
@@ -17,8 +20,8 @@ export default function SonarrClientsReducer(state = {}, action) {
     }
   }
   else if (action.type === SONARR_LOAD_PATHS) {
-    var newState = { ...state };
-    var newSonarr = { ...newState.sonarr };
+    newState = { ...state };
+    newSonarr = { ...newState.sonarr };
 
     newSonarr.isLoadingPaths = action.payload;
 
@@ -27,8 +30,8 @@ export default function SonarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === SONARR_SET_PATHS) {
-    var newState = { ...state };
-    var newSonarr = { ...newState.sonarr };
+    newState = { ...state };
+    newSonarr = { ...newState.sonarr };
 
     newSonarr.isLoadingPaths = false;
     newSonarr.hasLoadedPaths = true;
@@ -40,8 +43,8 @@ export default function SonarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === SONARR_LOAD_PROFILES) {
-    var newState = { ...state };
-    var newSonarr = { ...newState.sonarr };
+    newState = { ...state };
+    newSonarr = { ...newState.sonarr };
 
     newSonarr.isLoadingProfiles = action.payload;
 
@@ -50,8 +53,8 @@ export default function SonarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === SONARR_SET_PROFILES) {
-    var newState = { ...state };
-    var newSonarr = { ...newState.sonarr };
+    newState = { ...state };
+    newSonarr = { ...newState.sonarr };
 
     newSonarr.isLoadingProfiles = false;
     newSonarr.hasLoadedProfiles = true;
@@ -63,8 +66,8 @@ export default function SonarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === SONARR_LOAD_TAGS) {
-    var newState = { ...state };
-    var newSonarr = { ...newState.sonarr };
+    newState = { ...state };
+    newSonarr = { ...newState.sonarr };
 
     newSonarr.isLoadingTags = action.payload;
 
@@ -73,8 +76,8 @@ export default function SonarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === SONARR_SET_TAGS) {
-    var newState = { ...state };
-    var newSonarr = { ...newState.sonarr };
+    newState = { ...state };
+    newSonarr = { ...newState.sonarr };
 
     newSonarr.isLoadingTags = false;
     newSonarr.hasLoadedTags = true;
@@ -86,8 +89,8 @@ export default function SonarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === SONARR_LOAD_LANGUAGES) {
-    var newState = { ...state };
-    var newSonarr = { ...newState.sonarr };
+    newState = { ...state };
+    newSonarr = { ...newState.sonarr };
 
     newSonarr.isLoadingLanguages = action.payload;
 
@@ -96,8 +99,8 @@ export default function SonarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === SONARR_SET_LANGUAGES) {
-    var newState = { ...state };
-    var newSonarr = { ...newState.sonarr };
+    newState = { ...state };
+    newSonarr = { ...newState.sonarr };
 
     newSonarr.isLoadingLanguages = false;
     newSonarr.hasLoadedLanguages = true;

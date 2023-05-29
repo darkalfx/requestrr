@@ -98,7 +98,7 @@ export function removeSonarrCategory(categoryId) {
         const state = getState();
 
         var categories = [...state.tvShows.sonarr.categories];
-        categories = categories.filter(x => x.id != categoryId);
+        categories = categories.filter(x => x.id !== categoryId);
 
         var sonarr = {
             ...state.tvShows.sonarr,
@@ -122,7 +122,7 @@ export function setSonarrCategory(categoryId, field, data) {
         var categories = [...state.tvShows.sonarr.categories];
 
         for (let index = 0; index < categories.length; index++) {
-            if (categories[index].id == categoryId) {
+            if (categories[index].id === categoryId) {
                 var category = { ...categories[index] };
 
                 if (field === "name") {

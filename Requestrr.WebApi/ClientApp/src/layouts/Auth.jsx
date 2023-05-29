@@ -20,7 +20,7 @@ import { connect } from 'react-redux';
 import { Route, Switch, Redirect } from "react-router-dom";
 // reactstrap components
 import { Container, Row, Col } from "reactstrap";
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 
 // core components
 import AuthNavbar from "../components/Navbars/AuthNavbar.jsx";
@@ -29,6 +29,8 @@ import { hasRegistered } from "../store/actions/UserActions"
 import { validateLogin } from "../store/actions/UserActions"
 
 import routes from "../routes.js";
+import requestrrLogo from "../assets/img/brand/requestrr.svg";
+
 
 class Auth extends React.Component {
   constructor(props) {
@@ -82,7 +84,7 @@ class Auth extends React.Component {
                   <p><img
                       style={{ width: '100%' }}
                       alt="requestrr logo"
-                      src={require("../assets/img/brand/requestrr.svg")}
+                      src={requestrrLogo}
                     />
                     </p>
                     <p style={{ color: 'white' }} className="mt-4">
@@ -114,11 +116,12 @@ class Auth extends React.Component {
               {
                 this.state.isLoading
                   ? (<Col className="text-center" lg="5" md="7">
-                    <Loader
+                    <Oval
                       type="Triangle"
                       color="#11cdef"
                       height={300}
                       width={300}
+                      wrapperClass="svg-centre"
                     />
                   </Col>)
                   : <Switch>

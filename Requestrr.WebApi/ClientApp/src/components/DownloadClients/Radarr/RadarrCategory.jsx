@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { loadRadarrProfiles } from "../../../store/actions/RadarrClientActions"
@@ -12,8 +12,6 @@ import Dropdown from "../../Inputs/Dropdown"
 import MultiDropdown from "../../Inputs/MultiDropdown"
 
 import {
-  FormGroup,
-  Input,
   Row,
   Col,
   Collapse
@@ -50,7 +48,7 @@ class RadarrCategory extends React.Component {
     var previousNames = prevProps.radarr.categories.map(x => x.name);
     var currentNames = this.props.radarr.categories.map(x => x.name);
 
-    if (!(previousNames.length == currentNames.length && currentNames.every((value, index) => previousNames[index] == value))) {
+    if (!(previousNames.length === currentNames.length && currentNames.every((value, index) => previousNames[index] === value))) {
       this.validateName(this.props.category.name)
     }
 
@@ -60,7 +58,7 @@ class RadarrCategory extends React.Component {
       this.props.loadTags(false);
     }
 
-    if (prevProps.isSaving != this.props.isSaving) {
+    if (prevProps.isSaving !== this.props.isSaving) {
       this.setState({
         isOpen: false,
       });
@@ -82,7 +80,7 @@ class RadarrCategory extends React.Component {
       };
     }
     else if (/^[\w-]{1,32}$/.test(value)) {
-      if (this.props.radarr.categories.map(x => x.id).includes(this.props.category.id) && this.props.radarr.categories.filter(c => typeof c.id !== 'undefined' && c.id != this.props.category.id && c.name.toLowerCase().trim() == value.toLowerCase().trim()).length > 0) {
+      if (this.props.radarr.categories.map(x => x.id).includes(this.props.category.id) && this.props.radarr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== this.props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
         state = {
           nameErrorMessage: "All categories must have different names.",
           isNameValid: false,
@@ -159,8 +157,8 @@ class RadarrCategory extends React.Component {
                         <span className="btn-inner--icon">
                           {
                             this.props.radarr.isLoadingPaths ? (
-                              <Loader
-                                className="loader"
+                              <Oval
+                                wrapperClass="loader"
                                 type="Oval"
                                 color="#11cdef"
                                 height={19}
@@ -197,8 +195,8 @@ class RadarrCategory extends React.Component {
                         <span className="btn-inner--icon">
                           {
                             this.props.radarr.isLoadingProfiles ? (
-                              <Loader
-                                className="loader"
+                              <Oval
+                                wrapperClass="loader"
                                 type="Oval"
                                 color="#11cdef"
                                 height={19}
@@ -251,8 +249,8 @@ class RadarrCategory extends React.Component {
                               <span className="btn-inner--icon">
                                 {
                                   this.props.radarr.isLoadingTags ? (
-                                    <Loader
-                                      className="loader"
+                                    <Oval
+                                      wrapperClass="loader"
                                       type="Oval"
                                       color="#11cdef"
                                       height={19}

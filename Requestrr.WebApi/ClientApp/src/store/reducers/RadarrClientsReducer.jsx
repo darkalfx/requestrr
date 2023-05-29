@@ -7,6 +7,9 @@ import { RADARR_LOAD_PROFILES } from "../actions/RadarrClientActions"
 import { RADARR_SET_PROFILES } from "../actions/RadarrClientActions"
 
 export default function RadarrClientsReducer(state = {}, action) {
+  var newState;
+  var newRadarr;
+
   if (action.type === RADARR_SET_CLIENT) {
     return {
       ...state,
@@ -15,8 +18,8 @@ export default function RadarrClientsReducer(state = {}, action) {
     }
   }
   else if (action.type === RADARR_LOAD_PATHS) {
-    var newState = { ...state };
-    var newRadarr = { ...newState.radarr };
+    newState = { ...state };
+    newRadarr = { ...newState.radarr };
 
     newRadarr.isLoadingPaths = action.payload;
 
@@ -25,8 +28,8 @@ export default function RadarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === RADARR_SET_PATHS) {
-    var newState = { ...state };
-    var newRadarr = { ...newState.radarr };
+    newState = { ...state };
+    newRadarr = { ...newState.radarr };
 
     newRadarr.isLoadingPaths = false;
     newRadarr.hasLoadedPaths = true;
@@ -38,8 +41,8 @@ export default function RadarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === RADARR_LOAD_PROFILES) {
-    var newState = { ...state };
-    var newRadarr = { ...newState.radarr };
+    newState = { ...state };
+    newRadarr = { ...newState.radarr };
 
     newRadarr.isLoadingProfiles = action.payload;
 
@@ -48,8 +51,8 @@ export default function RadarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === RADARR_SET_PROFILES) {
-    var newState = { ...state };
-    var newRadarr = { ...newState.radarr };
+    newState = { ...state };
+    newRadarr = { ...newState.radarr };
 
     newRadarr.isLoadingProfiles = false;
     newRadarr.hasLoadedProfiles = true;
@@ -61,8 +64,8 @@ export default function RadarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === RADARR_LOAD_TAGS) {
-    var newState = { ...state };
-    var newRadarr = { ...newState.radarr };
+    newState = { ...state };
+    newRadarr = { ...newState.radarr };
 
     newRadarr.isLoadingTags = action.payload;
 
@@ -71,8 +74,8 @@ export default function RadarrClientsReducer(state = {}, action) {
     return newState;
   }
   else if (action.type === RADARR_SET_TAGS) {
-    var newState = { ...state };
-    var newRadarr = { ...newState.radarr };
+    newState = { ...state };
+    newRadarr = { ...newState.radarr };
 
     newRadarr.isLoadingTags = false;
     newRadarr.hasLoadedTags = true;

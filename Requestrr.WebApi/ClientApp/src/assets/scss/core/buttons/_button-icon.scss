@@ -26,6 +26,10 @@
       }
 }
 
+.svg-centre svg {
+    @extend .flex-grow-1;
+}
+
 // Button only with icon and NO text
 
 .btn-icon-only {

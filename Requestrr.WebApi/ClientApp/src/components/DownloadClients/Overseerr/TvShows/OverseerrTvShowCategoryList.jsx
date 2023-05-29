@@ -5,17 +5,7 @@ import OverseerrTvShowCategory from "./OverseerrTvShowCategory";
 
 // reactstrap components
 import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  FormGroup,
-  Form,
-  Input,
-  Container,
-  Row,
-  Col,
-  UncontrolledTooltip,
+  FormGroup
 } from "reactstrap";
 
 class OverseerrTvShowCategoryList extends React.Component {

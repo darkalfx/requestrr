@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { testOmbiSettings } from "../../store/actions/MovieClientsActions"
@@ -237,7 +237,7 @@ class Ombi extends React.Component {
               </FormGroup>
             </Col>
             <Col lg="6">
-              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Ombi#configuring-permissions" target="_blank">Click here to view how configure Ombi permissions with the bot</a>
+              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Ombi#configuring-permissions" target="_blank" rel="noreferrer">Click here to view how configure Ombi permissions with the bot</a>
             </Col>
           </Row>
           <Row>
@@ -264,8 +264,8 @@ class Ombi extends React.Component {
                   <span className="btn-inner--icon">
                     {
                       this.state.isTestingSettings ? (
-                        <Loader
-                          className="loader"
+                        <Oval
+                          wrapperClass="loader"
                           type="Oval"
                           color="#11cdef"
                           height={19}

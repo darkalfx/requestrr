@@ -5,17 +5,7 @@ import OverseerrMovieCategory from "./OverseerrMovieCategory";
 
 // reactstrap components
 import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
   FormGroup,
-  Form,
-  Input,
-  Container,
-  Row,
-  Col,
-  UncontrolledTooltip,
 } from "reactstrap";
 
 class OverseerrMovieCategoryList extends React.Component {

@@ -25,7 +25,6 @@ class MultiDropdown extends React.Component {
         </label>
         <Select
           multi="true"
-          placeholder=""
           className={this.props.create === true ? "dropdown react-dropdown-create" : "dropdown"}
           options={this.props.items}
           placeholder={this.props.placeholder}

@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { testOverseerrTvShowSettings } from "../../../../store/actions/OverseerrClientSonarrActions"
@@ -164,7 +164,7 @@ class OverseerrTvShow extends React.Component {
       && this.state.isHostnameValid
       && this.state.isPortValid
       && this.state.isDefaultApiUserIDValid
-      && (this.props.settings.categories.length == 0 || (this.props.settings.categories.every(x => this.validateCategory(x)) && this.props.settings.isSonarrServiceSettingsValid));
+      && (this.props.settings.categories.length === 0 || (this.props.settings.categories.every(x => this.validateCategory(x)) && this.props.settings.isSonarrServiceSettingsValid));
 
     if (isValid !== this.state.isValid) {
       this.setState({ isValid: isValid },
@@ -188,7 +188,7 @@ class OverseerrTvShow extends React.Component {
       else {
         var sonarrService = this.props.settings.sonarrServiceSettings.sonarrServices.filter(x => x.id === category.serviceId)[0];
 
-        if (sonarrService.profiles.length == 0 || sonarrService.rootPaths.length == 0) {
+        if (sonarrService.profiles.length === 0 || sonarrService.rootPaths.length === 0) {
           return false;
         }
       }
@@ -288,7 +288,7 @@ class OverseerrTvShow extends React.Component {
               </FormGroup>
             </Col>
             <Col lg="6">
-              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank">Click here to view how configure Overseerr permissions with the bot</a>
+              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank" rel="noreferrer">Click here to view how configure Overseerr permissions with the bot</a>
             </Col>
           </Row>
           <Row>
@@ -315,8 +315,8 @@ class OverseerrTvShow extends React.Component {
                   <span className="btn-inner--icon">
                     {
                       this.state.isTestingSettings ? (
-                        <Loader
-                          className="loader"
+                        <Oval
+                          wrapperClass="loader"
                           type="Oval"
                           color="#11cdef"
                           height={19}

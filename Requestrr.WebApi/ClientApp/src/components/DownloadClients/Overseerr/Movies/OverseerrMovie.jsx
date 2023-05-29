@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { testOverseerrMovieSettings } from "../../../../store/actions/OverseerrClientRadarrActions"
@@ -164,7 +164,7 @@ class OverseerrMovie extends React.Component {
       && this.state.isHostnameValid
       && this.state.isPortValid
       && this.state.isDefaultApiUserIDValid
-      && (this.props.settings.categories.length == 0 || (this.props.settings.categories.every(x => this.validateCategory(x)) && this.props.settings.isRadarrServiceSettingsValid));
+      && (this.props.settings.categories.length === 0 || (this.props.settings.categories.every(x => this.validateCategory(x)) && this.props.settings.isRadarrServiceSettingsValid));
 
     if (isValid !== this.state.isValid) {
       this.setState({ isValid: isValid },
@@ -188,7 +188,7 @@ class OverseerrMovie extends React.Component {
       else {
         var radarrService = this.props.settings.radarrServiceSettings.radarrServices.filter(x => x.id === category.serviceId)[0];
 
-        if (radarrService.profiles.length == 0 || radarrService.rootPaths.length == 0) {
+        if (radarrService.profiles.length === 0 || radarrService.rootPaths.length === 0) {
           return false;
         }
       }
@@ -288,7 +288,7 @@ class OverseerrMovie extends React.Component {
               </FormGroup>
             </Col>
             <Col lg="6">
-              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank">Click here to view how configure Overseerr permissions with the bot</a>
+              <a href="https://github.com/darkalfx/requestrr/wiki/Configuring-Overseerr#configuring-permissions" target="_blank" rel="noreferrer">Click here to view how configure Overseerr permissions with the bot</a>
             </Col>
           </Row>
           <Row>
@@ -315,8 +315,8 @@ class OverseerrMovie extends React.Component {
                   <span className="btn-inner--icon">
                     {
                       this.state.isTestingSettings ? (
-                        <Loader
-                          className="loader"
+                        <Oval
+                          wrapperClass="loader"
                           type="Oval"
                           color="#11cdef"
                           height={19}

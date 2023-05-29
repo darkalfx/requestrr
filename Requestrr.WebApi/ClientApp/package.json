@@ -1,6 +1,6 @@
 {
   "name": "Requestrr",
-  "version": "2.1.2",
+  "version": "2.1.2.1",
   "description": "Requestrr is a server designed to faciliate the request of media through chat applications.",
   "main": "index.js",
   "author": "Darkalfx",
@@ -26,30 +26,31 @@
     "not op_mini all"
   ],
   "dependencies": {
-    "chart.js": "2.7.3",
-    "classnames": "2.2.6",
-    "moment": "2.24.0",
-    "node-sass": "4.12.0",
-    "nouislider": "13.1.1",
-    "react": "16.8.4",
-    "react-chartjs-2": "2.7.4",
-    "react-copy-to-clipboard": "5.0.1",
-    "react-datetime": "2.16.3",
-    "react-dom": "16.8.4",
-    "react-dropdown-select": "^4.1.1",
-    "react-google-maps": "9.4.5",
-    "react-loader-spinner": "^3.1.5",
-    "react-redux": "^5.1.1",
-    "react-router-dom": "4.3.1",
-    "react-scripts": "2.1.8",
-    "reactstrap": "7.1.0",
-    "redux": "^3.7.2",
-    "redux-thunk": "^2.2.0"
+    "@fortawesome/fontawesome-free": "5.15.3",
+    "@reduxjs/toolkit": "^1.9.3",
+    "bootstrap": "4.6.0",
+    "chart.js": "4.2.1",
+    "classnames": "2.3.1",
+    "moment": "2.29.4",
+    "nouislider": "15.2.0",
+    "react": "18.2.0",
+    "react-chartjs-2": "5.2.0",
+    "react-copy-to-clipboard": "5.1.0",
+    "react-datetime": "3.2.0",
+    "react-dom": "18.2.0",
+    "react-dropdown-select": "4.9.3",
+    "react-loader-spinner": "^5.3.4",
+    "react-redux": "8.0.5",
+    "react-router-dom": "5.2.0",
+    "react-scripts": "5.0.1",
+    "reactstrap": "8.9.0",
+    "redux-thunk": "^2.4.2",
+    "sass": "1.54.5"
   },
   "devDependencies": {
-    "@types/googlemaps": "3.30.18",
-    "@types/markerclustererplus": "2.1.33",
-    "@types/react": "16.8.7",
-    "typescript": "3.3.3333"
+    "@types/react": "18.0.28",
+    "gulp": "4.0.2",
+    "gulp-append-prepend": "1.0.9",
+    "typescript": "4.8.2"
   }
 }

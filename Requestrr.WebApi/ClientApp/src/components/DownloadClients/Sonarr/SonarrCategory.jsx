@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 import { connect } from 'react-redux';
 import { Alert } from "reactstrap";
 import { loadSonarrProfiles } from "../../../store/actions/SonarrClientActions"
@@ -45,7 +45,7 @@ class SonarrCategory extends React.Component {
     var previousNames = prevProps.sonarr.categories.map(x => x.name);
     var currentNames = this.props.sonarr.categories.map(x => x.name);
 
-    if (!(previousNames.length == currentNames.length && currentNames.every((value, index) => previousNames[index] == value))) {
+    if (!(previousNames.length === currentNames.length && currentNames.every((value, index) => previousNames[index] === value))) {
       this.validateName(this.props.category.name)
     }
 
@@ -56,7 +56,7 @@ class SonarrCategory extends React.Component {
       this.props.loadLanguages(false);
     }
 
-    if (prevProps.isSaving != this.props.isSaving) {
+    if (prevProps.isSaving !== this.props.isSaving) {
       this.setState({
         isOpen: false,
       });
@@ -78,7 +78,7 @@ class SonarrCategory extends React.Component {
       };
     }
     else if (/^[\w-]{1,32}$/.test(value)) {
-      if (this.props.sonarr.categories.map(x => x.id).includes(this.props.category.id) && this.props.sonarr.categories.filter(c => typeof c.id !== 'undefined' && c.id != this.props.category.id && c.name.toLowerCase().trim() == value.toLowerCase().trim()).length > 0) {
+      if (this.props.sonarr.categories.map(x => x.id).includes(this.props.category.id) && this.props.sonarr.categories.filter(c => typeof c.id !== 'undefined' && c.id !== this.props.category.id && c.name.toLowerCase().trim() === value.toLowerCase().trim()).length > 0) {
         state = {
           nameErrorMessage: "All categories must have different names.",
           isNameValid: false,
@@ -155,8 +155,8 @@ class SonarrCategory extends React.Component {
                         <span className="btn-inner--icon">
                           {
                             this.props.sonarr.isLoadingPaths ? (
-                              <Loader
-                                className="loader"
+                              <Oval
+                                wrapperClass="loader"
                                 type="Oval"
                                 color="#11cdef"
                                 height={19}
@@ -193,8 +193,8 @@ class SonarrCategory extends React.Component {
                         <span className="btn-inner--icon">
                           {
                             this.props.sonarr.isLoadingProfiles ? (
-                              <Loader
-                                className="loader"
+                              <Oval
+                                wrapperClass="loader"
                                 type="Oval"
                                 color="#11cdef"
                                 height={19}
@@ -236,8 +236,8 @@ class SonarrCategory extends React.Component {
                               <span className="btn-inner--icon">
                                 {
                                   this.props.sonarr.isLoadingLanguages ? (
-                                    <Loader
-                                      className="loader"
+                                    <Oval
+                                      wrapperClass="loader"
                                       type="Oval"
                                       color="#11cdef"
                                       height={19}
@@ -278,8 +278,8 @@ class SonarrCategory extends React.Component {
                               <span className="btn-inner--icon">
                                 {
                                   this.props.sonarr.isLoadingTags ? (
-                                    <Loader
-                                      className="loader"
+                                    <Oval
+                                      wrapperClass="loader"
                                       type="Oval"
                                       color="#11cdef"
                                       height={19}

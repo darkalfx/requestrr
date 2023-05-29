@@ -82,7 +82,7 @@ export function removeRadarrCategory(categoryId) {
         const state = getState();
 
         var categories = [...state.movies.radarr.categories];
-        categories = categories.filter(x => x.id != categoryId);
+        categories = categories.filter(x => x.id !== categoryId);
 
         var radarr = {
             ...state.movies.radarr,
@@ -106,7 +106,7 @@ export function setRadarrCategory(categoryId, field, data) {
         var categories = [...state.movies.radarr.categories];
 
         for (let index = 0; index < categories.length; index++) {
-            if (categories[index].id == categoryId) {
+            if (categories[index].id === categoryId) {
                 var category = { ...categories[index] };
 
                 if (field === "name") {
