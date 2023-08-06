@@ -37,6 +37,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             SettingsFile.Write(settings =>
             {
                 SetOverseerrSettings(overseerrSettings, settings);
+                settings.DownloadClients.Overseerr.UseMovieIssue = overseerrSettings.UseMovieIssue;
                 settings.DownloadClients.Overseerr.Movies = JToken.FromObject(overseerrSettings.Movies);
                 SetMovieSettings(movieSettings, settings);
             });
@@ -99,6 +100,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients
             SettingsFile.Write(settings =>
             {
                 SetOverseerrSettings(overseerrSettings, settings);
+                settings.DownloadClients.Overseerr.UseTVIssue = overseerrSettings.UseTVIssue;
                 settings.DownloadClients.Overseerr.TvShows = JToken.FromObject(overseerrSettings.TvShows);
                 SetTvShowSettings(movieSettings, settings);
             });

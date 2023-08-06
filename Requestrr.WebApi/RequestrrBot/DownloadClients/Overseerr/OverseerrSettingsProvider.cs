@@ -14,6 +14,8 @@
                 Hostname = settings.DownloadClients.Overseerr.Hostname,
                 Port = settings.DownloadClients.Overseerr.Port,
                 UseSSL = (bool)settings.DownloadClients.Overseerr.UseSSL,
+                UseMovieIssue = (bool)settings.DownloadClients.Overseerr.UseMovieIssue,
+                UseTVIssue = (bool)settings.DownloadClients.Overseerr.UseTVIssue,
                 Version = settings.DownloadClients.Overseerr.Version,
             };
         }

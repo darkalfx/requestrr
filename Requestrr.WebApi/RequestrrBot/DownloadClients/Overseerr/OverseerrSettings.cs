@@ -42,6 +42,10 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
         public string Hostname { get; set; } = string.Empty;
         public int Port { get; set; } = 5055;
         public bool UseSSL { get; set; } = false;
+
+        public bool UseMovieIssue { get; set; } = false;
+        public bool UseTVIssue { get; set; } = false;
+
         public string ApiKey { get; set; } = string.Empty;
         public OverseerrMovieSettings Movies { get; set; } = new OverseerrMovieSettings();
         public OverseerrTvShowSettings TvShows { get; set; } = new OverseerrTvShowSettings();
