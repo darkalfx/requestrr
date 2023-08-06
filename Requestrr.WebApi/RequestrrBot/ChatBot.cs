@@ -277,6 +277,10 @@ namespace Requestrr.WebApi.RequestrrBot
                 {
                     await HandleMovieIssueModalAsync(e);
                 }
+                else if(e.Values.FirstOrDefault().Key.ToLower().StartsWith("tir"))
+                {
+                    await HandleTvShowIssueModalAsync(e);
+                }
             }
             catch (System.Exception ex)
             {
@@ -314,6 +318,10 @@ namespace Requestrr.WebApi.RequestrrBot
                     if (e.Id.ToLower().StartsWith("tr") || e.Id.ToLower().StartsWith("ts"))
                     {
                         await HandleTvRequestAsync(e);
+                    }
+                    else if (e.Id.ToLower().StartsWith("tir"))
+                    {
+                        await HandleTvIssueRequestAsync(e);
                     }
                     else if (e.Id.ToLower().StartsWith("tnr"))
                     {
@@ -465,6 +473,63 @@ namespace Requestrr.WebApi.RequestrrBot
             }
         }
 
+
+        /// <summary>
+        /// Handles issue responces
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private async Task HandleTvIssueRequestAsync(ComponentInteractionCreateEventArgs e)
+        {
+            if (e.Id.ToLower().StartsWith("tirs"))
+            {
+                if (e.Values != null && e.Values.Any())
+                {
+                    string[] values = e.Values.Single().Split("/");
+                    string category = values[0];
+                    string tvShow = values[1];
+                    string issue = values.Length >= 3 ? values[2] : string.Empty;
+
+                    //TODO: finish here
+                    await CreateTvShowIssueWorkFlow(e, int.Parse(category)).HandleIssueTVSelectionAsync(int.Parse(tvShow), issue);
+                        
+                        //.HandleIssueMovieSelectionAsync(int.Parse(movie), issue);
+                }
+            }
+            else if (e.Id.ToLower().StartsWith("tirb"))
+            {
+                //Pull out the details form the message link
+                string[] values = e.Id.Split("/");
+                string category = values[2];
+                string tvShow = values[3];
+                string issue = values[4];
+
+                await CreateTvShowIssueWorkFlow(e, int.Parse(category))
+                    .HandleIssueTvShowSendModalAsync(int.Parse(tvShow), issue);
+            }
+        }
+
+
+        /// <summary>
+        /// Handle the modal input form the user connected to issues
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private async Task HandleTvShowIssueModalAsync(ModalSubmitEventArgs e)
+        {
+            KeyValuePair<string, string> firstTextbox = e.Values.FirstOrDefault();
+            
+            if (firstTextbox.Key.ToLower().StartsWith("tirc"))
+            {
+                string[] values = firstTextbox.Key.Split("/");
+                string category = values[2];
+
+                await CreateTvShowIssueWorkFlow(e, int.Parse(category))
+                    .SubmitIssueTvShowModalReadAsync(firstTextbox);
+            }
+        }
+
+
         private MovieRequestingWorkflow CreateMovieRequestWorkFlow(ComponentInteractionCreateEventArgs e, int categoryId)
         {
             return _movieWorkflowFactory
@@ -503,6 +568,26 @@ namespace Requestrr.WebApi.RequestrrBot
             return _tvShowWorkflowFactory
                 .CreateRequestingWorkflow(e.Interaction, categoryId);
         }
+
+
+        /// <summary>
+        /// Returns a Workflow for creating issues
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="categoryId"></param>
+        /// <returns></returns>
+        private TvShowIssueWorkflow CreateTvShowIssueWorkFlow(ComponentInteractionCreateEventArgs e, int categoryId)
+        {
+            return _tvShowWorkflowFactory
+                .CreateIssueWorkflow(e.Interaction, categoryId);
+        }
+
+        private TvShowIssueWorkflow CreateTvShowIssueWorkFlow(ModalSubmitEventArgs e, int categoryId)
+        {
+            return _tvShowWorkflowFactory
+                .CreateIssueWorkflow(e.Interaction, categoryId);
+        }
+
 
         private ITvShowNotificationWorkflow CreateTvShowNotificationWorkflow(ComponentInteractionCreateEventArgs e)
         {

@@ -59,9 +59,6 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         {
             var settings = _settingsProvider.Provide();
 
-            if (settings.MovieDownloadClient != DownloadClient.Overseerr)
-                return null;
-
             return new MovieIssueWorkflow(new MovieUserRequester(interaction.User.Id.ToString(), interaction.User.Username),
                                                 categoryId,
                                                 GetMovieClient<IMovieSearcher>(settings),

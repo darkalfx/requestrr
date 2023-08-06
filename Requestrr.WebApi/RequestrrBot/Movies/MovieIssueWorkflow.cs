@@ -62,7 +62,7 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
 
         /// <summary>
-        /// This handles the checking of movies in library against whats in library
+        /// This handles the checking of movies in library
         /// </summary>
         /// <param name="movieName">Name of the movie to search for</param>
         /// <returns></returns>
@@ -154,19 +154,11 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
         /// <returns></returns>
         public async Task HandleIssueMovieSendModalAsync(int theMovieDbId, string issue)
         {
-            await HandleIssueMovieSendModalAsync(await _searcher.SearchMovieAsync(new MovieRequest(_user, _categoryId), theMovieDbId), issue);
-        }
-
-
-        /// <summary>
-        /// Handle the responce to a issue submittion to send a Modal
-        /// </summary>
-        /// <param name="movie"></param>
-        /// <param name="issue"></param>
-        /// <returns></returns>
-        public async Task HandleIssueMovieSendModalAsync(Movie movie, string issue)
-        {
-            await _userInterface.DisplayMovieIssueModalAsync(new MovieRequest(_user, _categoryId), movie, issue);
+            await _userInterface.DisplayMovieIssueModalAsync(
+                new MovieRequest(_user, _categoryId),
+                await _searcher.SearchMovieAsync(new MovieRequest(_user, _categoryId), theMovieDbId),
+                issue
+            );
         }
 
 

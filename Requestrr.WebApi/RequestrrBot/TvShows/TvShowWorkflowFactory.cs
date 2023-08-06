@@ -42,14 +42,42 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
         {
             var settings = _settingsProvider.Provide();
 
+            ITvShowIssueSearcher issueSearcher = null;
+            var searcher = GetTvShowClient<ITvShowSearcher>(settings);
+            if(searcher is ITvShowIssueSearcher)
+                issueSearcher = (ITvShowIssueSearcher)searcher;
+
+
             return new TvShowRequestingWorkflow(new TvShowUserRequester(interaction.User.Id.ToString(), interaction.User.Username),
                                                 categoryId,
                                                 GetTvShowClient<ITvShowSearcher>(settings),
                                                 GetTvShowClient<ITvShowRequester>(settings),
-                                                new DiscordTvShowUserInterface(interaction),
+                                                new DiscordTvShowUserInterface(interaction, issueSearcher),
                                                 CreateMovieNotificationWorkflow(interaction, settings, GetTvShowClient<ITvShowSearcher>(settings)),
                                                 _tvShowsSettingsProvider.Provide());
         }
+        
+        
+        public TvShowIssueWorkflow CreateIssueWorkflow(DiscordInteraction interaction, int categoryId)
+        {
+            var settings = _settingsProvider.Provide();
+
+            ITvShowIssueSearcher issueSearcher = null;
+            ITvShowSearcher searcher = GetTvShowClient<ITvShowSearcher>(settings);
+            if (searcher is ITvShowIssueSearcher)
+            {
+                issueSearcher = (ITvShowIssueSearcher)searcher;
+            }
+
+            return new TvShowIssueWorkflow(new TvShowUserRequester(interaction.User.Id.ToString(), interaction.User.Username),
+                categoryId,
+                GetTvShowClient<ITvShowSearcher>(settings),
+                GetTvShowClient<ITvShowRequester>(settings),
+                new DiscordTvShowUserInterface(interaction, issueSearcher),
+                CreateMovieNotificationWorkflow(interaction, settings, GetTvShowClient<ITvShowSearcher>(settings)),
+                _tvShowsSettingsProvider.Provide());
+        }
+        
 
         public ITvShowNotificationWorkflow CreateNotificationWorkflow(DiscordInteraction interaction)
         {

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using Requestrr.WebApi.RequestrrBot.Locale;
+using Requestrr.WebApi.RequestrrBot.Movies;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
@@ -12,10 +13,12 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
     public class DiscordTvShowUserInterface : ITvShowUserInterface
     {
         private readonly DiscordInteraction _interactionContext;
+        private readonly ITvShowIssueSearcher _tvShowIssue;
 
-        public DiscordTvShowUserInterface(DiscordInteraction interactionContext)
+        public DiscordTvShowUserInterface(DiscordInteraction interactionContext, ITvShowIssueSearcher tvShowIssue = null)
         {
             _interactionContext = interactionContext;
+            _tvShowIssue = tvShowIssue;
         }
 
         public static DiscordEmbed GenerateTvShowDetailsAsync(TvShow tvShow)
@@ -147,13 +150,121 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
             await _interactionContext.EditOriginalResponseAsync(builder);
         }
 
+
+
+        /// <summary>
+        /// Handle the responce to the user when requesting submitting an issue
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="tvShow"></param>
+        /// <param name="issue"></param>
+        /// <returns></returns>
+        public async Task DisplayTvShowIssueDetailsAsync(TvShowRequest request, TvShow tvShow, string issue = "")
+        {
+            //Validate that the TV issue searcher is not null
+            if (_tvShowIssue == null)
+            {
+                await WarnNoTvShowFoundAsync(tvShow.Title);
+                return;
+            }
+
+            var message = Language.Current.DiscordCommandTvIssueSelect;
+
+            //Setup the dropdown of issues
+            var options = _tvShowIssue.IssueTypes.Select(x => new DiscordSelectComponentOption(x, $"{request.CategoryId}/{tvShow.TheTvDbId}/{x}", null, x == issue)).ToList();
+            DiscordSelectComponent select = new DiscordSelectComponent($"TIRS/{_interactionContext.User.Id}/{request.CategoryId}/{tvShow.TheTvDbId}", Language.Current.DiscordCommandIssueHelpDropdown, options);
+
+
+            var embed = GenerateTvShowDetailsAsync(tvShow);
+
+            DiscordWebhookBuilder builder = new DiscordWebhookBuilder().AddEmbed(embed);
+            if ((await _interactionContext.GetOriginalResponseAsync()).Components.Where(x => x.Components.Where(y => y.GetType() == typeof(DiscordSelectComponent)).ToList().Count > 0).ToList().Count > 1)
+            {
+                builder = await AddPreviousDropdownsAsync(tvShow, builder);
+            }
+            builder.AddComponents(select).WithContent(message);
+
+            //If issue has been selected, add submit issue button to propmt for description
+            if (issue != string.Empty)
+            {
+                DiscordButtonComponent button = new DiscordButtonComponent(ButtonStyle.Primary, $"TIRB/{_interactionContext.User.Id}/{request.CategoryId}/{tvShow.TheTvDbId}/{issue}/Modal", Language.Current.DiscordCommandIssueButton, false, null);
+                builder.AddComponents(button);
+            }
+
+            await _interactionContext.EditOriginalResponseAsync(builder);
+        }
+
+
+        /// <summary>
+        /// Used to handle the submitting of a Modal back to the user when an issue is being submitted
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="movie"></param>
+        /// <param name="issue"></param>
+        /// <returns></returns>
+        public async Task DisplayTvShowIssueModalAsync(TvShowRequest request, TvShow tvShow, string issue) //MovieRequest request, Movie movie, string issue)
+        {
+            DiscordInteractionResponseBuilder builder = new DiscordInteractionResponseBuilder();
+
+            TextInputComponent textBox = new TextInputComponent(
+                $"Description of '{issue}' issue",
+                $"TIRC/{_interactionContext.User.Id}/{request.CategoryId}/{tvShow.TheTvDbId}/{issue}",
+                "Description",
+                string.Empty,
+                true,
+                TextInputStyle.Paragraph,
+                0,
+                null
+            );
+
+            builder.AddComponents(textBox);
+            builder.WithCustomId("TIRC");
+            builder.WithTitle($"Report Issue for '{tvShow.Title}'");
+
+            await _interactionContext.CreateResponseAsync(InteractionResponseType.Modal, builder);
+        }
+
+
+        /// <summary>
+        /// Handle the responce message to a modal for issue being submitted
+        /// </summary>
+        /// <param name="movie"></param>
+        /// <param name="success"></param>
+        /// <returns></returns>
+        public async Task CompleteTvShowIssueModalRequestAsync(TvShow tvShow, bool success)
+        {
+            await _interactionContext.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder()
+                .WithContent(success ? Language.Current.DiscordCommandTvIssueSuccess.ReplaceTokens(tvShow) : Language.Current.DiscordCommandTvIssueFailed.ReplaceTokens(tvShow))
+            );
+        }
+
+
         public async Task ShowTvShowSelection(TvShowRequest request, IReadOnlyList<SearchedTvShow> searchedTvShows)
         {
+            await TvShowSelection("TRS", request, searchedTvShows);
+        }
+        
+        
+        /// <summary>
+        /// Handles the message for issues of a TV Show
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="searchedTvShows"></param>
+        /// <returns></returns>
+        public async Task ShowTvShowIssueSelection(TvShowRequest request, IReadOnlyList<SearchedTvShow> searchedTvShows)
+        {
+            await TvShowSelection("TIRS", request, searchedTvShows);
+        }
+
+
+        private async Task TvShowSelection(string customId, TvShowRequest request, IReadOnlyList<SearchedTvShow> searchedTvShows)
+        {
             var options = searchedTvShows.Take(15).Select(x => new DiscordSelectComponentOption(GetFormatedTvShowTitle(x), $"{request.CategoryId}/{x.TheTvDbId.ToString()}")).ToList();
-            var select = new DiscordSelectComponent($"TRS/{_interactionContext.User.Id}/{request.CategoryId}", Language.Current.DiscordCommandTvRequestHelpSearchDropdown, options);
+            var select = new DiscordSelectComponent($"{customId}/{_interactionContext.User.Id}/{request.CategoryId}", Language.Current.DiscordCommandTvRequestHelpSearchDropdown, options);
 
             await _interactionContext.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddComponents(select).WithContent(Language.Current.DiscordCommandTvRequestHelpSearch));
         }
+        
 
         public async Task WarnAlreadyNotifiedForSeasonsAsync(TvShow tvShow, TvSeason requestedSeason)
         {
