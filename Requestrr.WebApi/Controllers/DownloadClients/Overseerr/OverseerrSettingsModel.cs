@@ -12,6 +12,7 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Overseerr
         public string ApiKey { get; set; }
         [Required]
         public bool UseSSL { get; set; }
+
         [Required]
         public string Version { get; set; }
     }
