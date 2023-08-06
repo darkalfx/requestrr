@@ -23,6 +23,8 @@ export default function MovieClientsReducer(state = {}, action) {
         defaultApiUserID: action.payload.overseerr.movies.defaultApiUserId,
         categories: action.payload.overseerr.movies.categories,
         useSSL: action.payload.overseerr.useSSL,
+        useMovieIssue: action.payload.overseerr.useMovieIssue,
+        useTVIssue: action.payload.overseerr.useTVIssue,
         version: action.payload.overseerr.version,
         radarrServiceSettings: { radarrServices: [] },
         isLoadinRadarrServiceSettings: false,

@@ -23,6 +23,8 @@ export default function TvShowsClientsReducer(state = {}, action) {
         defaultApiUserID: action.payload.overseerr.tvShows.defaultApiUserId,
         categories: action.payload.overseerr.tvShows.categories,
         useSSL: action.payload.overseerr.useSSL,
+        useMovieIssue: action.payload.overseerr.useMovieIssue,
+        useTVIssue: action.payload.overseerr.useTVIssue,
         version: action.payload.overseerr.version,
         sonarrServiceSettings: { sonarrServices: [] },
         isLoadinSonarrServiceSettings: false,
