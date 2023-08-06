@@ -15,7 +15,7 @@ using Requestrr.WebApi.RequestrrBot.TvShows;
 
 namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
 {
-    public class OverseerrClient : IMovieRequester, IMovieSearcher, ITvShowSearcher, ITvShowRequester, IMovieIssueSearcher, IMovieIssueRequester
+    public class OverseerrClient : IMovieRequester, IMovieSearcher, ITvShowSearcher, ITvShowRequester, IMovieIssueSearcher, IMovieIssueRequester, ITvShowIssueSearcher, ITvShowIssueRequester
     {
         private IHttpClientFactory _httpClientFactory;
         private readonly ILogger<OverseerrClient> _logger;
@@ -518,7 +518,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             return TheMovieDb.GetMovieDetailsAsync(_httpClientFactory.CreateClient(), theMovieDbId, _logger);
         }
 
-        async Task<IReadOnlyList<SearchedTvShow>> ITvShowSearcher.SearchTvShowAsync(TvShowRequest request, string tvShowName)
+        public async Task<IReadOnlyList<SearchedTvShow>> SearchTvShowAsync(TvShowRequest request, string tvShowName)
         {
             try
             {
@@ -539,6 +539,111 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
                 throw new System.Exception("An error occurred while searching for tv shows from Overseerr: " + ex.Message);
             }
         }
+        
+        
+        
+        /// <summary>
+        /// Handles the searching of a TV Show in your library
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="tvShowName"></param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
+        async Task<IReadOnlyList<SearchedTvShow>> ITvShowIssueSearcher.SearchTvShowLibraryAsync(TvShowRequest request, string tvShowName)
+        {
+            try
+            {
+                var response = await HttpGetAsync($"{BaseURL}search/?query={Uri.EscapeDataString(tvShowName)}&page=1&language=en");
+                await response.ThrowIfNotSuccessfulAsync("OverseerrTvShowSearch failed", x => x.error);
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+
+                var tvShows = JsonConvert.DeserializeObject<JSONSearchResult>(jsonResponse).Results
+                    .Where(x => x.MediaType == MediaTypes.TV)
+                    .Where(x => x.MediaInfo != null)
+                    .Where(x => x.MediaInfo.Status == MediaStatus.AVAILABLE || x.MediaInfo.Status4k == MediaStatus.AVAILABLE)
+                    .ToArray();
+
+                return tvShows.Select(ConvertSearchedTvShow).ToArray();
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while searching for tv shows from Overseerr: " + ex.Message);
+                throw new System.Exception("An error occurred while searching for tv shows from Overseerr: " + ex.Message);
+            }
+        }
+
+
+        /// <summary>
+        /// Handles the searching of a TV Show in your library by TVDB ID
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="tvShowName"></param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
+        async Task<SearchedTvShow> ITvShowIssueSearcher.SearchTvShowLibraryAsync(TvShowRequest request, int tvDbId)
+        {
+            SearchedTvShow tvShow = await SearchTvShowAsync(request, tvDbId);
+
+            try
+            {
+                var response = await HttpGetAsync($"{BaseURL}search/?query={Uri.EscapeDataString($"tvdb:{tvDbId}")}&page=1&language=en");
+                await response.ThrowIfNotSuccessfulAsync("OverseerrTvShowSearch failed", x => x.error);
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+
+                var tvShows = JsonConvert.DeserializeObject<JSONSearchResult>(jsonResponse).Results
+                    .Where(x => x.MediaType == MediaTypes.TV)
+                    .Where(x => x.MediaInfo != null)
+                    .ToArray();
+
+                if (tvShows.Count() != 1)
+                {
+                    return null;
+                }
+
+                return tvShow;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while searching for tv shows from Overseerr: " + ex.Message);
+                throw new System.Exception("An error occurred while searching for tv shows from Overseerr: " + ex.Message);
+            }
+        }
+
+
+        public async Task<bool> SubmitTvShowIssueAsync(int thTvDbId, string issueName, string issueDescription)
+        {
+            try
+            {
+                var response = await HttpGetAsync($"{BaseURL}tv/{thTvDbId}");
+                await response.ThrowIfNotSuccessfulAsync("OverseerrTvShowSearch failed", x => x.error);
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+
+                var tvShows = JsonConvert.DeserializeObject<JSONMedia>(jsonResponse);
+
+                int interalMediaId = tvShows.MediaInfo.Id;
+                int issueId = IssueTypes.IndexOf(issueName) + 1;
+
+                response = await HttpPostAsync(null, $"{BaseURL}issue", JsonConvert.SerializeObject(new
+                {
+                    issueType = issueId,
+                    message = issueDescription,
+                    mediaId = interalMediaId
+                }));
+
+                await response.ThrowIfNotSuccessfulAsync("OverseerrRequestTvShowIssueRequest failed", x => x.error);
+
+                return tvShows != null;
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while submitting issue for tv shows from Overseerr: " + ex.Message);
+                throw new System.Exception("An error occurred while submitting issue for tv shows from Overseerr: " + ex.Message);
+            }
+        }
+
 
         public async Task<TvShow> GetTvShowDetailsAsync(TvShowRequest request, int theTvDbId)
         {
@@ -687,10 +792,22 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Overseerr
             }
         }
 
-        Task<SearchedTvShow> ITvShowSearcher.SearchTvShowAsync(TvShowRequest request, int tvDbId)
+
+        /// <summary>
+        /// Allow for searching for TVDB Ids
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="tvDbId"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
+        public async Task<SearchedTvShow> SearchTvShowAsync(TvShowRequest request, int tvDbId)
         {
-            throw new NotSupportedException("Overseerr does not support searching via TheTvDatabase.");
+            IReadOnlyList<SearchedTvShow> list = await SearchTvShowAsync(request, $"tvdb:{tvDbId}");
+            return list.First();
         }
+
+
+
 
         private async Task<string> FindLinkedOverseerUserAsync(string userId, string username, string defaultApiUserID)
         {

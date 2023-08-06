@@ -33,6 +33,11 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 { LanguageTokens.MovieCommandTmDb, $"{Language.Current.DiscordCommandRequestGroupName.ToLower()} {Language.Current.DiscordCommandMovieRequestTmbdName.ToLower()}" },
                 { LanguageTokens.TvShowCommandTitle, $"{Language.Current.DiscordCommandRequestGroupName.ToLower()} {Language.Current.DiscordCommandTvRequestTitleName.ToLower()}" },
                 { LanguageTokens.TvShowCommandTvDb, $"{Language.Current.DiscordCommandRequestGroupName.ToLower()} {Language.Current.DiscordCommandTvRequestTvdbName.ToLower()}" },
+
+                { LanguageTokens.MovieCommandIssue, $"{Language.Current.DiscordCommandIssueName.ToLower()} {Language.Current.DiscordCommandMovieIssueTitleName.ToLower()}" },
+                { LanguageTokens.MovieCommandTmDbIssue, $"{Language.Current.DiscordCommandIssueName.ToLower()} {Language.Current.DiscordCommandMovieIssueTmdbName.ToLower()}" },
+                { LanguageTokens.TvShowCommandIssue, $"{Language.Current.DiscordCommandIssueName.ToLower()} {Language.Current.DiscordCommandTvIssueTitleName.ToLower()}" },
+                { LanguageTokens.TvShowCommandTvDbIssue, $"{Language.Current.DiscordCommandIssueName.ToLower()} {Language.Current.DiscordCommandTvIssueTvdbName.ToLower()}" },
             });
 
             await _context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true).WithContent(message));

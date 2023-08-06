@@ -16,6 +16,11 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         public static string MovieCommandTmDb = "[MovieCommandTmDb]";
         public static string MovieCommandTitle = "[MovieCommandTitle]";
         public static string TvShowCommandTitle = "[TvShowCommandTitle]";
+
+        public static string MovieCommandIssue = "[MovieCommandIssue]";
+        public static string MovieCommandTmDbIssue = "[MovieCommandTmDbIssue]";
+        public static string TvShowCommandIssue = "[TvShowCommandIssue]";
+        public static string TvShowCommandTvDbIssue = "[TvShowCommandTvDbIssue]";
     }
 
     public class Language
@@ -342,11 +347,13 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
         [JsonProperty("Discord.Embed.Tv.WatchNow")]
         public string DiscordEmbedTvWatchNow { get; set; }
 
+
+
         [JsonProperty("Discord.Command.Movie.Issue.Select")]
         public string DiscordCommandMovieIssueSelect { get; set; }
 
-        [JsonProperty("Discord.Command.Movie.Issue.Help.Dropdown")]
-        public string DiscordCommandMovieIssueHelpDropdown { get; set; }
+        [JsonProperty("Discord.Command.Issue.Help.Dropdown")]
+        public string DiscordCommandIssueHelpDropdown { get; set; }
 
         [JsonProperty("Discord.Command.IssueButton")]
         public string DiscordCommandIssueButton { get; set; }
@@ -356,5 +363,59 @@ namespace Requestrr.WebApi.RequestrrBot.Locale
 
         [JsonProperty("Discord.Command.Movie.Issue.Failed")]
         public string DiscordCommandMovieIssueFailed { get; set; }
+
+
+
+        [JsonProperty("Discord.Command.Tv.Issue.Select")]
+        public string DiscordCommandTvIssueSelect { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Issue.Success")]
+        public string DiscordCommandTvIssueSuccess { get; set; }
+
+        [JsonProperty("Discord.Command.Tv.Issue.Failed")]
+        public string DiscordCommandTvIssueFailed { get; set; }
+
+
+
+        [JsonProperty("Discord.Command.Issue.Name")]
+        public string DiscordCommandIssueName { get; set; }
+        [JsonProperty("Discord.Command.Issue.Description")]
+        public string DiscordCommandIssueDescription { get; set; }
+
+
+        [JsonProperty("Discord.Command.Movie.Issue.Title.Name")]
+        public string DiscordCommandMovieIssueTitleName { get; set; }
+        [JsonProperty("Discord.Command.Movie.Issue.Title.Description")]
+        public string DiscordCommandMovieIssueTitleDescription { get; set; }
+        [JsonProperty("Discord.Command.Movie.Issue.Title.Option.Name")]
+        public string DiscordCommandMovieIssueTitleOptionName { get; set; }
+        [JsonProperty("Discord.Command.Movie.Issue.Title.Option.Description")]
+        public string DiscordCommandMovieIssueTitleOptionDescription { get; set; }
+        [JsonProperty("Discord.Command.Movie.Issue.Tmdb.Name")]
+        public string DiscordCommandMovieIssueTmdbName { get; set; }
+        [JsonProperty("Discord.Command.Movie.Issue.Tmdb.Description")]
+        public string DiscordCommandMovieIssueTmdbDescription { get; set; }
+        [JsonProperty("Discord.Command.Movie.Issue.Tmdb.Option.Name")]
+        public string DiscordCommandMovieIssueTmdbOptionName { get; set; }
+        [JsonProperty("Discord.Command.Movie.Issue.Tmdb.Option.Description")]
+        public string DiscordCommandMovieIssueTmdbOptionDescription { get; set; }
+
+
+        [JsonProperty("Discord.Command.Tv.Issue.Title.Name")]
+        public string DiscordCommandTvIssueTitleName { get; set; }
+        [JsonProperty("Discord.Command.Tv.Issue.Title.Description")]
+        public string DiscordCommandTvIssueTitleDescription { get; set; }
+        [JsonProperty("Discord.Command.Tv.Issue.Title.Option.Name")]
+        public string DiscordCommandTvIssueTitleOptionName { get; set; }
+        [JsonProperty("Discord.Command.Tv.Issue.Title.Option.Description")]
+        public string DiscordCommandTvIssueTitleOptionDescription { get; set; }
+        [JsonProperty("Discord.Command.Tv.Issue.Tvdb.Name")]
+        public string DiscordCommandTvIssueTvdbName { get; set; }
+        [JsonProperty("Discord.Command.Tv.Issue.Tvdb.Description")]
+        public string DiscordCommandTvIssueTvdbDescription { get; set; }
+        [JsonProperty("Discord.Command.Tv.Issue.Tvdb.Option.Name")]
+        public string DiscordCommandTvIssueTvdbOptionName { get; set; }
+        [JsonProperty("Discord.Command.Tv.Issue.Tvdb.Option.Description")]
+        public string DiscordCommandTvIssueTvdbOptionDescription { get; set; }
     }
 }
