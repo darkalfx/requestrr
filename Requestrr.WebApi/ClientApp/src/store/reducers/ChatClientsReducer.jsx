@@ -17,7 +17,7 @@ export default function ChatClientsReducer(state = {}, action) {
       automaticallyPurgeCommandMessages: action.payload.automaticallyPurgeCommandMessages,
       language: action.payload.language,
       availableLanguages: action.payload.availableLanguages,
-    }
+    };
   }
 
   return { ...state };

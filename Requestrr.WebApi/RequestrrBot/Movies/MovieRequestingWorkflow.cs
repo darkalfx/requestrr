@@ -48,6 +48,8 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
             }
         }
 
+
+
         public async Task SearchMovieAsync(int theMovieDbId)
         {
             try
@@ -75,6 +77,8 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
 
             return movies;
         }
+
+
 
         public async Task HandleMovieSelectionAsync(int theMovieDbId)
         {

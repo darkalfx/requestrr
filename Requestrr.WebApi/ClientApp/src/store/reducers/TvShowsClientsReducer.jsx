@@ -23,6 +23,8 @@ export default function TvShowsClientsReducer(state = {}, action) {
         defaultApiUserID: action.payload.overseerr.tvShows.defaultApiUserId,
         categories: action.payload.overseerr.tvShows.categories,
         useSSL: action.payload.overseerr.useSSL,
+        useMovieIssue: action.payload.overseerr.useMovieIssue,
+        useTVIssue: action.payload.overseerr.useTVIssue,
         version: action.payload.overseerr.version,
         sonarrServiceSettings: { sonarrServices: [] },
         isLoadinSonarrServiceSettings: false,
@@ -57,21 +59,19 @@ export default function TvShowsClientsReducer(state = {}, action) {
         languages: [],
       },
       restrictions: action.payload.restrictions
-    }
-  }
-  else if (action.type === SET_DISABLED_CLIENT) {
+    };
+  } else if (action.type === SET_DISABLED_CLIENT) {
     return {
       ...state,
       client: "Disabled"
-    }
-  }
-  else if (action.type === SET_OMBI_CLIENT) {
+    };
+  } else if (action.type === SET_OMBI_CLIENT) {
     return {
       ...state,
       ombi: action.payload.ombi,
       restrictions: action.payload.restrictions,
       client: "Ombi"
-    }
+    };
   }
 
   return { ...state };

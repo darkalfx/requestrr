@@ -6,6 +6,9 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Overseerr
     public class SaveOverseerrTvShowsSettingsModel : OverseerrSettingsModel
     {
         [Required]
+        public bool UseTVIssue { get; set; }
+
+        [Required]
         public string Restrictions { get; set; }
 
         [Required]

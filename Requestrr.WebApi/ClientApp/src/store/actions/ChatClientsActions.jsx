@@ -21,7 +21,7 @@ export function getSettings() {
         })
             .then(data => data.json())
             .then(data => {
-                dispatch(setSettings(data));
+                return dispatch(setSettings(data));
             });
     };
 };
@@ -64,7 +64,7 @@ export function save(saveModel) {
                 'Authorization': `Bearer ${state.user.token}`
             },
             body: JSON.stringify({
-                'Client': saveModel.chatClient,
+                'Client': saveModel.client,
                 'ClientId': saveModel.clientId,
                 'BotToken': saveModel.botToken,
                 'StatusMessage': saveModel.statusMessage,
@@ -100,7 +100,7 @@ export function save(saveModel) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     }
 };

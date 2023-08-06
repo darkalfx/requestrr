@@ -125,7 +125,7 @@ export function setRadarrCategory(categoryId, field, data) {
                     category.tags = state.movies.radarr.tags.map(x => x.id).filter(x => data.includes(x));
                 }
 
-                categories[index] = category
+                categories[index] = category;
             }
         }
 
@@ -379,7 +379,7 @@ export function testRadarrSettings(settings) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     };
 };

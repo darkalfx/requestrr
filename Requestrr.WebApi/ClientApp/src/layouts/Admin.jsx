@@ -15,9 +15,9 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
-import { Route, Switch, Redirect } from "react-router-dom";
-import { connect } from 'react-redux';
+import { useEffect, useRef, useState } from "react";
+import { Route, Routes, Navigate } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
 // reactstrap components
 import { Container } from "reactstrap";
 // core components
@@ -29,38 +29,37 @@ import routes from "../routes.js";
 import requestrrLogo from "../assets/img/brand/requestrr_black.svg";
 
 
-class Admin extends React.Component {
-  constructor(props) {
-    super(props);
+function Admin(props) {
+  const [isLoading, setIsLoading] = useState(true);
+  const mainContent = useRef(null);
 
-    this.state = {
-      isLoading: true,
-    };
-  }
 
-  componentDidMount() {
-    this.props.validateLogin()
-      .then(data => this.setState({ isLoading: false }));
-  }
-
-  componentDidUpdate(e) {
-    document.documentElement.scrollTop = 0;
-    document.scrollingElement.scrollTop = 0;
-
-    if (!this.state.isLoading) {
-      this.refs.mainContent.scrollTop = 0;
+  const reduxState = useSelector((state) => {
+    return {
+      isLoggedIn: state.user.isLoggedIn
     }
+  });
+  const dispatch = useDispatch();
 
-    this.props.validateLogin();
+
+  useEffect(() => {
+    dispatch(validateLogin())
+      .then(data => setIsLoading(false));
+  }, []);
+
+
+  if (!isLoading) {
+    mainContent.scrollTop = 0;
   }
 
-  getRoutes = routes => {
+
+  const getRoutes = routes => {
     return routes.map((prop, key) => {
       if (prop.layout === "/admin") {
         return (
           <Route
-            path={prop.layout + prop.path}
-            component={prop.component}
+            path={prop.path}
+            element={prop.component}
             key={key}
           />
         );
@@ -69,68 +68,45 @@ class Admin extends React.Component {
       }
     });
   };
-  getBrandText = path => {
-    for (let i = 0; i < routes.length; i++) {
-      if (
-        this.props.location.pathname.indexOf(
-          routes[i].layout + routes[i].path
-        ) !== -1
-      ) {
-        return routes[i].name;
-      }
-    }
-    return "Brand";
-  };
-  render() {
-    if (!this.state.isLoading) {
-      return (
-        <>
-          <Sidebar
-            {...this.props}
-            routes={routes}
-            logo={{
-              innerLink: "/admin/",
-              imgSrc: requestrrLogo,
-              imgAlt: "Requestrr Logo"
-            }}
-          />
-          <div className="main-content" ref="mainContent">
-            <Switch>
+
+  if (!isLoading) {
+    return (
+      <>
+        <Sidebar
+          {...props}
+          routes={routes}
+          logo={{
+            innerLink: "/admin/",
+            imgSrc: requestrrLogo,
+            imgAlt: "Requestrr Logo"
+          }}
+        />
+        <div className="main-content" ref={mainContent}>
+          <Routes>
             {
-              !this.state.isLoading
-                ? this.props.isLoggedIn
-                  ? this.getRoutes(routes)
+              !isLoading
+                ? reduxState.isLoggedIn
+                  ? getRoutes(routes)
                   : null
                 : null
             }
             {
-              !this.state.isLoading ?
-                this.props.isLoggedIn ?
-                  <Redirect from="*" to="/admin/chatclients" />
-                  : <Redirect from="*" to="/auth/" />
+              !isLoading ?
+                reduxState.isLoggedIn ?
+                  <Route path="*" element={<Navigate to="/admin/chatclients" />} />
+                  : <Route path="*" element={<Navigate to="/auth/" />} />
                 : null
             }
-            </Switch>
-            <Container fluid>
-              <AdminFooter />
-            </Container>
-          </div>
-        </>
-      );
-    }
-
-    return null;
+          </Routes>
+          <Container fluid>
+            <AdminFooter />
+          </Container>
+        </div>
+      </>
+    );
   }
+
+  return null;
 }
 
-const mapPropsToState = state => {
-  return {
-    isLoggedIn: state.user.isLoggedIn
-  }
-};
-
-const mapPropsToAction = {
-  validateLogin: validateLogin
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(Admin);
+export default Admin;

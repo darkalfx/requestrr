@@ -23,6 +23,8 @@ export default function MovieClientsReducer(state = {}, action) {
         defaultApiUserID: action.payload.overseerr.movies.defaultApiUserId,
         categories: action.payload.overseerr.movies.categories,
         useSSL: action.payload.overseerr.useSSL,
+        useMovieIssue: action.payload.overseerr.useMovieIssue,
+        useTVIssue: action.payload.overseerr.useTVIssue,
         version: action.payload.overseerr.version,
         radarrServiceSettings: { radarrServices: [] },
         isLoadinRadarrServiceSettings: false,
@@ -52,20 +54,18 @@ export default function MovieClientsReducer(state = {}, action) {
         areTagsValid: false,
         tags: [],
       },
-    }
-  }
-  else if (action.type === SET_DISABLED_CLIENT) {
+    };
+  } else if (action.type === SET_DISABLED_CLIENT) {
     return {
       ...state,
       client: "Disabled"
-    }
-  }
-  else if (action.type === SET_OMBI_CLIENT) {
+    };
+  } else if (action.type === SET_OMBI_CLIENT) {
     return {
       ...state,
       ombi: action.payload.ombi,
       client: "Ombi"
-    }
+    };
   }
 
   return { ...state };

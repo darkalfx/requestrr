@@ -13,11 +13,25 @@ Fork Notes:
 Purpose.
 This fork was created to learn, tests and tweak this bot for personal use, you are welcome to copy/fork/correct or fork the original, I take no credit for this bot other then the small tweaks and changes.
 
-Changes:
-* Updated the Webapps React version, updated from version 16.8.4 to version 18.2.0, updated all packages to latest versions
-* Small changes to Webapp code to remove un-needed lines or update to function with new version of React or packages.
+Overall/Major changes:
+* Updated to packages for both frontend (React) and Discord bot (DSharpPlus).
+* Added ability to report issues to Overseerr through bot.
+
+
+Full list of changes:
+* Updated the Webapps React version, updated from version 16.8.4 to version 18.2.0, updated most packages to latest versions
+* Convereted all class components to functional components.
+* Updated redux functions to hook functions.
+* Updated React Router to version 6.
+* Changed and corrected bugs introducted from the change of code or old small issues.
 * Updated .Net from version 5 to version 6, updated all packages to work with .Net 6
+* Updated Overseerr to search for TVDB Id in the TV section
+* Added ability to report 'issues', this feature only works with Overseerr, and needs to be enabled in the Overseerr options for Movies and/or TV shows.
+
+
+Notes:
 * Due to a change in Discords API and the package DSharpPlus version 4.3.0, the Bot uses `Intents = DiscordIntents.All` to connect, you will need to enable `Message Content Intent` in the Discords Developer Portal for your bot.
+* All text for the bot to respond to the user when reporting an issue was originally written in English, these messages where converted to the 3 other lanagues in the 'locales' folder.  These messages where converted with Google translate, so these messages could be incorrect or have small issues changing the message.
 
 =================
 

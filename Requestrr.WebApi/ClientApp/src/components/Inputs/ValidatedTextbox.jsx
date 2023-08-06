@@ -1,4 +1,6 @@
-import React from "react";
+
+
+import { useEffect, useState } from "react";
 import { Alert } from "reactstrap";
 
 import {
@@ -6,80 +8,68 @@ import {
   Input,
 } from "reactstrap";
 
-class ValidatedTextbox extends React.Component {
-  constructor(props) {
-    super(props);
+function ValidatedTextbox(props) {
+  const [value, setValue] = useState("");
+  const [hasValueChanged, setHasValueChanged] = useState(false);
+  const [isValueValid, setIsValueValid] = useState(true);
 
-    this.state = {
-      value: "",
-      hasValueChanged: false,
-      isValueValid: true,
-    };
 
-    this.onValueChange = this.onValueChange.bind(this);
-    this.triggerValueValidation = this.triggerValueValidation.bind(this);
-  }
+  useEffect(() => {
+    if(props.value !== "")
+      setValue(props.value);
+  }, [props.value]);
 
-  componentDidMount() {
-    if (this.state.value !== this.props.value) {
-      this.setState({ value: this.props.value },
-        () => this.triggerValueValidation());
-    }
-  }
+  useEffect(() => {
+    if(value !== "")
+      triggerValueValidation();
+  }, [value]);
 
-  componentWillReceiveProps(nextProps) {
-    if (this.state.value !== nextProps.value) {
-      this.setState({ value: nextProps.value },
-        () => this.triggerValueValidation());
-    }
+  useEffect(() => {
+    if (props.isSubmitted)
+      triggerValueValidation();
+  }, [props.isSubmitted]);
+  
 
-    if (this.props.isSubmitted !== nextProps.isSubmitted) {
-      this.triggerValueValidation();
-    }
-  }
 
-  onValueChange = event => {
-    this.setState({
-      value: event.target.value,
-      hasValueChanged: true
-    }, () => {
-      this.triggerValueValidation();
-      this.props.onChange(this.state.value);
-    });
-  }
+  const onValueChange = (event) => {
+    setValue(event.target.value);
+    setHasValueChanged(true);
+    setIsValueValid(props.validation(event.target.value));
+    props.onChange(event.target.value);
+  };
 
-  triggerValueValidation() {
-    this.setState({
-      isValueValid: this.props.validation(this.state.value)
-    }, () => this.props.onValidate(this.state.isValueValid));
-  }
+  const triggerValueValidation = () => {
+    const check = props.validation(value);
+    setIsValueValid(check);
+    props.onValidate(check);
+  };
 
-  render() {
-    return (
-      <>
-        <FormGroup className={!this.state.isValueValid ? this.props.className + " has-danger" : this.state.hasValueChanged ? this.props.className + " has-success" : this.props.className}>
-          <label
-            className="form-control-label"
-            htmlFor={"input-" + this.props.name}>
-            {this.props.name}
-          </label>
-          <Input
-            value={this.state.value} onChange={this.onValueChange}
-            className="form-control-alternative"
-            id={"input-" + this.props.name}
-            placeholder={this.props.placeholder}
-            type="text" />
-          {
-            !this.state.isValueValid ? (
-              <Alert className={this.props.alertClassName} color="warning">
-                <strong>{this.props.errorMessage}</strong>
-              </Alert>)
-              : null
-          }
-        </FormGroup>
-      </>
-    );
-  }
+
+
+  return (
+    <>
+      <FormGroup className={!isValueValid ? props.className + " has-danger" : hasValueChanged ? props.className + " has-success" : props.className}>
+        <label
+          className="form-control-label"
+          htmlFor={"input-" + props.name}>
+          {props.name}
+        </label>
+        <Input
+          value={value} onChange={onValueChange}
+          className="form-control-alternative"
+          id={"input-" + props.name}
+          placeholder={props.placeholder}
+          type="text" />
+        {
+          !isValueValid ? (
+            <Alert className={props.alertClassName} color="warning">
+              <strong>{props.errorMessage}</strong>
+            </Alert>)
+            : null
+        }
+      </FormGroup>
+    </>
+  );
 }
 
 export default ValidatedTextbox;

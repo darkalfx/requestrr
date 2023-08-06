@@ -15,9 +15,8 @@ export default function RadarrClientsReducer(state = {}, action) {
       ...state,
       radarr: action.payload.radarr,
       client: "Radarr"
-    }
-  }
-  else if (action.type === RADARR_LOAD_PATHS) {
+    };
+  } else if (action.type === RADARR_LOAD_PATHS) {
     newState = { ...state };
     newRadarr = { ...newState.radarr };
 
@@ -26,8 +25,7 @@ export default function RadarrClientsReducer(state = {}, action) {
     newState.radarr = newRadarr;
 
     return newState;
-  }
-  else if (action.type === RADARR_SET_PATHS) {
+  } else if (action.type === RADARR_SET_PATHS) {
     newState = { ...state };
     newRadarr = { ...newState.radarr };
 
@@ -39,8 +37,7 @@ export default function RadarrClientsReducer(state = {}, action) {
     newState.radarr = newRadarr;
 
     return newState;
-  }
-  else if (action.type === RADARR_LOAD_PROFILES) {
+  } else if (action.type === RADARR_LOAD_PROFILES) {
     newState = { ...state };
     newRadarr = { ...newState.radarr };
 
@@ -49,8 +46,7 @@ export default function RadarrClientsReducer(state = {}, action) {
     newState.radarr = newRadarr;
 
     return newState;
-  }
-  else if (action.type === RADARR_SET_PROFILES) {
+  } else if (action.type === RADARR_SET_PROFILES) {
     newState = { ...state };
     newRadarr = { ...newState.radarr };
 
@@ -62,8 +58,7 @@ export default function RadarrClientsReducer(state = {}, action) {
     newState.radarr = newRadarr;
 
     return newState;
-  }
-  else if (action.type === RADARR_LOAD_TAGS) {
+  } else if (action.type === RADARR_LOAD_TAGS) {
     newState = { ...state };
     newRadarr = { ...newState.radarr };
 
@@ -72,8 +67,7 @@ export default function RadarrClientsReducer(state = {}, action) {
     newState.radarr = newRadarr;
 
     return newState;
-  }
-  else if (action.type === RADARR_SET_TAGS) {
+  } else if (action.type === RADARR_SET_TAGS) {
     newState = { ...state };
     newRadarr = { ...newState.radarr };
 

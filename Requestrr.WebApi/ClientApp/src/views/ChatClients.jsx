@@ -15,9 +15,9 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+import { useEffect, useState } from "react";
 import { Oval } from 'react-loader-spinner'
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Alert } from "reactstrap";
 import { testSettings } from "../store/actions/ChatClientsActions"
 import { getSettings } from "../store/actions/ChatClientsActions"
@@ -41,645 +41,624 @@ import {
 // core components
 import UserHeader from "../components/Headers/UserHeader.jsx";
 
-class ChatClients extends React.Component {
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      isLoading: true,
-      isSaving: false,
-      saveAttempted: false,
-      saveSuccess: false,
-      saveError: "",
-      isCopyingLink: false,
-      isTestingSettings: false,
-      testSettingsRequested: false,
-      testSettingsSuccess: false,
-      testSettingsError: "",
-      monitoredChannels: [],
-      statusMessage: "",
-      enableRequestsThroughDirectMessages: true,
-      chatClient: "",
-      chatClientChanged: false,
-      chatClientInvalid: false,
-      clientId: "",
-      clientIdChanged: false,
-      clientIdInvalid: false,
-      botToken: "",
-      botTokenChanged: false,
-      botTokenInvalid: false,
-      tvShowRoles: [],
-      movieRoles: [],
-      automaticallyNotifyRequesters: true,
-      notificationMode: "PrivateMessages",
-      notificationChannels: [],
-      automaticallyPurgeCommandMessages: true,
-      language: "english",
-      availableLanguages: [],
-    };
+function ChatClients(props) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveAttempted, setSaveAttempted] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [isCopyingLink, setIsCopyingLink] = useState(false);
+  const [isTestingSettings, setIsTestingSettings] = useState(false);
+  const [testSettingsRequested, setTestSettingsRequested] = useState(false);
+  const [testSettingsSuccess, setTestSettingsSuccess] = useState(false);
+  const [testSettingsError, setTestSettingsError] = useState("");
+  const [monitoredChannels, setMonitoredChannels] = useState([]);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [enableRequestsThroughDirectMessages, setEnableRequestsThroughDirectMessages] = useState(true);
+  const [chatClient, setChatClient] = useState("");
+  const [chatClientChanged, setChatClientChanged] = useState(false);
+  const [chatClientInvalid, setChatClientInvalid] = useState(false);
+  const [clientId, setClientId] = useState("");
+  const [clientIdChanged, setClientIdChanged] = useState(false);
+  const [clientIdInvalid, setClientIdInvalid] = useState(false);
+  const [botToken, setBotToken] = useState("");
+  const [botTokenChanged, setBotTokenChanged] = useState(false);
+  const [botTokenInvalid, setBotTokenInvalid] = useState(false);
+  const [tvShowRoles, setTvShowRoles] = useState([]);
+  const [movieRoles, setMovieRoles] = useState([]);
+  const [automaticallyNotifyRequesters, setAutomaticallyNotifyRequesters] = useState(true);
+  const [notificationMode, setNotificationMode] = useState("PrivateMessages");
+  const [notificationChannels, setNotificationChannels] = useState([]);
+  const [automaticallyPurgeCommandMessages, setAutomaticallyPurgeCommandMessages] = useState(true);
+  const [language, setLanguage] = useState("english");
+  const [availableLanguages, setAvailableLanguages] = useState([]);
 
-    this.onSaving = this.onSaving.bind(this);
-    this.onTestSettings = this.onTestSettings.bind(this);
-    this.onGenerateInviteLink = this.onGenerateInviteLink.bind(this);
-    this.triggerBotTokenValidation = this.triggerBotTokenValidation.bind(this);
-    this.triggerChatClientValidation = this.triggerChatClientValidation.bind(this);
-    this.triggerClientIdValidation = this.triggerClientIdValidation.bind(this);
-    this.validateClientId = this.validateClientId.bind(this);
-    this.validateBotToken = this.validateBotToken.bind(this);
-    this.validateClient = this.validateChatClient.bind(this);
-  }
+  const dispatch = useDispatch();
 
-  componentDidMount() {
-    this.props.getSettings(this.props.token)
+
+  useEffect(() => {
+    dispatch(getSettings(props.token))
       .then(data => {
-        this.setState({
-          isLoading: false,
-          chatClient: this.props.settings.chatClient,
-          clientId: this.props.settings.clientId,
-          botToken: this.props.settings.botToken,
-          statusMessage: this.props.settings.statusMessage,
-          monitoredChannels: this.props.settings.monitoredChannels,
-          enableRequestsThroughDirectMessages: this.props.settings.enableRequestsThroughDirectMessages,
-          tvShowRoles: this.props.settings.tvShowRoles,
-          movieRoles: this.props.settings.movieRoles,
-          automaticallyNotifyRequesters: this.props.settings.automaticallyNotifyRequesters,
-          notificationMode: this.props.settings.notificationMode,
-          notificationChannels: this.props.settings.notificationChannels,
-          automaticallyPurgeCommandMessages: this.props.settings.automaticallyPurgeCommandMessages,
-          language: this.props.settings.language,
-          availableLanguages: this.props.settings.availableLanguages,
-        });
+        setIsLoading(false);
+        setChatClient(data.payload.client);
+        setClientId(data.payload.clientId);
+        setBotToken(data.payload.botToken);
+        setStatusMessage(data.payload.statusMessage);
+        setMonitoredChannels(data.payload.monitoredChannels);
+        setEnableRequestsThroughDirectMessages(data.payload.enableRequestsThroughDirectMessages);
+        setTvShowRoles(data.payload.tvShowRoles);
+        setMovieRoles(data.payload.movieRoles);
+        setAutomaticallyNotifyRequesters(data.payload.automaticallyNotifyRequesters);
+        setNotificationMode(data.payload.notificationMode);
+        setNotificationChannels(data.payload.notificationChannels);
+        setAutomaticallyPurgeCommandMessages(data.payload.automaticallyPurgeCommandMessages);
+        setLanguage(data.payload.language);
+        setAvailableLanguages(data.payload.availableLanguages);
       });
-  }
+  }, []);
 
-  onChatClientChange = event => {
-    this.setState({
-      chatClient: event.target.value,
-      chatClientChanged: true
-    }, () => this.triggerChatClientValidation());
-  }
 
-  triggerChatClientValidation() {
-    this.setState({
-      chatClientInvalid: !this.validateChatClient()
-    });
-  }
+  useEffect(() => {
+    if (chatClientChanged)
+      triggerChatClientValidation();
+  }, [chatClientChanged]);
 
-  validateChatClient() {
-    return /\S/.test(this.state.chatClient);
-  }
 
-  onStatusMessageChange = event => {
-    this.setState({ statusMessage: event.target.value });
-  }
+  useEffect(() => {
+    if (clientIdChanged)
+      triggerClientIdValidation()
+  }, [clientIdChanged]);
 
-  onClientIdChange = event => {
-    this.setState({
-      clientId: event.target.value,
-      clientIdChanged: true
-    }, () => this.triggerClientIdValidation());
-  }
 
-  triggerClientIdValidation() {
-    this.setState({
-      clientIdInvalid: !this.validateClientId()
-    });
-  }
+  useEffect(() => {
+    if (botTokenChanged)
+      triggerBotTokenValidation()
+  }, [botTokenChanged]);
 
-  validateClientId() {
-    return /\S/.test(this.state.clientId);
-  }
 
-  onBotTokenChange = event => {
-    this.setState({
-      botToken: event.target.value,
-      botTokenChanged: true
-    }, () => this.triggerBotTokenValidation());
-  }
 
-  triggerBotTokenValidation() {
-    this.setState({
-      botTokenInvalid: !this.validateBotToken()
-    });
-  }
 
-  validateBotToken() {
-    return /\S/.test(this.state.botToken);
-  }
+  const validateChatClient = () => {
+    return /\S/.test(chatClient);
+  };
 
-  onSaving = e => {
+  const validateClientId = () => {
+    return /\S/.test(clientId);
+  };
+
+  const validateBotToken = () => {
+    return /\S/.test(botToken);
+  };
+
+
+
+  // const onChatClientChange = (event) => {
+  //   setChatClient(event.target.value);
+  //   setChatClientChanged(true);
+  // };
+
+  const triggerChatClientValidation = () => {
+    setChatClientInvalid(!validateChatClient());
+  };
+
+  const onStatusMessageChange = (event) => {
+    setStatusMessage(event.target.value);
+  };
+
+  const onClientIdChange = (event) => {
+    setClientId(event.target.value);
+    setClientIdChanged(true);
+  };
+
+
+  const triggerClientIdValidation = () => {
+    setClientIdInvalid(!validateClientId());
+  };
+
+
+  const onBotTokenChange = (event) => {
+    setBotToken(event.target.value);
+    setBotTokenChanged(true);
+  };
+
+  const triggerBotTokenValidation = () => {
+    setBotTokenInvalid(!validateBotToken());
+  };
+
+
+
+  const onSaving = (e) => {
     e.preventDefault();
 
-    this.triggerChatClientValidation();
-    this.triggerClientIdValidation();
-    this.triggerBotTokenValidation();
+    triggerChatClientValidation();
+    triggerClientIdValidation();
+    triggerBotTokenValidation();
 
-    if (!this.isSaving) {
-      if (this.validateChatClient()
-        && this.validateBotToken()
-        && this.validateClientId()) {
-        this.setState({ isSaving: true });
+    if (!isSaving) {
+      if (validateChatClient()
+        && validateBotToken()
+        && validateClientId()) {
+        setIsSaving(true);
 
-        this.props.save({
-          chatClient: this.state.chatClient,
-          clientId: this.state.clientId,
-          botToken: this.state.botToken,
-          statusMessage: this.state.statusMessage,
-          monitoredChannels: this.state.monitoredChannels,
-          tvShowRoles: this.state.tvShowRoles,
-          movieRoles: this.state.movieRoles,
-          enableRequestsThroughDirectMessages: this.state.enableRequestsThroughDirectMessages,
-          automaticallyNotifyRequesters: this.state.automaticallyNotifyRequesters,
-          notificationMode: this.state.notificationMode,
-          notificationChannels: this.state.notificationChannels,
-          automaticallyPurgeCommandMessages: this.state.automaticallyPurgeCommandMessages,
-          language: this.state.language,
-        })
+        dispatch(save({
+          client: chatClient,
+          clientId: clientId,
+          botToken: botToken,
+          statusMessage: statusMessage,
+          monitoredChannels: monitoredChannels,
+          tvShowRoles: tvShowRoles,
+          movieRoles: movieRoles,
+          enableRequestsThroughDirectMessages: enableRequestsThroughDirectMessages,
+          automaticallyNotifyRequesters: automaticallyNotifyRequesters,
+          notificationMode: notificationMode,
+          notificationChannels: notificationChannels,
+          automaticallyPurgeCommandMessages: automaticallyPurgeCommandMessages,
+          language: language,
+        }))
           .then(data => {
-            this.setState({ isSaving: false });
+            setIsSaving(false);
 
             if (data.ok) {
-              this.setState({
-                savingAttempted: true,
-                savingError: "",
-                savingSuccess: true
-              });
-            }
-            else {
-              var error = "An unknown error occurred while saving.";
+              setSaveAttempted(true);
+              setSaveError("");
+              setSaveSuccess(true);
+            } else {
+              let error = "An unknown error occurred while saving.";
 
               if (typeof (data.error) === "string")
                 error = data.error;
 
-              this.setState({
-                savingAttempted: true,
-                savingError: error,
-                savingSuccess: false
-              });
+              setSaveAttempted(true);
+              setSaveError(error);
+              setSaveSuccess(false);
             }
           });
-      }
-      else {
-        this.setState({
-          savingAttempted: true,
-          savingError: "Some fields are invalid, please fix them before saving.",
-          savingSuccess: false
-        });
+      } else {
+        setSaveAttempted(true);
+        setSaveError("Some fields are invalid, please fix them before saving.");
+        setSaveSuccess(false);
       }
     }
   }
 
-  onTestSettings = e => {
+  const onTestSettings = (e) => {
     e.preventDefault();
 
-    this.triggerChatClientValidation();
-    this.triggerClientIdValidation();
-    this.triggerBotTokenValidation();
+    triggerChatClientValidation();
+    triggerClientIdValidation();
+    triggerBotTokenValidation();
 
-    if (!this.state.isTestingSettings
-      && this.validateChatClient()
-      && this.validateBotToken()
-      && this.validateClientId()) {
-      this.setState({ isTestingSettings: true });
+    if (!isTestingSettings
+      && validateChatClient()
+      && validateBotToken()
+      && validateClientId()) {
+      setIsTestingSettings(true);
 
-      this.props.testSettings({
-        chatClient: this.state.chatClient,
-        clientId: this.state.clientId,
-        botToken: this.state.botToken,
-      })
+      dispatch(testSettings({
+        chatClient: chatClient,
+        clientId: clientId,
+        botToken: botToken,
+      }))
         .then(data => {
-          this.setState({ isTestingSettings: false });
+          setIsTestingSettings(false);
 
           if (data.ok) {
-            this.setState({
-              testSettingsRequested: true,
-              testSettingsError: "",
-              testSettingsSuccess: true
-            });
-          }
-          else {
-            var error = "An unknown error occurred while testing the settings";
+            setTestSettingsRequested(true);
+            setTestSettingsError("");
+            setTestSettingsSuccess(true);
+          } else {
+            let error = "An unknown error occurred while testing the settings";
 
             if (typeof (data.error) === "string")
               error = data.error;
 
-            this.setState({
-              testSettingsRequested: true,
-              testSettingsError: error,
-              testSettingsSuccess: false
-            });
+            setTestSettingsRequested(true);
+            setTestSettingsError(error);
+            setTestSettingsSuccess(false);
           }
         });
     }
-  }
+  };
 
-  onGenerateInviteLink = e => {
+  const onGenerateInviteLink = (e) => {
     e.preventDefault();
 
-    this.triggerChatClientValidation();
-    this.triggerClientIdValidation();
-    this.triggerBotTokenValidation();
+    triggerChatClientValidation();
+    triggerClientIdValidation();
+    triggerBotTokenValidation();
 
-    if (!this.state.isCopyingLink
-      && this.validateChatClient()
-      && this.validateBotToken()
-      && this.validateClientId()) {
-      this.setState({ isCopyingLink: true });
+    if (!isCopyingLink
+      && validateChatClient()
+      && validateBotToken()
+      && validateClientId()) {
+      setIsCopyingLink(true);
 
-      var linkElement = document.getElementById("discordlink");
+      let linkElement = document.getElementById("discordlink");
       linkElement.classList.remove("d-none");
       linkElement.focus();
       linkElement.select();
-      document.execCommand('copy');
+      let text = linkElement.value;
+      navigator.clipboard.writeText(text);
       linkElement.classList.add("d-none");
 
-      let thisRef = this;
-      setTimeout(function () { thisRef.setState({ isCopyingLink: false }) }, 3000);
+      // let thisRef = this;
+      setTimeout(() => { setIsCopyingLink(false) }, 3000);
     }
-  }
+  };
 
-  render() {
-    return (
-      <>
-        <UserHeader title="Chat Client" description="This page is for configuring your bot to your favorite chatting application" />
-        <Container className="mt--7" fluid>
-          <Row>
-            <Col className="order-xl-1" xl="12">
-              <Card className="bg-secondary shadow">
-                <CardHeader className="bg-white border-0">
-                  <Row className="align-items-center">
-                    <Col xs="8">
-                      <h3 className="mb-0">Configuration</h3>
-                    </Col>
-                    <Col className="text-right" xs="4">
-                      <Button
-                        color="primary"
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                        size="sm"
-                      >
-                        Settings
-                      </Button>
-                    </Col>
-                  </Row>
-                </CardHeader>
-                <CardBody className={this.state.isLoading ? "fade" : "fade show"}>
-                  <Form className="complex">
+
+
+
+
+  return (
+    <>
+      <UserHeader title="Chat Client" description="This page is for configuring your bot to your favorite chatting application" />
+      <Container className="mt--7" fluid>
+        <Row>
+          <Col className="order-xl-1" xl="12">
+            <Card className="bg-secondary shadow">
+              <CardHeader className="bg-white border-0">
+                <Row className="align-items-center">
+                  <Col xs="8">
+                    <h3 className="mb-0">Configuration</h3>
+                  </Col>
+                  <Col className="text-right" xs="4">
+                    <Button
+                      color="primary"
+                      href="#pablo"
+                      onClick={e => e.preventDefault()}
+                      size="sm"
+                    >
+                      Settings
+                    </Button>
+                  </Col>
+                </Row>
+              </CardHeader>
+              <CardBody className={isLoading ? "fade" : "fade show"}>
+                <Form className="complex">
+                  <h6 className="heading-small text-muted mb-4">
+                    General Settings
+                  </h6>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col lg="6">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-client"
+                          >
+                            Chat Client
+                          </label>
+                          <Input id="input-client" value="Discord" disabled="disabled" className="form-control" type="text" />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                  </div>
+                  <hr className="my-4" />
+                  <div>
                     <h6 className="heading-small text-muted mb-4">
-                      General Settings
+                      Discord Bot Settings
                     </h6>
-                    <div className="pl-lg-4">
-                      <Row>
-                        <Col lg="6">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-client"
-                            >
-                              Chat Client
-                            </label>
-                            <Input id="input-client" value="Discord" disabled="disabled" className="form-control" type="text" />
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </div>
-                    <hr className="my-4" />
-                    <div>
-                      <h6 className="heading-small text-muted mb-4">
-                        Discord Bot Settings
-                      </h6>
-                    </div>
-                    <div className="pl-lg-4">
-                      <Row>
-                        <Col lg="6">
-                          <FormGroup className={this.state.clientIdInvalid ? "has-danger" : this.state.clientIdChanged ? "has-success" : ""}>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-client-id"
-                            >
-                              Application Id
-                            </label>
-                            <Input
-                              value={this.state.clientId} onChange={this.onClientIdChange}
-                              className="form-control-alternative"
-                              id="input-client-id"
-                              placeholder="Enter client id"
-                              type="text"
-                            />
-                            {
-                              this.state.clientIdInvalid ? (
-                                <Alert className="mt-3" color="warning">
-                                  <strong>Client id is required.</strong>
-                                </Alert>)
-                                : null
-                            }
-                          </FormGroup>
-                        </Col>
-                        <Col lg="6">
-                          <FormGroup className={this.state.botTokenInvalid ? "has-danger" : this.state.botTokenChanged ? "has-success" : ""}>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-bot-token"
-                            >
-                              Bot Token
-                            </label>
-                            <Input
-                              value={this.state.botToken} onChange={this.onBotTokenChange}
-                              className="form-control-alternative"
-                              id="input-bot-token"
-                              placeholder="Enter bot token"
-                              type="text"
-                            />
-                            {
-                              this.state.botTokenInvalid ? (
-                                <Alert className="mt-3" color="warning">
-                                  <strong>Bot token is required.</strong>
-                                </Alert>)
-                                : null
-                            }
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col lg="6">
-                          <FormGroup>
-                            <MultiDropdown
-                              name="Roles allowed to request tv shows"
-                              create={true}
-                              searchable={true}
-                              placeholder="Enter role ids here. Leave blank for all roles."
-                              labelField="name"
-                              valueField="id"
-                              dropdownHandle={false}
-                              selectedItems={this.state.tvShowRoles.map(x => { return { name: x, id: x } })}
-                              items={this.state.tvShowRoles.map(x => { return { name: x, id: x } })}
-                              onChange={newTvShowRoles => this.setState({ tvShowRoles: newTvShowRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
-                          </FormGroup>
-                        </Col>
-                        <Col lg="6">
-                          <FormGroup>
-                            <MultiDropdown
-                              name="Roles allowed to request movies"
-                              create={true}
-                              searchable={true}
-                              placeholder="Enter role ids here. Leave blank for all roles."
-                              labelField="name"
-                              valueField="id"
-                              dropdownHandle={false}
-                              selectedItems={this.state.movieRoles.map(x => { return { name: x, id: x } })}
-                              items={this.state.movieRoles.map(x => { return { name: x, id: x } })}
-                              onChange={newMovieRoles => this.setState({ movieRoles: newMovieRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()) })} />
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col md="12">
-                          <FormGroup>
-                            <MultiDropdown
-                              name="Channel(s) to monitor"
-                              create={true}
-                              searchable={true}
-                              placeholder="Enter channels ids here. Leave blank for all channels."
-                              labelField="name"
-                              valueField="id"
-                              dropdownHandle={false}
-                              selectedItems={this.state.monitoredChannels.map(x => { return { name: x, id: x } })}
-                              items={this.state.monitoredChannels.map(x => { return { name: x, id: x } })}
-                              onChange={newMonitoredChannels => this.setState({ monitoredChannels: newMonitoredChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')) })} />
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col lg="6">
-                          <FormGroup>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-status-message"
-                            >
-                              Status Message
-                            </label>
-                            <Input
-                              value={this.state.statusMessage} onChange={this.onStatusMessageChange}
-                              className="form-control-alternative"
-                              id="input-status-message"
-                              placeholder="Enter status message (Optional)"
-                              type="text"
-                            />
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </div>
-                    <div>
-                      <h6 className="heading-small text-muted mt-4">
-                        Discord Notification Settings
-                      </h6>
-                    </div>
-                    <div className="pl-lg-4">
-                      <Row>
-                        <Col lg="6">
-                          <Dropdown
-                            name="Notifications"
-                            value={this.state.notificationMode}
-                            items={[{ name: "Disabled", value: "Disabled" }, { name: "Via private messages", value: "PrivateMessages" }, { name: "Via channel(s)", value: "Channels" }]}
-                            onChange={newNotificationMode => this.setState({ notificationMode: newNotificationMode }, this.onValueChange)} />
-                        </Col>
-                        <Col lg="6">
+                  </div>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col lg="6">
+                        <FormGroup className={clientIdInvalid ? "has-danger" : clientIdChanged ? "has-success" : ""}>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-client-id"
+                          >
+                            Application Id
+                          </label>
+                          <Input
+                            value={clientId} onChange={onClientIdChange}
+                            className="form-control-alternative"
+                            id="input-client-id"
+                            placeholder="Enter client id"
+                            type="text"
+                          />
                           {
-                            this.state.notificationMode === "Channels"
-                              ? <>
-                                <FormGroup>
-                                  <MultiDropdown
-                                    name="Channel(s) to send notifications to"
-                                    create={true}
-                                    searchable={true}
-                                    placeholder="Enter channels ids here"
-                                    labelField="name"
-                                    valueField="id"
-                                    dropdownHandle={false}
-                                    selectedItems={this.state.notificationChannels.map(x => { return { name: x, id: x } })}
-                                    items={this.state.notificationChannels.map(x => { return { name: x, id: x } })}
-                                    onChange={newNotificationChannels => this.setState({ notificationChannels: newNotificationChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')) })} />
-                                </FormGroup>
-                              </>
+                            clientIdInvalid ? (
+                              <Alert className="mt-3" color="warning">
+                                <strong>Client id is required.</strong>
+                              </Alert>)
                               : null
                           }
-                        </Col>
-                      </Row>
+                        </FormGroup>
+                      </Col>
+                      <Col lg="6">
+                        <FormGroup className={botTokenInvalid ? "has-danger" : botTokenChanged ? "has-success" : ""}>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-bot-token"
+                          >
+                            Bot Token
+                          </label>
+                          <Input
+                            value={botToken} onChange={onBotTokenChange}
+                            className="form-control-alternative"
+                            id="input-bot-token"
+                            placeholder="Enter bot token"
+                            type="text"
+                          />
+                          {
+                            botTokenInvalid ? (
+                              <Alert className="mt-3" color="warning">
+                                <strong>Bot token is required.</strong>
+                              </Alert>)
+                              : null
+                          }
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col lg="6">
+                        <FormGroup>
+                          <MultiDropdown
+                            name="Roles allowed to request tv shows"
+                            create={true}
+                            searchable={true}
+                            placeholder="Enter role ids here. Leave blank for all roles."
+                            labelField="name"
+                            valueField="id"
+                            dropdownHandle={false}
+                            selectedItems={tvShowRoles.map(x => { return { name: x, id: x } })}
+                            items={tvShowRoles.map(x => { return { name: x, id: x } })}
+                            onChange={newTvShowRoles => setTvShowRoles(newTvShowRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()))} />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="6">
+                        <FormGroup>
+                          <MultiDropdown
+                            name="Roles allowed to request movies"
+                            create={true}
+                            searchable={true}
+                            placeholder="Enter role ids here. Leave blank for all roles."
+                            labelField="name"
+                            valueField="id"
+                            dropdownHandle={false}
+                            selectedItems={movieRoles.map(x => { return { name: x, id: x } })}
+                            items={movieRoles.map(x => { return { name: x, id: x } })}
+                            onChange={newMovieRoles => setMovieRoles(newMovieRoles.filter(x => /\S/.test(x.id)).map(x => x.id.trim()))} />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md="12">
+                        <FormGroup>
+                          <MultiDropdown
+                            name="Channel(s) to monitor"
+                            create={true}
+                            searchable={true}
+                            placeholder="Enter channels ids here. Leave blank for all channels."
+                            labelField="name"
+                            valueField="id"
+                            dropdownHandle={false}
+                            selectedItems={monitoredChannels.map(x => { return { name: x, id: x } })}
+                            items={monitoredChannels.map(x => { return { name: x, id: x } })}
+                            onChange={newMonitoredChannels => setMonitoredChannels(newMonitoredChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')))} />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col lg="6">
+                        <FormGroup>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-status-message"
+                          >
+                            Status Message
+                          </label>
+                          <Input
+                            value={statusMessage} onChange={onStatusMessageChange}
+                            className="form-control-alternative"
+                            id="input-status-message"
+                            placeholder="Enter status message (Optional)"
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                  </div>
+                  <div>
+                    <h6 className="heading-small text-muted mt-4">
+                      Discord Notification Settings
+                    </h6>
+                  </div>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col lg="6">
+                        <Dropdown
+                          name="Notifications"
+                          value={notificationMode}
+                          items={[{ name: "Disabled", value: "Disabled" }, { name: "Via private messages", value: "PrivateMessages" }, { name: "Via channel(s)", value: "Channels" }]}
+                          onChange={newNotificationMode => setNotificationMode(newNotificationMode)} />
+                      </Col>
+                      <Col lg="6">
+                        {
+                          notificationMode === "Channels"
+                            ? <>
+                              <FormGroup>
+                                <MultiDropdown
+                                  name="Channel(s) to send notifications to"
+                                  create={true}
+                                  searchable={true}
+                                  placeholder="Enter channels ids here"
+                                  labelField="name"
+                                  valueField="id"
+                                  dropdownHandle={false}
+                                  selectedItems={notificationChannels.map(x => { return { name: x, id: x } })}
+                                  items={notificationChannels.map(x => { return { name: x, id: x } })}
+                                  onChange={newNotificationChannels => setNotificationChannels(newNotificationChannels.filter(x => /\S/.test(x.id)).map(x => x.id.trim().replace(/#/g, '').replace(/\s+/g, '-')))} />
+                              </FormGroup>
+                            </>
+                            : null
+                        }
+                      </Col>
+                    </Row>
+                    {
+                      notificationMode !== "Disabled"
+                        ? <>
+                          <Row>
+                            <Col md="12">
+                              <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                                <Input
+                                  className="custom-control-input"
+                                  id="automaticRequests"
+                                  type="checkbox"
+                                  onChange={e => { setAutomaticallyNotifyRequesters(!automaticallyNotifyRequesters); }}
+                                  checked={automaticallyNotifyRequesters}
+                                />
+                                <label
+                                  className="custom-control-label"
+                                  htmlFor="automaticRequests"
+                                >
+                                  <span className="text-muted">Automatically notify users of downloaded content when they make requests</span>
+                                </label>
+                              </FormGroup>
+                            </Col>
+                          </Row>
+                        </>
+                        : null
+                    }
+                  </div>
+                  <div>
+                    <h6 className="heading-small text-muted mt-4">
+                      Discord Miscellaneous Settings
+                    </h6>
+                  </div>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col md="12">
+                        <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                          <Input
+                            className="custom-control-input"
+                            id="enableRequestDM"
+                            type="checkbox"
+                            onChange={e => { setEnableRequestsThroughDirectMessages(!enableRequestsThroughDirectMessages); }}
+                            checked={enableRequestsThroughDirectMessages}
+                          />
+                          <label
+                            className="custom-control-label"
+                            htmlFor="enableRequestDM"
+                          >
+                            <span className="text-muted">Enable requesting via a private message, all role restrictions will be ignored, even on the servers.<br /><strong>(It might take up to an hour for the commands to show up on your servers.)</strong></span>
+                          </label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md="12">
+                        <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+                          <Input
+                            className="custom-control-input"
+                            id="deleteRequestMessages"
+                            type="checkbox"
+                            onChange={e => { setAutomaticallyPurgeCommandMessages(!automaticallyPurgeCommandMessages); }}
+                            checked={automaticallyPurgeCommandMessages}
+                          />
+                          <label
+                            className="custom-control-label"
+                            htmlFor="deleteRequestMessages"
+                          >
+                            <span className="text-muted">Hide slash command request messages in channels.</span>
+                          </label>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md="12">
+                      </Col>
+                    </Row>
+                  </div>
+                  <div className="pl-lg-4">
+                    <div className="mt-4">
                       {
-                        this.state.notificationMode !== "Disabled"
-                          ? <>
-                            <Row>
-                              <Col md="12">
-                                <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
-                                  <Input
-                                    className="custom-control-input"
-                                    id="automaticRequests"
-                                    type="checkbox"
-                                    onChange={e => { this.setState({ automaticallyNotifyRequesters: !this.state.automaticallyNotifyRequesters }); }}
-                                    checked={this.state.automaticallyNotifyRequesters}
-                                  />
-                                  <label
-                                    className="custom-control-label"
-                                    htmlFor="automaticRequests"
-                                  >
-                                    <span className="text-muted">Automatically notify users of downloaded content when they make requests</span>
-                                  </label>
-                                </FormGroup>
-                              </Col>
-                            </Row>
-                          </>
+                        testSettingsRequested && !isTestingSettings ?
+                          !testSettingsSuccess ? (
+                            <Alert className="text-center" color="danger">
+                              <strong>{testSettingsError}.</strong>
+                            </Alert>)
+                            : <Alert className="text-center" color="success">
+                              <strong>The specified settings are valid.</strong>
+                            </Alert>
                           : null
                       }
                     </div>
-                    <div>
-                      <h6 className="heading-small text-muted mt-4">
-                        Discord Miscellaneous Settings
-                      </h6>
-                    </div>
-                    <div className="pl-lg-4">
-                      <Row>
-                        <Col md="12">
-                          <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
-                            <Input
-                              className="custom-control-input"
-                              id="enableRequestDM"
-                              type="checkbox"
-                              onChange={e => { this.setState({ enableRequestsThroughDirectMessages: !this.state.enableRequestsThroughDirectMessages }); }}
-                              checked={this.state.enableRequestsThroughDirectMessages}
-                            />
-                            <label
-                              className="custom-control-label"
-                              htmlFor="enableRequestDM"
-                            >
-                              <span className="text-muted">Enable requesting via a private message, all role restrictions will be ignored, even on the servers.<br/><strong>(It might take up to an hour for the commands to show up on your servers.)</strong></span>
-                            </label>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col md="12">
-                          <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
-                            <Input
-                              className="custom-control-input"
-                              id="deleteRequestMessages"
-                              type="checkbox"
-                              onChange={e => { this.setState({ automaticallyPurgeCommandMessages: !this.state.automaticallyPurgeCommandMessages }); }}
-                              checked={this.state.automaticallyPurgeCommandMessages}
-                            />
-                            <label
-                              className="custom-control-label"
-                              htmlFor="deleteRequestMessages"
-                            >
-                              <span className="text-muted">Hide slash command request messages in channels.</span>
-                            </label>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col md="12">
-                        </Col>
-                      </Row>
-                    </div>
-                    <div className="pl-lg-4">
-                      <div className="mt-4">
-                        {
-                          this.state.testSettingsRequested && !this.state.isTestingSettings ?
-                            !this.state.testSettingsSuccess ? (
-                              <Alert className="text-center" color="danger">
-                                <strong>{this.state.testSettingsError}.</strong>
-                              </Alert>)
-                              : <Alert className="text-center" color="success">
-                                <strong>The specified settings are valid.</strong>
-                              </Alert>
-                            : null
-                        }
-                      </div>
-                      <Row>
-                        <Col>
-                          <FormGroup className="text-right">
-                            <Input id="discordlink" readOnly={true} className="d-none" value={"https://discord.com/api/oauth2/authorize?client_id=" + this.state.clientId + "&permissions=522304&scope=bot%20applications.commands"} />
-                            <button onClick={this.onTestSettings} disabled={!(this.validateBotToken() && this.validateClientId())} className="btn mt-3 btn-icon btn-3 btn-default" type="button">
-                              <span className="btn-inner--icon">
-                                {
-                                  this.state.isTestingSettings ? (
-                                    <Oval
-                                      wrapperClass="loader"
-                                      type="Oval"
-                                      color="#11cdef"
-                                      height={19}
-                                      width={19}
-                                    />)
-                                    : (<i className="fas fa-cogs"></i>)
-                                }</span>
-                              <span className="btn-inner--text">Test Settings</span>
-                            </button>
-                            <button onClick={this.onGenerateInviteLink} disabled={!(this.validateBotToken() && this.validateClientId())} className="btn mt-3 btn-icon btn-3 btn-info" type="button">
-                              <span className="btn-inner--icon"><i className="fas fa-copy"></i></span>
-                              <span className="btn-inner--text">{this.state.isCopyingLink ? "Copied to clipboard!" : "Copy Invite Link"}</span>
-                            </button>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </div>
-                    <hr className="my-4" />
-                    <h6 className="heading-small text-muted mb-4">
-                      Chat Command Options
-                    </h6>
-                    <div className="pl-lg-4">
-                      <Row>
-                        <Col lg="6">
-                          <Dropdown
-                            name="Language"
-                            value={this.state.language}
-                            items={this.state.availableLanguages.map(x => { return { name: x, value: x } })}
-                            onChange={newLanguage => this.setState({ language: newLanguage }, this.onValueChange)} />
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col>
-                          <FormGroup className="mt-4">
-                            {
-                              this.state.savingAttempted && !this.state.isSaving ?
-                                !this.state.savingSuccess ? (
-                                  <Alert className="text-center" color="danger">
-                                    <strong>{this.state.savingError}</strong>
-                                  </Alert>)
-                                  : <Alert className="text-center" color="success">
-                                    <strong>Settings updated successfully.</strong>
-                                  </Alert>
-                                : null
-                            }
-                          </FormGroup>
-                          <FormGroup className="text-right">
-                            <button className="btn btn-icon btn-3 btn-primary" onClick={this.onSaving} disabled={this.state.isSaving} type="button">
-                              <span className="btn-inner--icon"><i className="fas fa-save"></i></span>
-                              <span className="btn-inner--text">Save Changes</span>
-                            </button>
-                          </FormGroup>
-                        </Col> 
-                      </Row>
-                    </div>
-                  </Form>
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
-      </>
-    );
-  }
+                    <Row>
+                      <Col>
+                        <FormGroup className="text-right">
+                          <Input id="discordlink" readOnly={true} className="d-none" value={"https://discord.com/api/oauth2/authorize?client_id=" + clientId + "&permissions=522304&scope=bot%20applications.commands"} />
+                          <button onClick={onTestSettings} disabled={!(validateBotToken() && validateClientId())} className="btn mt-3 btn-icon btn-3 btn-default" type="button">
+                            <span className="btn-inner--icon">
+                              {
+                                isTestingSettings ? (
+                                  <Oval
+                                    wrapperClass="loader"
+                                    type="Oval"
+                                    color="#11cdef"
+                                    height={19}
+                                    width={19}
+                                  />)
+                                  : (<i className="fas fa-cogs"></i>)
+                              }</span>
+                            <span className="btn-inner--text">Test Settings</span>
+                          </button>
+                          <button onClick={onGenerateInviteLink} disabled={!(validateBotToken() && validateClientId())} className="btn mt-3 btn-icon btn-3 btn-info" type="button">
+                            <span className="btn-inner--icon"><i className="fas fa-copy"></i></span>
+                            <span className="btn-inner--text">{isCopyingLink ? "Copied to clipboard!" : "Copy Invite Link"}</span>
+                          </button>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                  </div>
+                  <hr className="my-4" />
+                  <h6 className="heading-small text-muted mb-4">
+                    Chat Command Options
+                  </h6>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col lg="6">
+                        <Dropdown
+                          name="Language"
+                          value={language}
+                          items={availableLanguages.map(x => { return { name: x, value: x } })}
+                          onChange={newLanguage => setLanguage(newLanguage)} />
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <FormGroup className="mt-4">
+                          {
+                            saveAttempted && !isSaving ?
+                              !saveSuccess ? (
+                                <Alert className="text-center" color="danger">
+                                  <strong>{saveError}</strong>
+                                </Alert>)
+                                : <Alert className="text-center" color="success">
+                                  <strong>Settings updated successfully.</strong>
+                                </Alert>
+                              : null
+                          }
+                        </FormGroup>
+                        <FormGroup className="text-right">
+                          <button className="btn btn-icon btn-3 btn-primary" onClick={onSaving} disabled={isSaving} type="button">
+                            <span className="btn-inner--icon"><i className="fas fa-save"></i></span>
+                            <span className="btn-inner--text">Save Changes</span>
+                          </button>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                  </div>
+                </Form>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </>
+  );
 }
 
-const mapPropsToState = state => {
-  return {
-    settings: state.chatClients
-  }
-};
-
-const mapPropsToAction = {
-  testSettings: testSettings,
-  getSettings: getSettings,
-  save: save
-};
-
-export default connect(mapPropsToState, mapPropsToAction)(ChatClients);
+export default ChatClients;

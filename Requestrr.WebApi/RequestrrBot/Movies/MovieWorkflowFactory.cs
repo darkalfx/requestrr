@@ -48,6 +48,25 @@ namespace Requestrr.WebApi.RequestrrBot.Movies
                                                 CreateMovieNotificationWorkflow(interaction, settings));
         }
 
+
+        /// <summary>
+        /// This handles creating a issue for a movie
+        /// </summary>
+        /// <param name="interaction"></param>
+        /// <param name="categoryId"></param>
+        /// <returns></returns>
+        public MovieIssueWorkflow CreateIssueWorkflow(DiscordInteraction interaction, int categoryId)
+        {
+            var settings = _settingsProvider.Provide();
+
+            return new MovieIssueWorkflow(new MovieUserRequester(interaction.User.Id.ToString(), interaction.User.Username),
+                                                categoryId,
+                                                GetMovieClient<IMovieSearcher>(settings),
+                                                GetMovieClient<IMovieRequester>(settings),
+                                                new DiscordMovieUserInterface(interaction, GetMovieClient<IMovieSearcher>(settings)),
+                                                CreateMovieNotificationWorkflow(interaction, settings));
+        }
+
         public IMovieNotificationWorkflow CreateNotificationWorkflow(DiscordInteraction interaction)
         {
             var settings = _settingsProvider.Provide();
