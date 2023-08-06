@@ -31,6 +31,7 @@ function OverseerrMovie(props) {
   const [defaultApiUserID, setDefaultApiUserID] = useState("");
   const [isDefaultApiUserIDValid, setIsDefaultApiUserIDValid] = useState(true);
   const [useSSL, setUseSSL] = useState("");
+  const [useMovieIssue, setUseMovieIssue] = useState("");
   const [apiVersion, setApiVersion] = useState("");
   const [isValid, setIsValid] = useState(false);
 
@@ -49,7 +50,7 @@ function OverseerrMovie(props) {
 
   useEffect(() => {
     onValueChange();
-  }, [apiVersion, apiKey, hostname, port, defaultApiUserID]);
+  }, [apiVersion, apiKey, hostname, port, defaultApiUserID, useSSL, useMovieIssue]);
 
 
 
@@ -81,12 +82,17 @@ function OverseerrMovie(props) {
     setDefaultApiUserID(reduxState.settings.defaultApiUserID);
     setIsDefaultApiUserIDValid(true);
     setUseSSL(reduxState.settings.useSSL);
+    setUseMovieIssue(reduxState.settings.useMovieIssue);
     setApiVersion(reduxState.settings.version);
     setIsValid(false);
   };
 
   const onUseSSLChanged = (event) => {
     setUseSSL(!useSSL);
+  };
+
+  const onUseMovieIssueChanged = (event) => {
+    setUseMovieIssue(!useMovieIssue);
   };
 
   const onTestSettings = (e) => {
@@ -134,6 +140,7 @@ function OverseerrMovie(props) {
       port: port,
       apiKey: apiKey,
       useSSL: useSSL,
+      useMovieIssue: useMovieIssue,
       version: apiVersion,
     }));
 
@@ -143,6 +150,7 @@ function OverseerrMovie(props) {
       apiKey: apiKey,
       defaultApiUserID: defaultApiUserID,
       useSSL: useSSL,
+      useMovieIssue: useMovieIssue,
       version: apiVersion,
     });
 
@@ -321,6 +329,29 @@ function OverseerrMovie(props) {
         </Row>
       </div>
       <OverseerrMovieCategoryList isSubmitted={props.isSubmitted} isSaving={props.isSaving} apiVersion={apiVersion} canConnect={isHostnameValid && isPortValid && isApiKeyValid} />
+
+      <h6 className="heading-small text-muted">
+        Enable Issues
+      </h6>
+      <div>
+        <Col lg="6">
+          <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+            <Input
+              className="custom-control-input"
+              id="useMovieIssue"
+              type="checkbox"
+              onChange={onUseMovieIssueChanged}
+              checked={useMovieIssue}
+            />
+            <label
+              className="custom-control-label"
+              htmlFor="useMovieIssue">
+              <span className="text-muted">Use Issues</span>
+            </label>
+          </FormGroup>
+        </Col>
+      </div>
+      <hr className="my-4" />
     </>
   );
 }

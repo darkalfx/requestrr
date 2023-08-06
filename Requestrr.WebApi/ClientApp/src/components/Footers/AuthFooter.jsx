@@ -25,9 +25,9 @@ function AuthFooter() {
     <>
       <footer className="py-5">
         <Container>
-          <Row className="align-items-center justify-content-xl-between">
+          <Row className="align-items-center justify-content-center">
             <Col xl="6">
-              <div className="copyright text-center text-xl-left text-muted">
+              <div className="copyright d-flex justify-content-center text-center text-xl-left text-muted">
                 © {new Date().getFullYear()}{" "}
                 Requestrr (v2.1.2.1)
               </div>

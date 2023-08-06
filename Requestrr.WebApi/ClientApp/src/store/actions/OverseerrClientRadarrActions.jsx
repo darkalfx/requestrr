@@ -138,6 +138,8 @@ export function setOverseerrMovieConnectionSettings(connectionSettings) {
             port: connectionSettings.port,
             apiKey: connectionSettings.apiKey,
             useSSL: connectionSettings.useSSL,
+            useMovieIssue: connectionSettings.useMovieIssue,
+            useTVIssue: connectionSettings.useTVIssue,
             version: connectionSettings.version,
         };
 
@@ -172,6 +174,8 @@ export function loadRadarrServiceSettings(forceReload) {
                     "Port": Number(overseerr.port),
                     "ApiKey": overseerr.apiKey,
                     "UseSSL": overseerr.useSSL,
+                    "UseMovieIssue": overseerr.useMovieIssue,
+                    "UseTVIssue": overseerr.useTVIssue,
                     "Version": overseerr.version,
                 })
             })
@@ -259,6 +263,8 @@ export function saveOverseerrMovieClient(saveModel) {
                 'ApiKey': saveModel.overseerr.apiKey,
                 'Movies': movies,
                 'UseSSL': saveModel.overseerr.useSSL,
+                'UseMovieIssue': saveModel.overseerr.useMovieIssue,
+                'UseTVIssue': saveModel.overseerr.useTVIssue,
                 'Version': saveModel.overseerr.version,
             })
         })

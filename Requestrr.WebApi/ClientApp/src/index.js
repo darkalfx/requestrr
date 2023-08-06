@@ -18,7 +18,7 @@
 
 import React from "react";
 import ReactDOM from 'react-dom/client';
-import { Routes, Route, Navigate, BrowserRouter, redirect } from "react-router-dom";
+import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import { configureStore } from "@reduxjs/toolkit";
@@ -37,6 +37,8 @@ import RadarrClients from './store/reducers/RadarrClientsReducer';
 import SonarrClients from './store/reducers/SonarrClientsReducer';
 import OverseerrClients from './store/reducers/OverseerrClientsReducer';
 import TvShowsClients from './store/reducers/TvShowsClientsReducer';
+
+
 
 function combinedMovieClientsReducer(state = {}, action) {
   if (action.type.includes("radarr")) {

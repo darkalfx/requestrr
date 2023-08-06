@@ -32,6 +32,7 @@ function OverseerrTvShow(props) {
   const [defaultApiUserID, setDefaultApiUserID] = useState("");
   const [isDefaultApiUserIDValid, setIsDefaultApiUserIDValid] = useState(true);
   const [useSSL, setUseSSL] = useState("");
+  const [useTVIssue, setUseTVIssue] = useState("");
   const [apiVersion, setApiVersion] = useState("");
   const [isValid, setIsValid] = useState(false);
 
@@ -50,7 +51,7 @@ function OverseerrTvShow(props) {
 
   useEffect(() => {
     onValueChange();
-  }, [apiVersion, apiKey, hostname, port, defaultApiUserID]);
+  }, [apiVersion, apiKey, hostname, port, defaultApiUserID, useSSL, useTVIssue]);
 
 
 
@@ -83,6 +84,7 @@ function OverseerrTvShow(props) {
     setDefaultApiUserID(reduxState.settings.defaultApiUserID);
     setIsDefaultApiUserIDValid(true);
     setUseSSL(reduxState.settings.useSSL);
+    setUseTVIssue(reduxState.settings.useTVIssue);
     setApiVersion(reduxState.settings.version);
     setIsValid(false);
   };
@@ -132,12 +134,17 @@ function OverseerrTvShow(props) {
     setUseSSL(!useSSL);
   };
 
+  const onUseTVIssueChanged = (event) => {
+    setUseTVIssue(!useTVIssue);
+  };
+
   const onValueChange = () => {
     dispatch(setConnectionSettings({
       hostname: hostname,
       port: port,
       apiKey: apiKey,
       useSSL: useSSL,
+      useTVIssue: useTVIssue,
       version: apiVersion,
     }));
 
@@ -147,6 +154,7 @@ function OverseerrTvShow(props) {
       apiKey: apiKey,
       defaultApiUserID: defaultApiUserID,
       useSSL: useSSL,
+      useTVIssue: useTVIssue,
       version: apiVersion,
     });
 
@@ -327,6 +335,28 @@ function OverseerrTvShow(props) {
         </Row>
       </div>
       <OverseerrTvShowCategoryList isSubmitted={props.isSubmitted} isSaving={props.isSaving} apiVersion={apiVersion} canConnect={isHostnameValid && isPortValid && isApiKeyValid} />
+      <h6 className="heading-small text-muted">
+        Enable Issues
+      </h6>
+      <div>
+        <Col lg="6">
+          <FormGroup className="custom-control custom-control-alternative custom-checkbox mb-3">
+            <Input
+              className="custom-control-input"
+              id="useTVIssue"
+              type="checkbox"
+              onChange={onUseTVIssueChanged}
+              checked={useTVIssue}
+            />
+            <label
+              className="custom-control-label"
+              htmlFor="useTVIssue">
+              <span className="text-muted">Use Issues</span>
+            </label>
+          </FormGroup>
+        </Col>
+      </div>
+      <hr className="my-4" />
     </>
   );
 }
