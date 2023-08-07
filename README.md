@@ -58,18 +58,21 @@ Installation & Configuration
 ==================
 
 Refer to the Wiki for detailed steps:
-https://github.com/darkalfx/requestrr/wiki
+https://github.com/thomst08/requestrr/wiki
 
 Docker Setup & Start
 ==================
 
 Open a command prompt/terminal and then use the following command create and start the container:
 
-    docker run --name requestrr \
+```
+    docker run -d \
+      --name requestrr \
       -p 4545:4545 \
       -v path to config:/root/config \
       --restart=unless-stopped \
-      darkalfx/requestrr
+      thomst08/requestrr
+```
 
 You can also choose to run the container as a different user. See [docker run](https://docs.docker.com/engine/reference/run/#user) reference for how to set the user for your container.
 
