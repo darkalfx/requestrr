@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   requestrr:
-    image: thomst08/requestrr
+    image: darkalfx/requestrr
     hostname: requestrr
     container_name: requestrr
     ports:

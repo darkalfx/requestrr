@@ -6,36 +6,6 @@
 [![Timeline](https://img.shields.io/badge/Project-Timeline-%23233240?style=for-the-badge&logo=gitkraken)](https://timelines.gitkraken.com/timeline/0656f1edc0dd4a2191406c62343c22c1)
 
 
-=================
-
-Fork Notes:
-
-Purpose.
-This fork was created to learn, tests and tweak this bot for personal use, you are welcome to copy/fork/correct or fork the original, I take no credit for this bot other then the small tweaks and changes.
-
-Overall/Major changes:
-* Updated to packages for both frontend (React) and Discord bot (DSharpPlus).
-* Added ability to report issues to Overseerr through bot.
-
-
-Full list of changes:
-* Updated the Webapps React version, updated from version 16.8.4 to version 18.2.0, updated most packages to latest versions
-* Convereted all class components to functional components.
-* Updated redux functions to hook functions.
-* Updated React Router to version 6.
-* Changed and corrected bugs introducted from the change of code or old small issues.
-* Updated .Net from version 5 to version 6, updated all packages to work with .Net 6
-* Updated Overseerr to search for TVDB Id in the TV section
-* Added ability to report 'issues', this feature only works with Overseerr, and needs to be enabled in the Overseerr options for Movies and/or TV shows.
-
-
-Notes:
-* Due to a change in Discords API and the package DSharpPlus version 4.3.0, the Bot uses `Intents = DiscordIntents.All` to connect, you will need to enable `Message Content Intent` in the Discords Developer Portal for your bot.
-* All text for the bot to respond to the user when reporting an issue was originally written in English, these messages where converted to the 3 other lanagues in the 'locales' folder.  These messages where converted with Google translate, so these messages could be incorrect or have small issues changing the message.
-
-=================
-
-
 Requestrr 
 =================
 
@@ -49,7 +19,7 @@ Requestrr is a chatbot used to simplify using services like Sonarr/Radarr/Overse
 - Apple's Siri integration
 - Users can get notified when their requests complete
 - Sonarr/Radarr V2/V3 integration with multiple instance support via Overseerr (only for 4k/1080p)
-- Overseerr integration with support for per user permissions/quotas
+- Overseerr integration with support for per user permissions/quotas and issues
 - Ombi V3 integration with support for per user roles/quotas
 - Fully configurable via a web portal
 
@@ -58,7 +28,7 @@ Installation & Configuration
 ==================
 
 Refer to the Wiki for detailed steps:
-https://github.com/thomst08/requestrr/wiki
+https://github.com/darkalfx/requestrr/wiki
 
 Docker Setup & Start
 ==================
@@ -66,12 +36,11 @@ Docker Setup & Start
 Open a command prompt/terminal and then use the following command create and start the container:
 
 ```
-    docker run -d \
-      --name requestrr \
+    docker run --name requestrr \
       -p 4545:4545 \
       -v path to config:/root/config \
       --restart=unless-stopped \
-      thomst08/requestrr
+      darkalfx/requestrr
 ```
 
 You can also choose to run the container as a different user. See [docker run](https://docs.docker.com/engine/reference/run/#user) reference for how to set the user for your container.
