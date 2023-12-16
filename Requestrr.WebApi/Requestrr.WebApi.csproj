@@ -8,15 +8,15 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.20" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.20" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.32.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.32.1" />
-    <PackageReference Include="DSharpPlus" Version="4.4.2" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.4.2" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.4.2" />
-    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.4.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.25" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.25" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
+    <PackageReference Include="DSharpPlus" Version="4.4.3" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.4.3" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.4.3" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.4.3" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="$(SpaRoot)**" />
