@@ -60,7 +60,7 @@ var routes = [
   {
     path: "/settings",
     name: "Settings",
-    icon: "fas big fa-tools text-gray",
+    icon: "fas big fa-toolbox text-gray",
     component: <Settings/>,
     layout: "/admin",
     supportsAnonymousUser: true

@@ -15,7 +15,6 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-/*eslint-disable*/
 import { useEffect, useState } from "react";
 import { useDispatch } from 'react-redux';
 import { NavLink as NavLinkRRD, Link } from "react-router-dom";
@@ -55,7 +54,10 @@ function Sidebar(props) {
 
 
 
+  const routes = props.routes;
+  const logo = props.logo;
   let navbarBrandProps;
+
   if (logo && logo.innerLink) {
     navbarBrandProps = {
       to: logo.innerLink,
@@ -68,9 +70,6 @@ function Sidebar(props) {
     };
   }
 
-
-  const routes = props.routes;
-  const logo = props.logo;
 
 
   // verifies if routeName is the one active (in browser input)
