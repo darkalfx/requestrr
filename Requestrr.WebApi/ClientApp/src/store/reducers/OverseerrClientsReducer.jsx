@@ -13,9 +13,8 @@ export default function OverseerrClientsReducer(state = {}, action) {
       ...state,
       overseerr: action.payload.overseerr,
       client: "Overseerr"
-    }
-  }
-  else if (action.type === OVERSEERR_LOAD_RADARR_SERVICE_SETTINGS) {
+    };
+  } else if (action.type === OVERSEERR_LOAD_RADARR_SERVICE_SETTINGS) {
     newState = { ...state };
     newOverseerr = { ...newState.overseerr };
 
@@ -24,8 +23,7 @@ export default function OverseerrClientsReducer(state = {}, action) {
     newState.overseerr = newOverseerr;
 
     return newState;
-  }
-  else if (action.type === OVERSEERR_SET_RADARR_SERVICE_SETTINGS) {
+  } else if (action.type === OVERSEERR_SET_RADARR_SERVICE_SETTINGS) {
     newState = { ...state };
     newOverseerr = { ...newState.overseerr };
 
@@ -37,8 +35,7 @@ export default function OverseerrClientsReducer(state = {}, action) {
     newState.overseerr = newOverseerr;
 
     return newState;
-  }
-  else if (action.type === OVERSEERR_LOAD_SONARR_SERVICE_SETTINGS) {
+  } else if (action.type === OVERSEERR_LOAD_SONARR_SERVICE_SETTINGS) {
     newState = { ...state };
     newOverseerr = { ...newState.overseerr };
 
@@ -47,8 +44,7 @@ export default function OverseerrClientsReducer(state = {}, action) {
     newState.overseerr = newOverseerr;
 
     return newState;
-  }
-  else if (action.type === OVERSEERR_SET_SONARR_SERVICE_SETTINGS) {
+  } else if (action.type === OVERSEERR_SET_SONARR_SERVICE_SETTINGS) {
     newState = { ...state };
     newOverseerr = { ...newState.overseerr };
 

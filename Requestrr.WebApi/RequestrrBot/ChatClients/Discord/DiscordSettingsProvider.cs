@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Requestrr.WebApi.RequestrrBot.DownloadClients;
 using Requestrr.WebApi.RequestrrBot.DownloadClients.Ombi;
@@ -70,6 +71,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 hash.Add(clientSettings.Port);
                 hash.Add(clientSettings.UseSSL);
                 hash.Add(clientSettings.Version);
+                hash.Add(clientSettings.UseMovieIssue);
             }
             else
             {
@@ -114,6 +116,7 @@ namespace Requestrr.WebApi.RequestrrBot.ChatClients.Discord
                 hash.Add(clientSettings.Port);
                 hash.Add(clientSettings.UseSSL);
                 hash.Add(clientSettings.Version);
+                hash.Add(clientSettings.UseTVIssue);
             }
             else
             {

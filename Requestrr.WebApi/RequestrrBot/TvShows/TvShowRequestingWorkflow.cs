@@ -57,7 +57,7 @@ namespace Requestrr.WebApi.RequestrrBot.TvShows
             try
             {
                 var searchedTvShow = await _searcher.SearchTvShowAsync(new TvShowRequest(_user, _categoryId), tvDbId);
-                await HandleTvShowSelectionAsync(tvDbId);
+                await HandleTvShowSelectionAsync(searchedTvShow.TheTvDbId);
             }
             catch
             {

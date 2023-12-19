@@ -147,7 +147,7 @@ export function setSonarrCategory(categoryId, field, data) {
                     category.useSeasonFolders = data;
                 }
 
-                categories[index] = category
+                categories[index] = category;
             }
         }
 

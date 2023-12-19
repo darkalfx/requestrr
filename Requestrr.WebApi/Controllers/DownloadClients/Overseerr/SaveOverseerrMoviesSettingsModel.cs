@@ -6,6 +6,10 @@ namespace Requestrr.WebApi.Controllers.DownloadClients.Overseerr
     public class SaveOverseerrMoviesSettingsModel : OverseerrSettingsModel
     {
         [Required]
+        public bool UseMovieIssue { get; set; }
+
+
+        [Required]
         public OverseerrMovieSettings Movies { get; set; } = new OverseerrMovieSettings();
     }
 

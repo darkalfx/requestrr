@@ -93,7 +93,7 @@ export function setOverseerrTvShowCategory(categoryId, field, data) {
                     category.is4K = data;
                 }
 
-                categories[index] = category
+                categories[index] = category;
             }
         }
 
@@ -141,6 +141,8 @@ export function setOverseerrTvShowConnectionSettings(connectionSettings) {
             port: connectionSettings.port,
             apiKey: connectionSettings.apiKey,
             useSSL: connectionSettings.useSSL,
+            useMovieIssue: connectionSettings.useMovieIssue,
+            useTVIssue: connectionSettings.useTVIssue,
             version: connectionSettings.version,
         };
 
@@ -175,6 +177,8 @@ export function loadSonarrServiceSettings(forceReload) {
                     "Port": Number(overseerr.port),
                     "ApiKey": overseerr.apiKey,
                     "UseSSL": overseerr.useSSL,
+                    "UseMovieIssue": overseerr.UseMovieIssue,
+                    "UseTVIssue": overseerr.UseTVIssue,
                     "Version": overseerr.version,
                 })
             })
@@ -235,7 +239,7 @@ export function testOverseerrTvShowSettings(settings) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     };
 };
@@ -263,6 +267,8 @@ export function saveOverseerrTvShowClient(saveModel) {
                 'Restrictions': saveModel.restrictions,
                 'TvShows': tvShows,
                 'UseSSL': saveModel.overseerr.useSSL,
+                "UseMovieIssue": saveModel.overseerr.useMovieIssue,
+                "UseTVIssue": saveModel.overseerr.useTVIssue,
                 'Version': saveModel.overseerr.version,
             })
         })
@@ -272,7 +278,7 @@ export function saveOverseerrTvShowClient(saveModel) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     }
 };

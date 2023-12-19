@@ -17,9 +17,8 @@ export default function SonarrClientsReducer(state = {}, action) {
       ...state,
       sonarr: action.payload.sonarr,
       client: "Sonarr"
-    }
-  }
-  else if (action.type === SONARR_LOAD_PATHS) {
+    };
+  } else if (action.type === SONARR_LOAD_PATHS) {
     newState = { ...state };
     newSonarr = { ...newState.sonarr };
 
@@ -28,8 +27,7 @@ export default function SonarrClientsReducer(state = {}, action) {
     newState.sonarr = newSonarr;
 
     return newState;
-  }
-  else if (action.type === SONARR_SET_PATHS) {
+  } else if (action.type === SONARR_SET_PATHS) {
     newState = { ...state };
     newSonarr = { ...newState.sonarr };
 
@@ -41,8 +39,7 @@ export default function SonarrClientsReducer(state = {}, action) {
     newState.sonarr = newSonarr;
 
     return newState;
-  }
-  else if (action.type === SONARR_LOAD_PROFILES) {
+  } else if (action.type === SONARR_LOAD_PROFILES) {
     newState = { ...state };
     newSonarr = { ...newState.sonarr };
 
@@ -51,8 +48,7 @@ export default function SonarrClientsReducer(state = {}, action) {
     newState.sonarr = newSonarr;
 
     return newState;
-  }
-  else if (action.type === SONARR_SET_PROFILES) {
+  } else if (action.type === SONARR_SET_PROFILES) {
     newState = { ...state };
     newSonarr = { ...newState.sonarr };
 
@@ -64,8 +60,7 @@ export default function SonarrClientsReducer(state = {}, action) {
     newState.sonarr = newSonarr;
 
     return newState;
-  }
-  else if (action.type === SONARR_LOAD_TAGS) {
+  } else if (action.type === SONARR_LOAD_TAGS) {
     newState = { ...state };
     newSonarr = { ...newState.sonarr };
 
@@ -74,8 +69,7 @@ export default function SonarrClientsReducer(state = {}, action) {
     newState.sonarr = newSonarr;
 
     return newState;
-  }
-  else if (action.type === SONARR_SET_TAGS) {
+  } else if (action.type === SONARR_SET_TAGS) {
     newState = { ...state };
     newSonarr = { ...newState.sonarr };
 
@@ -87,8 +81,7 @@ export default function SonarrClientsReducer(state = {}, action) {
     newState.sonarr = newSonarr;
 
     return newState;
-  }
-  else if (action.type === SONARR_LOAD_LANGUAGES) {
+  } else if (action.type === SONARR_LOAD_LANGUAGES) {
     newState = { ...state };
     newSonarr = { ...newState.sonarr };
 
@@ -97,8 +90,7 @@ export default function SonarrClientsReducer(state = {}, action) {
     newState.sonarr = newSonarr;
 
     return newState;
-  }
-  else if (action.type === SONARR_SET_LANGUAGES) {
+  } else if (action.type === SONARR_SET_LANGUAGES) {
     newState = { ...state };
     newSonarr = { ...newState.sonarr };
 

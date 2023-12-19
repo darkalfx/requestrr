@@ -15,7 +15,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+
 import { Link } from "react-router-dom";
 // reactstrap components
 import {
@@ -26,23 +26,21 @@ import {
 import requestrrLogo from "../../assets/img/brand/requestrr_white.svg";
 
 
-class AuthNavbar extends React.Component {
-  render() {
-    return (
-      <>
-        <Navbar
-          className="navbar-top navbar-horizontal navbar-dark"
-          expand="md"
-        >
-          <Container className="px-4">
-            <NavbarBrand to="/" tag={Link}>
-              <img alt="..." src={requestrrLogo} />
-            </NavbarBrand>
-          </Container>
-        </Navbar>
-      </>
-    );
-  }
+function AuthNavbar() {
+  return (
+    <>
+      <Navbar
+        className="navbar-top navbar-horizontal navbar-dark"
+        expand="md"
+      >
+        <Container className="px-4">
+          <NavbarBrand to="/" tag={Link}>
+            <img alt="..." src={requestrrLogo} />
+          </NavbarBrand>
+        </Container>
+      </Navbar>
+    </>
+  );
 }
 
 export default AuthNavbar;

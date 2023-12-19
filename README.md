@@ -19,7 +19,7 @@ Requestrr is a chatbot used to simplify using services like Sonarr/Radarr/Overse
 - Apple's Siri integration
 - Users can get notified when their requests complete
 - Sonarr/Radarr V2/V3 integration with multiple instance support via Overseerr (only for 4k/1080p)
-- Overseerr integration with support for per user permissions/quotas
+- Overseerr integration with support for per user permissions/quotas and issues
 - Ombi V3 integration with support for per user roles/quotas
 - Fully configurable via a web portal
 
@@ -35,11 +35,13 @@ Docker Setup & Start
 
 Open a command prompt/terminal and then use the following command create and start the container:
 
+```
     docker run --name requestrr \
       -p 4545:4545 \
       -v path to config:/root/config \
       --restart=unless-stopped \
       darkalfx/requestrr
+```
 
 You can also choose to run the container as a different user. See [docker run](https://docs.docker.com/engine/reference/run/#user) reference for how to set the user for your container.
 

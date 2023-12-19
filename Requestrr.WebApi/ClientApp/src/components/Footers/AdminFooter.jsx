@@ -15,27 +15,25 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-/*eslint-disable*/
-import React from "react";
+
 
 // reactstrap components
-import { Container, Row, Col, Nav, NavItem, NavLink } from "reactstrap";
+import { Row, Col } from "reactstrap";
 
-class Footer extends React.Component {
-  render() {
-    return (
-      <footer className="footer">
-        <Row className="align-items-center justify-content-xl-between">
-          <Col xl="6">
-            <div className="copyright text-center text-xl-left text-muted">
-              © {new Date().getFullYear()}{" "}
-              Requestrr (v2.1.2.1)
-            </div>
-          </Col>
-        </Row>
-      </footer>
-    );
-  }
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <Row className="align-items-center justify-content-xl-between">
+        <Col xl="6">
+          <div className="copyright text-center text-xl-left text-muted">
+            © {new Date().getFullYear()}{" "}
+            Requestrr (v2.1.3)
+          </div>
+        </Col>
+      </Row>
+    </footer>
+  );
 }
 
 export default Footer;

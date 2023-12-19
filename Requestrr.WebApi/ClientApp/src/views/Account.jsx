@@ -15,8 +15,8 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
-import { connect } from 'react-redux';
+import { useEffect, useState } from "react";
+import { useDispatch } from 'react-redux';
 import { Alert } from "reactstrap";
 import { changePassword } from "../store/actions/UserActions"
 
@@ -36,315 +36,296 @@ import {
 // core components
 import UserHeader from "../components/Headers/UserHeader.jsx";
 
-class Account extends React.Component {
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      isSaving: false,
-      saveAttempted: false,
-      saveSuccess: false,
-      saveError: "",
-      password: "",
-      hasPasswordChanged: false,
-      isPasswordInvalid: false,
-      newPassword: "",
-      hasNewPasswordChanged: false,
-      isNewPasswordInvalid: false,
-      newPasswordConfirmation: "",
-      hasNewPasswordConfirmationChanged: false,
-      isNewPasswordConfirmationInvalid: false,
-      passwordsDoNotMatch: false,
-    };
+function Account() {
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveAttempted, setSaveAttempted] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [password, setPassword] = useState("");
+  const [hasPasswordChanged, setHasPasswordChanged] = useState(false);
+  const [isPasswordInvalid, setIsPasswordInvalid] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [hasNewPasswordChanged, setHasNewPasswordChanged] = useState(false);
+  const [isNewPasswordInvalid, setIsNewPasswordInvalid] = useState(false);
+  const [newPasswordConfirmation, setNewPasswordConfirmation] = useState("");
+  const [hasNewPasswordConfirmationChanged, setHasNewPasswordConfirmationChanged] = useState(false);
+  const [isNewPasswordConfirmationInvalid, setIsNewPasswordConfirmationInvalid] = useState(false);
+  const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState(false);
 
-    this.onSaving = this.onSaving.bind(this);
-    this.onPasswordChange = this.onPasswordChange.bind(this);
-    this.triggerPasswordValidation = this.triggerPasswordValidation.bind(this);
-    this.validatePassword = this.validatePassword.bind(this);
-    this.onNewPasswordChange = this.onNewPasswordChange.bind(this);
-    this.triggerNewPasswordValidation = this.triggerNewPasswordValidation.bind(this);
-    this.validateNewPassword = this.validateNewPassword.bind(this);
-    this.onNewPasswordConfirmationChange = this.onNewPasswordConfirmationChange.bind(this);
-    this.triggerNewPasswordConfirmationValidation = this.triggerNewPasswordConfirmationValidation.bind(this);
-    this.validateNewPasswordConfirmation = this.validateNewPasswordConfirmation.bind(this);
-    this.validatePasswordMatch = this.validatePasswordMatch.bind(this);
-    this.triggerPasswordMatchValidation = this.triggerPasswordMatchValidation.bind(this);
-  }
+  const dispatch = useDispatch();
 
-  onPasswordChange = event => {
-    this.setState({
-      password: event.target.value,
-      hasPasswordChanged: true
-    }, () => this.triggerPasswordValidation());
-  }
+  useEffect(() => {
+    if (hasPasswordChanged) {
+      triggerPasswordValidation();
+    }
+  }, [password]);
 
-  triggerPasswordValidation() {
-    this.setState({
-      isPasswordInvalid: !this.validatePassword()
-    });
-  }
 
-  validatePassword() {
-    return /\S/.test(this.state.password);
-  }
+  useEffect(() => {
+    if (hasNewPasswordChanged) {
+      triggerNewPasswordValidation();
+      triggerPasswordMatchValidation();
+    }
+  }, [newPassword]);
 
-  onNewPasswordChange = event => {
-    this.setState({
-      newPassword: event.target.value,
-      hasNewPasswordChanged: true
-    }, () => {
-      this.triggerNewPasswordValidation();
-      this.triggerPasswordMatchValidation();
-    });
-  }
 
-  triggerNewPasswordValidation() {
-    this.setState({
-      isNewPasswordInvalid: !this.validateNewPassword()
-    });
-  }
+  useEffect(() => {
+    if (hasNewPasswordConfirmationChanged) {
+      triggerNewPasswordConfirmationValidation();
+      triggerPasswordMatchValidation();
+    }
+  }, [newPasswordConfirmation]);
 
-  validateNewPassword() {
-    return /\S/.test(this.state.newPassword);
-  }
 
-  onNewPasswordConfirmationChange = event => {
-    this.setState({
-      newPasswordConfirmation: event.target.value,
-      hasNewPasswordConfirmationChanged: true
-    }, () => {
-      this.triggerNewPasswordConfirmationValidation();
-      this.triggerPasswordMatchValidation();
-    });
-  }
 
-  triggerNewPasswordConfirmationValidation() {
-    this.setState({
-      isNewPasswordConfirmationInvalid: !this.validateNewPasswordConfirmation()
-    });
-  }
 
-  validateNewPasswordConfirmation() {
-    return /\S/.test(this.state.newPasswordConfirmation);
-  }
+  const validateNewPassword = () => {
+    return /\S/.test(newPassword);
+  };
 
-  triggerPasswordMatchValidation() {
-    this.setState({
-      passwordsDoNotMatch: !this.validatePasswordMatch()
-    });
-  }
+  const validateNewPasswordConfirmation = () => {
+    return /\S/.test(newPasswordConfirmation);
+  };
 
-  validatePasswordMatch() {
-    return (!/\S/.test(this.state.newPassword) || !/\S/.test(this.state.newPasswordConfirmation)) || (this.state.newPassword === this.state.newPasswordConfirmation);
-  }
+  const validatePasswordMatch = () => {
+    return (!/\S/.test(newPassword) || !/\S/.test(newPasswordConfirmation)) || (newPassword === newPasswordConfirmation);
+  };
 
-  onSaving = e => {
+  const validatePassword = () => {
+    return /\S/.test(password);
+  };
+
+
+
+  const onPasswordChange = (event) => {
+    setPassword(event.target.value);
+    setHasPasswordChanged(true);
+  };
+
+  const triggerPasswordValidation = () => {
+    setIsPasswordInvalid(!validatePassword());
+  };
+
+
+  const onNewPasswordChange = (event) => {
+    setNewPassword(event.target.value);
+    setHasNewPasswordChanged(true);
+  };
+
+  const triggerNewPasswordValidation = () => {
+    setIsNewPasswordInvalid(!validateNewPassword());
+  };
+
+  const onNewPasswordConfirmationChange = (event) => {
+    setNewPasswordConfirmation(event.target.value);
+    setHasNewPasswordConfirmationChanged(true);
+  };
+
+  const triggerNewPasswordConfirmationValidation = () => {
+    setIsNewPasswordConfirmationInvalid(!validateNewPasswordConfirmation());
+  };
+
+  const triggerPasswordMatchValidation = () => {
+    setPasswordsDoNotMatch(!validatePasswordMatch());
+  };
+
+
+  const onSaving = (e) => {
     e.preventDefault();
 
-    this.triggerPasswordValidation();
-    this.triggerNewPasswordValidation();
-    this.triggerNewPasswordConfirmationValidation();
-    this.triggerPasswordMatchValidation();
+    triggerPasswordValidation();
+    triggerNewPasswordValidation();
+    triggerNewPasswordConfirmationValidation();
+    triggerPasswordMatchValidation();
 
-    if (!this.state.isSaving) {
-      if (this.validatePassword()
-        && this.validateNewPassword()
-        && this.validateNewPasswordConfirmation()
-        && this.validatePasswordMatch()) {
-        this.setState({ isSaving: true });
+    if (!isSaving) {
+      if (validatePassword()
+        && validateNewPassword()
+        && validateNewPasswordConfirmation()
+        && validatePasswordMatch()) {
+        setIsSaving(true);
 
-        this.props.changePassword({
-          'password': this.state.password,
-          'newPassword': this.state.newPassword,
-          'newPasswordConfirmation': this.state.newPasswordConfirmation,
-        })
+        dispatch(changePassword({
+          'password': password,
+          'newPassword': newPassword,
+          'newPasswordConfirmation': newPasswordConfirmation,
+        }))
           .then(data => {
-            this.setState({ isSaving: false });
+            setIsSaving(false);
 
             if (data.ok) {
-              this.setState({
-                savingAttempted: true,
-                savingError: "",
-                savingSuccess: true
-              });
-            }
-            else {
-              var error = "An unknown error occurred while saving.";
+              setSaveAttempted(true);
+              setSaveError("");
+              setSaveSuccess(true);
+            } else {
+              let error = "An unknown error occurred while saving.";
 
               if (typeof (data.error) === "string")
                 error = data.error;
 
-              this.setState({
-                savingAttempted: true,
-                savingError: error,
-                savingSuccess: false
-              });
+              setSaveAttempted(true);
+              setSaveError(error);
+              setSaveSuccess(false);
             }
           });
-      }
-      else {
-        this.setState({
-          savingAttempted: true,
-          savingError: "Some fields are invalid, please fix them before saving.",
-          savingSuccess: false
-        });
+      } else {
+        setSaveAttempted(true);
+        setSaveError("Some fields are invalid, please fix them before saving.");
+        setSaveSuccess(false);
       }
     }
-  }
+  };
 
-  render() {
-    return (
-      <>
-        <UserHeader title="Account" description="This page is for configuring your admin account" />
-        <Container className="mt--7" fluid>
-          <Row>
-            <Col className="order-xl-1" xl="12">
-              <Card className="bg-secondary shadow">
-                <CardHeader className="bg-white border-0">
-                  <Row className="align-items-center">
-                    <Col xs="8">
-                      <h3 className="mb-0">Configuration</h3>
-                    </Col>
-                    <Col className="text-right" xs="4">
-                      <Button
-                        color="primary"
-                        href="#pablo"
-                        onClick={e => e.preventDefault()}
-                        size="sm"
-                      >
-                        Settings
-                      </Button>
-                    </Col>
-                  </Row>
-                </CardHeader>
-                <CardBody>
-                  <Form className="complex">
-                    <h6 className="heading-small text-muted mb-4">
-                      Change Password
-                    </h6>
-                    <div className="pl-lg-4">
-                      <Row>
-                        <Col lg="12">
-                          <FormGroup className={this.state.isPasswordInvalid ? "has-danger" : this.state.hasPasswordChanged ? "has-success" : ""}>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-existing-password"
-                            >
-                              Existing password
-                            </label>
-                            <Input
-                              value={this.state.password} onChange={this.onPasswordChange}
-                              className="form-control-alternative"
-                              id="input-existing-password"
-                              placeholder="Enter the existing password"
-                              type="password"
-                            />
-                            {
-                              this.state.isPasswordInvalid ? (
-                                <Alert className="mt-3" color="warning">
-                                  <strong>Existing password is required.</strong>
+
+
+  return (
+    <>
+      <UserHeader title="Account" description="This page is for configuring your admin account" />
+      <Container className="mt--7" fluid>
+        <Row>
+          <Col className="order-xl-1" xl="12">
+            <Card className="bg-secondary shadow">
+              <CardHeader className="bg-white border-0">
+                <Row className="align-items-center">
+                  <Col xs="8">
+                    <h3 className="mb-0">Configuration</h3>
+                  </Col>
+                  <Col className="text-right" xs="4">
+                    <Button
+                      color="primary"
+                      href="#pablo"
+                      onClick={e => e.preventDefault()}
+                      size="sm"
+                    >
+                      Settings
+                    </Button>
+                  </Col>
+                </Row>
+              </CardHeader>
+              <CardBody>
+                <Form className="complex">
+                  <h6 className="heading-small text-muted mb-4">
+                    Change Password
+                  </h6>
+                  <div className="pl-lg-4">
+                    <Row>
+                      <Col lg="12">
+                        <FormGroup className={isPasswordInvalid ? "has-danger" : hasPasswordChanged ? "has-success" : ""}>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-existing-password"
+                          >
+                            Existing password
+                          </label>
+                          <Input
+                            value={password} onChange={onPasswordChange}
+                            className="form-control-alternative"
+                            id="input-existing-password"
+                            placeholder="Enter the existing password"
+                            type="password"
+                          />
+                          {
+                            isPasswordInvalid ? (
+                              <Alert className="mt-3" color="warning">
+                                <strong>Existing password is required.</strong>
+                              </Alert>)
+                              : null
+                          }
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col lg="12">
+                        <FormGroup className={isNewPasswordInvalid ? "has-danger" : hasNewPasswordChanged ? "has-success" : ""}>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-new-password"
+                          >
+                            New password
+                          </label>
+                          <Input
+                            value={newPassword} onChange={onNewPasswordChange}
+                            className="form-control-alternative"
+                            id="input-new-password"
+                            placeholder="Enter the new password"
+                            type="password"
+                          />
+                          {
+                            isNewPasswordInvalid ? (
+                              <Alert className="mt-3" color="warning">
+                                <strong>New password is required.</strong>
+                              </Alert>)
+                              : null
+                          }
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col lg="12">
+                        <FormGroup className={isNewPasswordConfirmationInvalid || passwordsDoNotMatch ? "has-danger" : hasNewPasswordConfirmationChanged ? "has-success" : ""}>
+                          <label
+                            className="form-control-label"
+                            htmlFor="input-new-password-confirmation"
+                          >
+                            New password confirmation
+                          </label>
+                          <Input
+                            value={newPasswordConfirmation} onChange={onNewPasswordConfirmationChange}
+                            className="form-control-alternative"
+                            id="input-new-password-confirmation"
+                            placeholder="Enter the new password confirmation"
+                            type="password"
+                          />
+                          {
+                            isNewPasswordConfirmationInvalid ? (
+                              <Alert className="mt-3" color="warning">
+                                <strong>New password confirmation is required.</strong>
+                              </Alert>)
+                              : null
+                          }
+                          {
+                            passwordsDoNotMatch ? (
+                              <Alert className="mt-3" color="warning">
+                                <strong>Password confirmation and password do not match.</strong>
+                              </Alert>)
+                              : null
+                          }
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <FormGroup>
+                          {
+                            saveAttempted && !isSaving ?
+                              !saveSuccess ? (
+                                <Alert className="text-center" color="danger">
+                                  <strong>{saveError}</strong>
                                 </Alert>)
-                                : null
-                            }
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col lg="12">
-                          <FormGroup className={this.state.isNewPasswordInvalid ? "has-danger" : this.state.hasNewPasswordChanged ? "has-success" : ""}>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-new-password"
-                            >
-                              New password
-                            </label>
-                            <Input
-                              value={this.state.newPassword} onChange={this.onNewPasswordChange}
-                              className="form-control-alternative"
-                              id="input-new-password"
-                              placeholder="Enter the new password"
-                              type="password"
-                            />
-                            {
-                              this.state.isNewPasswordInvalid ? (
-                                <Alert className="mt-3" color="warning">
-                                  <strong>New password is required.</strong>
-                                </Alert>)
-                                : null
-                            }
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col lg="12">
-                          <FormGroup className={this.state.isNewPasswordConfirmationInvalid || this.state.passwordsDoNotMatch ? "has-danger" : this.state.hasNewPasswordConfirmationChanged ? "has-success" : ""}>
-                            <label
-                              className="form-control-label"
-                              htmlFor="input-new-password-confirmation"
-                            >
-                              New password confirmation
-                            </label>
-                            <Input
-                              value={this.state.newPasswordConfirmation} onChange={this.onNewPasswordConfirmationChange}
-                              className="form-control-alternative"
-                              id="input-new-password-confirmation"
-                              placeholder="Enter the new password confirmation"
-                              type="password"
-                            />
-                            {
-                              this.state.isNewPasswordConfirmationInvalid ? (
-                                <Alert className="mt-3" color="warning">
-                                  <strong>New password confirmation is required.</strong>
-                                </Alert>)
-                                : null
-                            }
-                            {
-                              this.state.passwordsDoNotMatch ? (
-                                <Alert className="mt-3" color="warning">
-                                  <strong>Password confirmation and password do not match.</strong>
-                                </Alert>)
-                                : null
-                            }
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col>
-                          <FormGroup>
-                            {
-                              this.state.savingAttempted && !this.state.isSaving ?
-                                !this.state.savingSuccess ? (
-                                  <Alert className="text-center" color="danger">
-                                    <strong>{this.state.savingError}</strong>
-                                  </Alert>)
-                                  : <Alert className="text-center" color="success">
-                                    <strong>Settings updated successfully.</strong>
-                                  </Alert>
-                                : null
-                            }
-                          </FormGroup>
-                          <FormGroup className="text-right">
-                            <button className="btn btn-icon btn-3 btn-primary" onClick={this.onSaving} disabled={this.state.isSaving} type="button">
-                              <span className="btn-inner--icon"><i className="fas fa-save"></i></span>
-                              <span className="btn-inner--text">Save Changes</span>
-                            </button>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                    </div>
-                  </Form>
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
-      </>
-    );
-  }
+                                : <Alert className="text-center" color="success">
+                                  <strong>Settings updated successfully.</strong>
+                                </Alert>
+                              : null
+                          }
+                        </FormGroup>
+                        <FormGroup className="text-right">
+                          <button className="btn btn-icon btn-3 btn-primary" onClick={onSaving} disabled={isSaving} type="button">
+                            <span className="btn-inner--icon"><i className="fas fa-save"></i></span>
+                            <span className="btn-inner--text">Save Changes</span>
+                          </button>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                  </div>
+                </Form>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </>
+  );
 }
 
-const mapPropsToAction = {
-  changePassword: changePassword
-};
-
-export default connect(null, mapPropsToAction)(Account);
+export default Account;

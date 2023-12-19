@@ -44,7 +44,7 @@ export function getSettings() {
         })
             .then(data => data.json())
             .then(data => {
-                dispatch(setSettings(data));
+                return dispatch(setSettings(data));
             })
     };
 };
@@ -75,7 +75,7 @@ export function testOmbiSettings(settings) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     };
 };
@@ -99,7 +99,7 @@ export function saveDisabledClient() {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     }
 };
@@ -142,7 +142,7 @@ export function saveOmbiClient(saveModel) {
                     return { ok: true };
                 }
 
-                return { ok: false, error: data }
+                return { ok: false, error: data };
             });
     }
 };

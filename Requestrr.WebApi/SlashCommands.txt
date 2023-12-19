@@ -10,6 +10,7 @@ using Requestrr.WebApi.RequestrrBot.ChatClients.Discord;
 using Requestrr.WebApi.RequestrrBot.Movies;
 using Requestrr.WebApi.RequestrrBot.TvShows;
 using Requestrr.WebApi.RequestrrBot.Locale;
+using System.Collections.Generic;
 
 namespace Requestrr.WebApi.RequestrrBot
 {
@@ -56,6 +57,7 @@ namespace Requestrr.WebApi.RequestrrBot
                     _logger.LogError(ex, $"Error while searching movies with title {movieTitle} : " + ex.Message);
                 }
             }
+
 
             [TMDB_COMMAND_START]
             [SlashCommand("[REQUEST_MOVIE_TMDB_NAME]", "[REQUEST_MOVIE_TMDB_DESCRIPTION]")]
@@ -151,5 +153,109 @@ namespace Requestrr.WebApi.RequestrrBot
                 _logger.LogError(ex, "Error while sending help command: " + ex.Message);
             }
         }
+
+        
+        [ISSUE_COMMAND_START]
+        [SlashCommandGroup("[ISSUE_GROUP_NAME]", "[ISSUE_GROUP_DESCRIPTION]")]
+        public class ReportGroup : ApplicationCommandModule
+        {
+            private readonly IServiceProvider _serviceProvider;
+            private readonly ILogger _logger;
+
+            public ReportGroup(IServiceProvider serviceProvider)
+            {
+                _serviceProvider = serviceProvider;
+                _logger = _serviceProvider.Get<ILogger>();
+            }
+
+
+            [ISSUE_MOVIE_COMMAND_START]
+            [SlashCommand("[ISSUE_MOVIE_TITLE_NAME]", "[ISSUE_MOVIE_TITLE_DESCRIPTION]")]
+            [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
+            [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
+            public async Task MovieByTitle[MOVIE_CATEGORY_ID](InteractionContext ctx, [Option("[ISSUE_MOVIE_TITLE_OPTION_NAME]", "[ISSUE_MOVIE_TITLE_OPTION_DESCRIPTION]")] string movieTitle)
+            {
+                try
+                {
+                    var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
+
+                    var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateIssueWorkflow(ctx.Interaction, [MOVIE_CATEGORY_ID]);
+                    await workFlow.SearchMovieLibraryAsync(movieTitle.Trim());
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, $"Error while searching movies with title {movieTitle} : " + ex.Message);
+                }
+            }
+
+
+            [ISSUE_TMDB_COMMAND_START]
+            [SlashCommand("[ISSUE_MOVIE_TMDB_NAME]", "[ISSUE_MOVIE_TMDB_DESCRIPTION]")]
+            [RequireRoles(new ulong[] { [REQUIRED_MOVIE_ROLE_IDS] })]
+            [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
+            public async Task ByTmdb[MOVIE_CATEGORY_ID](InteractionContext ctx, [Option("[ISSUE_MOVIE_TMDB_OPTION_NAME]", "[ISSUE_MOVIE_TMDB_OPTION_NAME]")] long theMovieDbId)
+            {
+                try
+                {
+                    var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
+
+                    var workFlow = _serviceProvider.Get<MovieWorkflowFactory>().CreateIssueWorkflow(ctx.Interaction, [MOVIE_CATEGORY_ID]);
+                    await workFlow.SearchMovieLibraryAsync((int)(theMovieDbId));
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, $"Error while searching movies by TmDb Id {theMovieDbId} : " + ex.Message);
+                }
+            }
+            [ISSUE_TMDB_COMMAND_END]
+            [ISSUE_MOVIE_COMMAND_END]
+            
+            
+            [ISSUE_TV_COMMAND_START]
+            [SlashCommand("[ISSUE_TV_TITLE_NAME]", "[ISSUE_TV_TITLE_DESCRIPTION]")]
+            [RequireRoles(new ulong[] { [REQUIRED_TV_ROLE_IDS] })]
+            [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
+            public async Task TvByTitle[TV_CATEGORY_ID](InteractionContext ctx, [Option("[ISSUE_TV_TITLE_OPTION_NAME]", "[ISSUE_TV_TITLE_OPTION_DESCRIPTION]")] string tvShowTitle)
+            {
+                try
+                {
+                    var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
+
+                    var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateIssueWorkflow(ctx.Interaction, [TV_CATEGORY_ID]);
+                    await workFlow.SearchTvShowLibraryAsync(tvShowTitle.Trim());
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, $"Error while searching tv shows with title {tvShowTitle} : " + ex.Message);
+                }
+            }
+
+
+            [ISSUE_TVDB_COMMAND_START]
+            [SlashCommand("[ISSUE_TV_TVDB_NAME]", "[ISSUE_TV_TVDB_DESCRIPTION]")]
+            [RequireRoles(new ulong[] { [REQUIRED_TV_ROLE_IDS] })]
+            [RequireChannels(new ulong[] { [REQUIRED_CHANNEL_IDS] })]
+            public async Task TvByTVDB[TV_CATEGORY_ID](InteractionContext ctx, [Option("[ISSUE_TV_TVDB_OPTION_NAME]", "[ISSUE_TV_TVDB_OPTION_DESCRIPTION]")] long tvShowId)
+            {
+                try
+                {
+                    var settings = _serviceProvider.Get<DiscordSettingsProvider>().Provide();
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(settings.AutomaticallyPurgeCommandMessages).WithContent(Language.Current.DiscordCommandSending));
+
+                    var workFlow = _serviceProvider.Get<TvShowWorkflowFactory>().CreateIssueWorkflow(ctx.Interaction, [TV_CATEGORY_ID]);
+                    await workFlow.SearchTvShowLibraryAsync((int)tvShowId);
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex, $"Error while searching tv shows with TVDB ID {tvShowId} : " + ex.Message);
+                }
+            }
+            [ISSUE_TVDB_COMMAND_END]
+            [ISSUE_TV_COMMAND_END]
+        }
+        [ISSUE_COMMAND_END]
     }
 }
