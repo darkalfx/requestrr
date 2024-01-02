@@ -87,7 +87,7 @@
       "SearchNewRequests": true,
       "MonitorNewRequests": true,
       "UseSSL": false,
-      "Version": "3"
+      "Version": "4"
     }
   },
   "BotClient": {
@@ -103,5 +103,5 @@
   "Port": 4545,
   "BaseUrl": "",
   "DisableAuthentication": false,
-  "Version": "2.1.0"
+  "Version": "2.1.1"
 }

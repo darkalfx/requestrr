@@ -14,7 +14,7 @@ using static Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr.SonarrClient;
 
 namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 {
-    public class SonarrClientV3 : ITvShowSearcher, ITvShowRequester
+    public class SonarrClientV4 : ITvShowSearcher, ITvShowRequester
     {
         private IHttpClientFactory _httpClientFactory;
         private readonly ILogger<SonarrClient> _logger;
@@ -22,7 +22,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         private SonarrSettings SonarrSettings => _sonarrSettingsProvider.Provide();
         private string BaseURL => GetBaseURL(SonarrSettings);
 
-        public SonarrClientV3(IHttpClientFactory httpClientFactory, ILogger<SonarrClient> logger, SonarrSettingsProvider sonarrSettingsProvider)
+        public SonarrClientV4(IHttpClientFactory httpClientFactory, ILogger<SonarrClient> logger, SonarrSettingsProvider sonarrSettingsProvider)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
@@ -325,7 +325,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                 title = jsonTvShow.title,
                 qualityProfileId = category.ProfileId,
                 profileId = category.ProfileId,
-                languageProfileId = category.LanguageId,
                 titleSlug = jsonTvShow.titleSlug,
                 monitored = SonarrSettings.MonitorNewRequests,
                 images = new string[0],
@@ -391,7 +390,6 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
 
             sonarrSeries.tags = JToken.FromObject(category.Tags);
             sonarrSeries.qualityProfileId = category.ProfileId;
-            sonarrSeries.languageProfileId = category.LanguageId;
             sonarrSeries.monitored = SonarrSettings.MonitorNewRequests;
             sonarrSeries.seasonFolder = category.UseSeasonFolders;
 
@@ -434,7 +432,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
                                 {
                                     name = "SeasonSearch",
                                     seasonNumber = s.SeasonNumber,
-                                    seriesId = tvShow.DownloadClientId
+                                    seriesId = int.Parse(tvShow.DownloadClientId)
                                 }));
 
                                 await response.ThrowIfNotSuccessfulAsync("SonarrSeasonSearchCommand failed", x => x.error);
@@ -625,7 +623,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
         private static string GetBaseURL(SonarrSettings settings)
         {
             var protocol = settings.UseSSL ? "https" : "http";
-            return $"{protocol}://{settings.Hostname}:{settings.Port}{settings.BaseUrl}/api/v{settings.Version}";
+            return $"{protocol}://{settings.Hostname}:{settings.Port}{settings.BaseUrl}/api/v3";
         }
 
         private Task<HttpResponseMessage> HttpGetAsync(string url)

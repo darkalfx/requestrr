@@ -224,44 +224,48 @@ function SonarrCategory(props) {
                 props.apiVersion !== "2"
                   ? <>
                     <Row>
-                      <Col lg="6">
-                        <div className="input-group-button mb-4">
-                          <Dropdown
-                            name="Language"
-                            value={props.category.languageId}
-                            items={reduxState.sonarr.languages.map(x => { return { name: x.name, value: x.id } })}
-                            onChange={newLanguage => setCategory("languageId", newLanguage)} />
-                          <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadLanguages(true))} disabled={!props.canConnect} type="button">
-                            <span className="btn-inner--icon">
-                              {
-                                reduxState.sonarr.isLoadingLanguages ? (
-                                  <Oval
-                                    wrapperClass="loader"
-                                    type="Oval"
-                                    color="#11cdef"
-                                    height={19}
-                                    width={19}
-                                  />)
-                                  : (<i className="fas fa-download"></i>)
-                              }</span>
-                            <span className="btn-inner--text">Load</span>
-                          </button>
-                        </div>
-                        {
-                          !reduxState.sonarr.areLanguagesValid ? (
-                            <Alert className="mt-3 mb-4 text-wrap " color="warning">
-                              <strong>Could not find any languages.</strong>
-                            </Alert>)
-                            : null
-                        }
-                        {
-                          props.isSubmitted && reduxState.sonarr.languages.length === 0 ? (
-                            <Alert className="mt-3 mb-4 text-wrap " color="warning">
-                              <strong>A language is required.</strong>
-                            </Alert>)
-                            : null
-                        }
-                      </Col>
+                      {props.apiVersion == "3"
+                        ? <>
+                          <Col lg="6">
+                            <div className="input-group-button mb-4">
+                              <Dropdown
+                                name="Language"
+                                value={props.category.languageId}
+                                items={reduxState.sonarr.languages.map(x => { return { name: x.name, value: x.id } })}
+                                onChange={newLanguage => setCategory("languageId", newLanguage)} />
+                              <button className="btn btn-icon btn-3 btn-default" onClick={() => dispatch(loadLanguages(true))} disabled={!props.canConnect} type="button">
+                                <span className="btn-inner--icon">
+                                  {
+                                    reduxState.sonarr.isLoadingLanguages ? (
+                                      <Oval
+                                        wrapperClass="loader"
+                                        type="Oval"
+                                        color="#11cdef"
+                                        height={19}
+                                        width={19}
+                                      />)
+                                      : (<i className="fas fa-download"></i>)
+                                  }</span>
+                                <span className="btn-inner--text">Load</span>
+                              </button>
+                            </div>
+                            {
+                              !reduxState.sonarr.areLanguagesValid ? (
+                                <Alert className="mt-3 mb-4 text-wrap " color="warning">
+                                  <strong>Could not find any languages.</strong>
+                                </Alert>)
+                                : null
+                            }
+                            {
+                              props.isSubmitted && reduxState.sonarr.languages.length === 0 ? (
+                                <Alert className="mt-3 mb-4 text-wrap " color="warning">
+                                  <strong>A language is required.</strong>
+                                </Alert>)
+                                : null
+                            }
+                          </Col>
+                        </>
+                        : null}
                       <Col lg="6">
                         <div className="input-group-button mb-4">
                           <MultiDropdown

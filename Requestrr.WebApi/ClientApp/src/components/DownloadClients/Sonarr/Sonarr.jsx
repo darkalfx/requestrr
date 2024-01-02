@@ -219,7 +219,7 @@ function Sonarr(props) {
             <Dropdown
               name="API"
               value={apiVersion}
-              items={[{ name: "Version 2", value: "2" }, { name: "Version 3", value: "3" }]}
+              items={[{ name: "Version 2", value: "2" }, { name: "Version 3", value: "3" }, { name: "Version 4", value: "4" }]}
               onChange={newApiVersion => { setApiVersion(newApiVersion) }} />
           </Col>
           <Col lg="6">

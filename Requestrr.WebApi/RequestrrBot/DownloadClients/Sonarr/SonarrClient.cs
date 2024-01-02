@@ -26,10 +26,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 return SonarrClientV2.TestConnectionAsync(httpClient, logger, settings);
             }
-            else
+            else if (settings.Version == "3")
             {
                 return SonarrClientV3.TestConnectionAsync(httpClient, logger, settings);
             }
+            else if (settings.Version == "4")
+            {
+                return SonarrClientV4.GetRootPaths(httpClient, logger, settings);
+            }
+
+            throw new System.Exception($"Sonarr V{settings.Version} is not yet supported.");
         }
 
         public static Task<IList<JSONRootPath>> GetRootPaths(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
@@ -38,10 +44,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 return SonarrClientV2.GetRootPaths(httpClient, logger, settings);
             }
-            else
+            else if (settings.Version == "3")
             {
                 return SonarrClientV3.GetRootPaths(httpClient, logger, settings);
             }
+            else if (settings.Version == "4")
+            {
+                return SonarrClientV4.GetRootPaths(httpClient, logger, settings);
+            }
+
+            throw new System.Exception($"Sonarr V{settings.Version} is not yet supported.");
         }
 
         public static Task<IList<JSONProfile>> GetProfiles(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
@@ -50,10 +62,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 return SonarrClientV2.GetProfiles(httpClient, logger, settings);
             }
-            else
+            else if (settings.Version == "3")
             {
                 return SonarrClientV3.GetProfiles(httpClient, logger, settings);
             }
+            else if (settings.Version == "4")
+            {
+                return SonarrClientV4.GetProfiles(httpClient, logger, settings);
+            }
+
+            throw new System.Exception($"Sonarr V{settings.Version} is not yet supported.");
         }
 
         public static Task<IList<JSONLanguageProfile>> GetLanguages(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
@@ -62,10 +80,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 return Task.FromResult((IList<JSONLanguageProfile>)new List<JSONLanguageProfile>());
             }
-            else
+            else if (settings.Version == "3")
             {
                 return SonarrClientV3.GetLanguages(httpClient, logger, settings);
             }
+            else if (settings.Version == "4")
+            {
+                return SonarrClientV4.GetLanguages(httpClient, logger, settings);
+            }
+
+            throw new System.Exception($"Sonarr V{settings.Version} is not yet supported.");
         }
 
         public static Task<IList<JSONTag>> GetTags(HttpClient httpClient, ILogger<SonarrClient> logger, SonarrSettings settings)
@@ -74,10 +98,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 return Task.FromResult((IList<JSONTag>)new List<JSONTag>());
             }
-            else
+            else if (settings.Version == "3")
             {
                 return SonarrClientV3.GetTags(httpClient, logger, settings);
             }
+            else if (settings.Version == "4")
+            {
+                return SonarrClientV4.GetTags(httpClient, logger, settings);
+            }
+
+            throw new System.Exception($"Sonarr V{settings.Version} is not yet supported.");
         }
 
         public Task<SearchedTvShow> SearchTvShowAsync(TvShowRequest request, int tvDbId)
@@ -111,10 +141,16 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             {
                 return new SonarrClientV2(_httpClientFactory, _logger, _settingsProvider) as T;
             }
-            else
+            else if (_settingsProvider.Provide().Version == "3")
             {
                 return new SonarrClientV3(_httpClientFactory, _logger, _settingsProvider) as T;
             }
+            else if (_settingsProvider.Provide().Version == "4")
+            {
+                return new SonarrClientV4(_httpClientFactory, _logger, _settingsProvider) as T;
+            }
+
+            throw new System.Exception($"Sonarr V{_settingsProvider.Provide().Version} is not yet supported.");
         }
 
         public class JSONRootPath
