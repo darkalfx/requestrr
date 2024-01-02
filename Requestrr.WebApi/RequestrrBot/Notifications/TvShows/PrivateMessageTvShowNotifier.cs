@@ -69,6 +69,11 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.TvShows
 
                         userNotified.Add(userId);
                     }
+                    catch (DSharpPlus.Exceptions.UnauthorizedException ex)
+                    {
+                        userNotified.Add(userId);
+                        _logger.LogWarning($"Removing tv show notification [{tvShow.Title}] for user [{userId}] as we are missing permissions to do so [Unauthorized].");
+                    }
                     catch (System.Exception ex)
                     {
                         _logger.LogError(ex, "An error occurred while sending a tv show notification to a specific user: " + ex.Message);

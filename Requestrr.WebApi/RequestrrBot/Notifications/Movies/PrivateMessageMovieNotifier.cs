@@ -61,6 +61,11 @@ namespace Requestrr.WebApi.RequestrrBot.Notifications.Movies
 
                         userNotified.Add(userId);
                     }
+                    catch (DSharpPlus.Exceptions.UnauthorizedException ex)
+                    {
+                        userNotified.Add(userId);
+                        _logger.LogWarning($"Removing movie notification [{movie.Title}] for user [{userId}] as we are missing permissions to do so [Unauthorized].");
+                    }
                     catch (System.Exception ex)
                     {
                         _logger.LogError(ex, "An error occurred while sending a private message movie notification to a specific user: " + ex.Message);
