@@ -43,7 +43,9 @@
         "Categories": []
       },
       "UseSSL": false,
-      "Version": "1"
+      "Version": "1",
+      "UseMovieIssue": false,
+      "UseTVIssue": false
     },
     "Radarr": {
       "Hostname": "",
