@@ -32,7 +32,7 @@ namespace Requestrr.WebApi.RequestrrBot.DownloadClients.Sonarr
             }
             else if (settings.Version == "4")
             {
-                return SonarrClientV4.GetRootPaths(httpClient, logger, settings);
+                return SonarrClientV4.TestConnectionAsync(httpClient, logger, settings);
             }
 
             throw new System.Exception($"Sonarr V{settings.Version} is not yet supported.");
