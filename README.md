@@ -47,6 +47,22 @@ Then simply access the web portal at http://youraddress:4545/ to create your adm
 
 Once you have configured the bot and invited it to your Discord server, simply type **/help** to see all available commands.
 
+### docker-compose
+
+```
+---
+version: "2.1"
+services:
+  requestrr:
+    image: darkalfx/requestrr
+    container_name: requestrr
+    volumes:
+      - path to config:/config
+    ports:
+      - 4545:4545
+    restart: unless-stopped
+```
+
 Build Instructions
 ==================
 
